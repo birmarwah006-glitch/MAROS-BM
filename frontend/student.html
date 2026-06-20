@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MAROS — Student</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<canvas id="oak-canvas"></canvas>
+
+<!-- HEADER -->
+<div class="header">
+  <a href="index.html" class="back-btn">← Back</a>
+  <div class="logo">MA<span>ROS</span></div>
+  <div class="role-badge badge-student">STUDENT</div>
+</div>
+
+<!-- PORTAL -->
+<div class="portal active" id="portal">
+
+  <!-- MAIN -->
+  <div class="portal-main">
+
+    <!-- WAITING -->
+    <div class="waiting" id="waiting-state">
+      <div class="waiting-icon">⏳</div>
+      <div class="waiting-title">Waiting for lecture</div>
+      <p class="waiting-sub">Your professor hasn't uploaded a lecture yet.<br>Check back soon.</p>
+      <div class="waiting-pill" id="waiting-pill">Checking for content...</div>
+    </div>
+
+    <!-- ACTIVE CONTENT -->
+    <div id="active-content" style="display:none">
+
+      <!-- MODULE LIST -->
+      <div id="module-list-section">
+        <div class="section-label">Today's Modules</div>
+        <div class="module-grid" id="module-grid"></div>
+      </div>
+
+      <!-- VIDEO PLAYER -->
+      <div id="player-section" style="display:none; margin-top:24px">
+        <div class="section-label" id="player-label">Module 1</div>
+
+        <div class="video-wrap">
+          <video id="video-player" controls></video>
+        </div>
+
+        <!-- MODULE NOTES -->
+        <div id="notes-section" style="margin-bottom:24px">
+          <div class="section-label">Module Notes</div>
+          <div id="notes-content" style="
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            font-size: 13px;
+            line-height: 1.8;
+            color: var(--muted2);
+            white-space: pre-wrap;
+          "></div>
+        </div>
+
+        <!-- QUIZ -->
+        <div id="quiz-section" style="display:none">
+          <div class="section-label">Concept Quiz</div>
+
+          <div class="progress-wrap">
+            <div class="progress-label">
+              <span>Progress</span>
+              <span id="quiz-progress-pct">0%</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" id="quiz-progress-fill" style="width:0%"></div>
+            </div>
+          </div>
+
+          <div class="score-card" id="score-card">
+            <div class="score-big" id="score-big">0/5</div>
+            <div class="score-label">Great effort! Review the explanations below.</div>
+          </div>
+
+          <div id="quiz-questions"></div>
+        </div>
+
+        <button
+          class="btn btn-primary"
+          id="quiz-btn"
+          style="margin-top:16px"
+        >
+          📝 Take Quiz for this Module
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- OAK SIDEBAR -->
+  <div class="oak-sidebar">
+    <div class="oak-header">
+      <div class="oak-avatar">🌿</div>
+      <div>
+        <div class="oak-name">Prof Oak</div>
+        <div class="oak-status">● Student Tutor Mode</div>
+      </div>
+    </div>
+
+    <div class="oak-messages" id="oak-messages">
+      <div class="oak-msg oak">
+        <div class="oak-label">PROF OAK</div>
+        Hey! I'm Prof Oak. Watch the module video, then ask me anything you don't understand.
+        I'm here to help you actually get it — not just memorize it.
+      </div>
+    </div>
+
+    <div class="oak-input-row">
+      <input
+        class="oak-input"
+        id="oak-input"
+        type="text"
+        placeholder="Ask Oak anything..."
+        onkeydown="if(event.key==='Enter') sendMessage()"
+      >
+      <button class="oak-send" onclick="sendMessage()">↑</button>
+    </div>
+  </div>
+
+</div>
+
+<script type="module">
+// Oak stub — Three.js disabled for local demo
+function initOak() {}
+function setOakMode() {}
+function setOakTalking() {}
+import { getModules, getVideoUrl, getModuleNotes, generateQuiz, chatWithOak, STATE } from './api.js';
+
+// ── Init Oak ──
+initOak('oak-canvas');
+setOakMode('corner');
+
+// ── State ──
+let chatHistory    = [];
+let currentModules = [];
+let activeModule   = null;
+let activeQuiz     = null;
+let answered       = {};
+
+// ── Load content if job exists ──
+async function init() {
+  const jobId = STATE.jobId;
+
+  if (!jobId) {
+    document.getElementById('waiting-pill').textContent = 'No lecture uploaded yet.';
+    return;
+  }
+
+  try {
+    const modules = await getModules(jobId);
+    if (!modules || modules.length === 0) {
+      document.getElementById('waiting-pill').textContent = 'Lecture is still processing...';
+      setTimeout(init, 5000);
+      return;
+    }
+
+    currentModules = modules;
+    STATE.setModules(modules);
+
+    document.getElementById('waiting-state').style.display  = 'none';
+    document.getElementById('active-content').style.display = 'block';
+
+    renderModuleList(modules);
+
+  } catch(e) {
+    document.getElementById('waiting-pill').textContent = 'Checking again...';
+    setTimeout(init, 5000);
+  }
+}
+
+// ── Render Module List ──
+function renderModuleList(modules) {
+  const grid = document.getElementById('module-grid');
+  grid.innerHTML = '';
+
+  modules.forEach(m => {
+    const card = document.createElement('div');
+    card.className = 'module-card';
+    card.id = `module-card-${m.module_id}`;
+    card.innerHTML = `
+      <div class="module-num">0${m.module_id}</div>
+      <div>
+        <div class="module-concept">${m.concept}</div>
+        <div class="module-meta">${m.duration_sec}s · ${m.start} → ${m.end}</div>
+      </div>
+      <div class="module-arrow">▶</div>
+    `;
+    card.addEventListener('click', () => loadModule(m));
+    grid.appendChild(card);
+  });
+}
+
+// ── Load Module ──
+async function loadModule(module) {
+  activeModule = module;
+  STATE.setActiveModule(module.module_id);
+  answered   = {};
+  activeQuiz = null;
+
+  document.querySelectorAll('.module-card').forEach(c => c.classList.remove('active'));
+  document.getElementById(`module-card-${module.module_id}`)?.classList.add('active');
+
+  document.getElementById('player-section').style.display = 'block';
+  document.getElementById('player-label').textContent     = `Module ${module.module_id} — ${module.concept}`;
+
+  const video = document.getElementById('video-player');
+  video.src   = getVideoUrl(STATE.jobId, module.module_id);
+  video.load();
+
+  try {
+    const data = await getModuleNotes(STATE.jobId, module.module_id);
+    document.getElementById('notes-content').textContent = data.notes;
+  } catch(e) {
+    document.getElementById('notes-content').textContent = module.notes || '';
+  }
+
+  document.getElementById('quiz-section').style.display    = 'none';
+  document.getElementById('quiz-questions').innerHTML       = '';
+  document.getElementById('score-card').style.display       = 'none';
+  document.getElementById('quiz-progress-fill').style.width = '0%';
+  document.getElementById('quiz-btn').style.display         = 'block';
+
+  addOakMessage('oak', `Now viewing: "${module.concept}". Ask me anything about this topic and I'll help you understand it deeply.`);
+  document.getElementById('player-section').scrollIntoView({ behavior: 'smooth' });
+}
+
+// ── Quiz ──
+document.getElementById('quiz-btn').addEventListener('click', async () => {
+  if (!activeModule) return;
+
+  const btn = document.getElementById('quiz-btn');
+  btn.disabled    = true;
+  btn.textContent = '⏳ Generating quiz...';
+
+  try {
+    activeQuiz = await generateQuiz(STATE.jobId, activeModule.module_id);
+    answered   = {};
+
+    renderQuiz(activeQuiz);
+    document.getElementById('quiz-section').style.display = 'block';
+    document.getElementById('quiz-btn').style.display     = 'none';
+
+    addOakMessage('oak', `Quiz ready! ${activeQuiz.questions.length} questions on "${activeModule.concept}". Take your time — I'm here if you get stuck.`);
+
+  } catch(e) {
+    btn.disabled    = false;
+    btn.textContent = '📝 Take Quiz for this Module';
+    addOakMessage('oak', `Quiz generation failed: ${e.message}`);
+  }
+});
+
+// ── Render Quiz ──
+function renderQuiz(quiz) {
+  const container = document.getElementById('quiz-questions');
+  container.innerHTML = '';
+
+  quiz.questions.forEach((q, i) => {
+    const card = document.createElement('div');
+    card.className = 'question-card';
+    card.innerHTML = `
+      <div class="question-num">QUESTION ${i + 1} OF ${quiz.questions.length}</div>
+      <div class="question-text">${q.question}</div>
+      ${Object.entries(q.options).map(([k, v]) => `
+        <div class="option" id="opt-${i}-${k}" onclick="answerQuestion(${i}, '${k}')">
+          <span class="option-key">${k}</span>
+          <span>${v}</span>
+        </div>
+      `).join('')}
+      <div class="explanation" id="exp-${i}">${q.explanation}</div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+// ── Answer Question ──
+window.answerQuestion = function(qi, key) {
+  if (answered[qi] !== undefined) return;
+  answered[qi] = key;
+
+  const q = activeQuiz.questions[qi];
+
+  ['A','B','C','D'].forEach(k => {
+    const el = document.getElementById(`opt-${qi}-${k}`);
+    if (!el) return;
+    if (k === q.correct_answer) el.classList.add('correct');
+    else if (k === key)         el.classList.add('wrong');
+  });
+
+  document.getElementById(`exp-${qi}`).style.display = 'block';
+
+  const total    = activeQuiz.questions.length;
+  const done     = Object.keys(answered).length;
+  const progress = Math.round((done / total) * 100);
+
+  document.getElementById('quiz-progress-fill').style.width = progress + '%';
+  document.getElementById('quiz-progress-pct').textContent  = progress + '%';
+
+  if (done === total) {
+    const score = Object.entries(answered)
+      .filter(([i, k]) => activeQuiz.questions[i].correct_answer === k).length;
+
+    document.getElementById('score-big').textContent    = `${score}/${total}`;
+    document.getElementById('score-card').style.display = 'block';
+    document.getElementById('score-card').scrollIntoView({ behavior: 'smooth' });
+
+    const pct = Math.round((score / total) * 100);
+    if (pct === 100) {
+      addOakMessage('oak', `Perfect score! You've mastered "${activeModule.concept}". Ready to build something with this knowledge?`);
+    } else if (pct >= 60) {
+      addOakMessage('oak', `Good work — ${score}/${total}! Review the explanations for the ones you missed. Ask me about anything that's still unclear.`);
+    } else {
+      addOakMessage('oak', `${score}/${total} — let's review this together. Which question confused you the most? Ask me and we'll work through it.`);
+    }
+  }
+}
+
+// ── Oak Chat ──
+window.sendMessage = async function() {
+  const input = document.getElementById('oak-input');
+  const msg   = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+
+  addOakMessage('user', msg);
+  chatHistory.push({ role: 'user', content: msg, timestamp: new Date().toISOString() });
+
+  showTyping();
+  setOakTalking(true);
+
+  try {
+    const reply = await chatWithOak({
+      message  : msg,
+      jobId    : STATE.jobId,
+      moduleId : activeModule?.module_id || null,
+      history  : chatHistory,
+      role     : 'student'
+    });
+
+    removeTyping();
+    addOakMessage('oak', reply.content);
+    chatHistory.push({ role: 'assistant', content: reply.content, timestamp: new Date().toISOString() });
+
+  } catch(e) {
+    removeTyping();
+    addOakMessage('oak', `Connection issue: ${e.message}`);
+  }
+
+  setOakTalking(false);
+}
+
+// ── Chat Helpers ──
+function addOakMessage(role, text) {
+  const msgs = document.getElementById('oak-messages');
+  const div  = document.createElement('div');
+  div.className = `oak-msg ${role}`;
+  div.innerHTML = role === 'oak'
+    ? `<div class="oak-label">PROF OAK</div>${text}`
+    : text;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function showTyping() {
+  const msgs = document.getElementById('oak-messages');
+  const div  = document.createElement('div');
+  div.className = 'oak-msg oak';
+  div.id = 'typing';
+  div.innerHTML = '<div class="oak-label">PROF OAK</div><div class="typing"><span></span><span></span><span></span></div>';
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function removeTyping() {
+  document.getElementById('typing')?.remove();
+}
+
+// ── Start ──
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+# Role of Operating System and Virtualization
+
+**Overview**
+The operating system (OS) acts as a middleware between user applications and system hardware, providing a convenient interface for users to interact with the system. The OS manages computer hardware resources such as CPU, memory, and disk, and provides services to user programs. The primary goal of an OS is to make it easy for users to use the system, and it achieves this by providing abstractions and virtualizing resources.
+
+**Key Takeaways**
+* The OS acts as an intermediary between user applications and system hardware, managing hardware resources and providing services to user programs.
+* The OS provides abstractions, such as process or thread for CPU and virtual address space for memory, to make it easy for users to interact with the system.
+* Virtualization of resources, such as CPU and memory, allows multiple programs to run seemingly at the same time, providing a convenient illusion to each process or application.
+* The OS provides a range of functions, including executing programs, managing memory, and handling input/output operations, to support the running of multiple programs.
+* The OS also ensures security, efficiency, and high performance, while minimizing overheads and making trade-offs between different design goals.
+
+**Important Terms or Definitions**
+* **Operating System (OS)**: a middleware between user applications and system hardware that manages computer hardware resources and provides services to user programs.
+* **Virtualization**: the process of providing abstractions and virtualizing resources, such as CPU and memory, to make it easy for users to interact with the system.
+* **Process**: an abstraction provided by the OS for CPU, allowing user programs to run seemingly at the same time.
+* **Virtual Address Space**: an abstraction provided by the OS for memory, allowing each process to have its own private memory space.

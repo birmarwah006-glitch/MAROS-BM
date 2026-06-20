@@ -1,0 +1,10 @@
+# Introduction to Operating System Course
+
+**Overview**: This course introduces the design and underlying principles of operating systems, covering both theoretical concepts and practical implementation through lab exercises. The course aims to provide a deeper understanding of how operating systems work and how they support applications. By studying this course, students will gain a better understanding of the basics of current systems and how to develop portable applications.
+
+**Key Takeaways**:
+* The course covers the design and underlying principles of operating systems, including practical implementation through lab exercises.
+* Understanding operating systems is essential for developing applications that can run on different operating systems, considering factors like portability and OS support.
+* Studying operating systems helps students understand the basics of how current systems work and how OS facilitates user programs and applications.
+
+**Important Terms**: Operating System (OS), Portability, Practical Implementation.

@@ -1,0 +1,16 @@
+# Demonstration of Virtualization and Process Management
+
+**Overview**
+The lecture segment demonstrates virtualization and process management using a Linux kernel. The instructor runs multiple instances of a simple program, showcasing how the operating system (OS) enables time-sharing and allows multiple processes to run simultaneously on a single CPU. This demonstration highlights the importance of virtualization in process management.
+
+**Key Takeaways**
+* The OS enables time-sharing, allowing multiple programs to run on a single CPU.
+* Multiple instances of a program can be run simultaneously, with each instance having its own process.
+* Virtualization is crucial for process management, as it allows multiple processes to share system resources.
+* The instructor demonstrates this concept by running multiple instances of a program, showing how the OS manages memory and CPU usage.
+* The demonstration also highlights how the OS assigns the same memory address to different pointers in different programs, showcasing the concept of virtual memory.
+
+**Important Terms**
+* Time-sharing: a technique used by the OS to allocate CPU time to multiple processes, allowing them to run concurrently.
+* Virtualization: a technology that enables multiple virtual machines or processes to share system resources, such as CPU and memory.
+* Process: a program in execution, with its own memory space and system resources.

@@ -1,0 +1,16 @@
+# Introduction to Programming with Python
+
+**Overview**
+This lecture introduces students to programming with Python, starting with the basics of writing and running code. The instructor uses Visual Studio Code (VS Code) to demonstrate how to create and run a simple Python program. The goal is to understand the fundamental concepts of programming, including writing code, using a text editor, and running programs using a command line interface.
+
+**Key Takeaways**
+* A text editor, such as VS Code, is used to write code, and the file name should end with .py to indicate it's a Python program.
+* The command line interface (CLI) is a powerful tool for running programs, and the Python interpreter is used to translate code into a language the computer can understand.
+* A simple Python program can be written using the `print()` function, and the program can be run using the command `python filename.py`.
+* The Python interpreter is a program that can be installed for free on a Mac, PC, or server, and it reads the code, translates it into zeros and ones, and executes it.
+
+**Important Terms**
+* **Text editor**: a program for writing text, such as VS Code or Google Docs.
+* **Command line interface (CLI)**: a way of interacting with a computer using text commands.
+* **Python interpreter**: a program that translates Python code into a language the computer can understand and executes it.
+* **.py file**: a file with a .py extension, indicating it's a Python program.

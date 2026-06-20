@@ -1,0 +1,17 @@
+# Importance and Motivation for Studying Operating Systems
+
+**Overview**
+The study of operating systems is crucial due to the many conceptually interesting concepts and design principles it encompasses. Understanding these principles is essential for building complex systems and troubleshooting common issues. This course provides a foundational understanding of operating systems, which is necessary for advanced courses and real-world applications.
+
+**Key Takeaways**
+* Abstraction is a key design principle in operating systems, allowing for the creation of complex systems by hiding underlying details and providing a clean interface.
+* The course covers three main topics: virtualization (CPU and memory), concurrency, and persistence, as well as important concepts like security, reliability, and portability.
+* Understanding operating systems is essential for building and customizing complex systems, such as those used by Google and Facebook, and for working with new and emerging devices.
+* The course provides a deeper understanding of common issues, such as segmentation faults and system crashes, and how they are handled by operating systems.
+* The principles learned in this course are foundational and will be applied in various contexts, including distributed systems and data centers.
+
+**Important Terms**
+* Abstraction: the concept of hiding underlying details and providing a clean interface to create complex systems.
+* Virtualization: the process of creating a virtual version of a resource, such as CPU or memory.
+* Concurrency: the ability of a system to handle multiple tasks or processes simultaneously.
+* Persistence: the ability of a system to store data persistently, even in the event of a failure.

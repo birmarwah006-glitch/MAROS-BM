@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MAROS</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<canvas id="oak-canvas"></canvas>
+
+<!-- LANDING PAGE -->
+<div class="page active" id="page-landing">
+
+  <div class="landing-badge">VNIT Nagpur · Research Platform</div>
+
+  <div class="landing-title">
+    MA<span class="accent">ROS</span>
+  </div>
+
+  <p class="landing-sub">MARWAH OPERATING SYSTEM · AI-POWERED LEARNING</p>
+
+  <div class="role-cards">
+    <a class="role-card prof" href="professor.html">
+      <span class="role-icon">🎓</span>
+      <div class="role-label">Professor</div>
+      <p class="role-desc">Upload lectures, generate modules, monitor students.</p>
+    </a>
+    <a class="role-card student" href="student.html">
+      <span class="role-icon">📚</span>
+      <div class="role-label">Student</div>
+      <p class="role-desc">Watch clips, take quizzes, chat with Prof Oak.</p>
+    </a>
+  </div>
+
+</div>
+
+<script type="module">
+  import { initOak, setOakMode } from './oak.js';
+  initOak('oak-canvas');
+  setOakMode('hero');
+</script>
+
+</body>
+</html>

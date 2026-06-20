@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MAROS — Professor</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<canvas id="oak-canvas"></canvas>
+
+<!-- HEADER -->
+<div class="header">
+  <a href="index.html" class="back-btn">← Back</a>
+  <div class="logo">MA<span>ROS</span></div>
+  <div class="role-badge badge-prof">PROFESSOR</div>
+</div>
+
+<!-- PORTAL -->
+<div class="portal active" id="portal">
+
+  <!-- MAIN -->
+  <div class="portal-main">
+
+    <div class="section-label">Lecture Video</div>
+    <div class="upload-zone" id="upload-zone">
+      <input type="file" id="video-input" accept="video/*,audio/*">
+      <span class="upload-icon">🎬</span>
+      <div class="upload-title" id="upload-title">Upload lecture video or audio</div>
+      <div class="upload-sub">MP4, MOV, AVI, MP3, WAV · processed by Chipper</div>
+    </div>
+
+    <button class="btn btn-primary" id="process-btn" disabled>
+      ⚡ Process with Chipper
+    </button>
+
+    <div class="progress-wrap" id="progress-wrap" style="display:none">
+      <div class="progress-label">
+        <span id="progress-status">Processing...</span>
+        <span id="progress-pct">0%</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+      </div>
+    </div>
+
+    <div id="modules-section" style="display:none; margin-top:32px">
+      <div class="section-label">Concept Modules</div>
+      <div class="module-grid" id="module-grid"></div>
+    </div>
+
+  </div>
+
+  <!-- OAK SIDEBAR -->
+  <div class="oak-sidebar">
+    <div class="oak-header">
+      <div class="oak-avatar">🌿</div>
+      <div>
+        <div class="oak-name">Prof Oak</div>
+        <div class="oak-status">● Teaching Assistant Mode</div>
+      </div>
+    </div>
+
+    <div class="oak-messages" id="oak-messages">
+      <div class="oak-msg oak">
+        <div class="oak-label">PROF OAK</div>
+        Hello Professor! Upload your lecture and I'll help you analyze the modules,
+        review quiz questions, and understand how students are engaging.
+      </div>
+    </div>
+
+    <div class="oak-input-row">
+      <input
+        class="oak-input"
+        id="oak-input"
+        type="text"
+        placeholder="Ask Oak anything..."
+      >
+      <button class="oak-send" id="oak-send-btn">↑</button>
+    </div>
+  </div>
+
+</div>
+
+<script type="module">
+// Oak stub — Three.js disabled for local demo
+function initOak() {}
+function setOakMode() {}
+function setOakTalking() {}
+import { submitJob, pollJob, getManifest, generateQuiz, chatWithOak, STATE } from './api.js';
+
+// ── Init Oak ──
+initOak('oak-canvas');
+setOakMode('corner');
+
+// ── State ──
+let selectedFile   = null;
+let pollInterval   = null;
+let chatHistory    = [];
+let currentJobId   = null;
+let currentModules = [];
+
+// ── File Select ──
+document.getElementById('video-input').addEventListener('change', (e) => {
+  selectedFile = e.target.files[0];
+  if (!selectedFile) return;
+  document.getElementById('upload-title').textContent = '✓ ' + selectedFile.name;
+  document.getElementById('upload-zone').classList.add('has-file');
+  document.getElementById('process-btn').disabled = false;
+});
+
+// ── Process ──
+document.getElementById('process-btn').addEventListener('click', async () => {
+  if (!selectedFile) return;
+
+  const btn = document.getElementById('process-btn');
+  btn.disabled    = true;
+  btn.textContent = '⏳ Uploading...';
+
+  document.getElementById('progress-wrap').style.display   = 'block';
+  document.getElementById('modules-section').style.display = 'none';
+
+  try {
+    const job    = await submitJob(selectedFile);
+    currentJobId = job.job_id;
+    STATE.setJobId(job.job_id);
+
+    btn.textContent = '⚙ Processing...';
+    addOakMessage('oak', `Job started! Processing "${selectedFile.name}". I'll let you know when the modules are ready.`);
+
+    pollInterval = setInterval(async () => {
+      try {
+        const status = await pollJob(currentJobId);
+        updateProgress(status);
+
+        if (status.status === 'done') {
+          clearInterval(pollInterval);
+          const manifest = await getManifest(currentJobId);
+          currentModules = manifest.modules;
+          STATE.setModules(manifest.modules);
+          renderModules(manifest.modules);
+          btn.textContent = '✓ Done';
+          addOakMessage('oak', `Chipper identified ${manifest.modules.length} concept modules. Click any module to generate a quiz for it.`);
+        }
+
+        if (status.status === 'failed') {
+          clearInterval(pollInterval);
+          btn.disabled    = false;
+          btn.textContent = '⚡ Process with Chipper';
+          addOakMessage('oak', `Processing failed: ${status.error}. Please try again.`);
+        }
+
+      } catch(e) { console.error(e); }
+    }, 2000);
+
+  } catch(e) {
+    btn.disabled    = false;
+    btn.textContent = '⚡ Process with Chipper';
+    addOakMessage('oak', `Upload failed: ${e.message}`);
+  }
+});
+
+// ── Progress UI ──
+function updateProgress(status) {
+  const statusMap = {
+    queued       : 'Queued...',
+    transcribing : 'Transcribing lecture...',
+    segmenting   : 'Identifying concept modules...',
+    cutting      : 'Cutting video clips...',
+    summarizing  : 'Generating notes...',
+    done         : 'Complete!',
+    failed       : 'Failed'
+  };
+  document.getElementById('progress-status').textContent = statusMap[status.status] || status.status;
+  document.getElementById('progress-pct').textContent    = status.progress + '%';
+  document.getElementById('progress-fill').style.width   = status.progress + '%';
+}
+
+// ── Render Modules ──
+function renderModules(modules) {
+  const grid = document.getElementById('module-grid');
+  grid.innerHTML = '';
+  modules.forEach(m => {
+    const card = document.createElement('div');
+    card.className = 'module-card';
+    card.innerHTML = `
+      <div class="module-num">0${m.module_id}</div>
+      <div>
+        <div class="module-concept">${m.concept}</div>
+        <div class="module-meta">${m.duration_sec}s · ${m.start} → ${m.end}</div>
+      </div>
+      <div class="module-arrow">→</div>
+    `;
+    card.addEventListener('click', () => generateModuleQuiz(m));
+    grid.appendChild(card);
+  });
+  document.getElementById('modules-section').style.display = 'block';
+}
+
+// ── Generate Quiz ──
+async function generateModuleQuiz(module) {
+  addOakMessage('oak', `Generating quiz for "${module.concept}"...`);
+  setOakTalking(true);
+  try {
+    const quiz = await generateQuiz(currentJobId, module.module_id);
+    addOakMessage('oak', `Quiz ready! ${quiz.questions.length} questions generated for "${module.concept}". Students can now access it.`);
+  } catch(e) {
+    addOakMessage('oak', `Quiz generation failed: ${e.message}`);
+  }
+  setOakTalking(false);
+}
+
+// ── Oak Chat ──
+async function sendMessage() {
+  const input = document.getElementById('oak-input');
+  const msg   = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+
+  addOakMessage('user', msg);
+  chatHistory.push({ role: 'user', content: msg, timestamp: new Date().toISOString() });
+
+  showTyping();
+  setOakTalking(true);
+
+  try {
+    const reply = await chatWithOak({
+      message  : msg,
+      jobId    : currentJobId,
+      moduleId : null,
+      history  : chatHistory,
+      role     : 'professor'
+    });
+    removeTyping();
+    addOakMessage('oak', reply.content);
+    chatHistory.push({ role: 'assistant', content: reply.content, timestamp: new Date().toISOString() });
+  } catch(e) {
+    removeTyping();
+    addOakMessage('oak', `Connection issue: ${e.message}`);
+  }
+  setOakTalking(false);
+}
+
+// ── Event Listeners for chat ──
+document.getElementById('oak-send-btn').addEventListener('click', sendMessage);
+document.getElementById('oak-input').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') sendMessage();
+});
+
+// ── Chat Helpers ──
+function addOakMessage(role, text) {
+  const msgs = document.getElementById('oak-messages');
+  const div  = document.createElement('div');
+  div.className = `oak-msg ${role}`;
+  div.innerHTML = role === 'oak'
+    ? `<div class="oak-label">PROF OAK</div>${text}`
+    : text;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function showTyping() {
+  const msgs = document.getElementById('oak-messages');
+  const div  = document.createElement('div');
+  div.className = 'oak-msg oak';
+  div.id = 'typing';
+  div.innerHTML = '<div class="oak-label">PROF OAK</div><div class="typing"><span></span><span></span><span></span></div>';
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function removeTyping() {
+  document.getElementById('typing')?.remove();
+}
+</script>
+</body>
+</html>

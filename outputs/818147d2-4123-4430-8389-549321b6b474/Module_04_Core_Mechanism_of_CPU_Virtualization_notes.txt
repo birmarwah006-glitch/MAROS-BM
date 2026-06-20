@@ -1,0 +1,16 @@
+# Core Mechanism of CPU Virtualization
+
+**Overview**
+The core mechanism of CPU virtualization is known as "limited direct execution," which balances efficiency and security. This approach allows processes to run directly on the CPU for most of the time, but with certain restrictions in place to prevent them from taking over or accessing other processes' memory. The goal is to utilize the CPU efficiently while maintaining security.
+
+**Key Takeaways**
+* Limited direct execution involves running processes directly on the CPU, but with restrictions in place to prevent security breaches.
+* The "limited" part of this term refers to the security aspect, where the OS intervenes at certain key points, such as when a process attempts to execute a privileged instruction.
+* The "direct execution" part refers to the efficiency aspect, where processes run directly on the CPU without intermediary involvement.
+* When a process is running, the OS is not running, and the OS can only regain control when the process makes a system call or completes its execution.
+* The OS must balance efficiency and security by allowing processes to run directly on the CPU while preventing them from accessing sensitive resources or executing privileged instructions.
+
+**Important Terms**
+* Limited direct execution: a core mechanism of CPU virtualization that balances efficiency and security.
+* System call: a mechanism that allows a process to request services from the OS, which can be used to regain control when a process is running.
+* Privileged instruction: an instruction that requires special permission or access rights to execute, which can be used to trigger OS intervention.

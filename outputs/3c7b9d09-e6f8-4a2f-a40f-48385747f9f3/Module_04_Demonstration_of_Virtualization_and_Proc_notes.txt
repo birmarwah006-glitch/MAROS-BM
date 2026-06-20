@@ -1,0 +1,13 @@
+# Demonstration of Virtualization and Process Management
+
+**Overview**
+The lecture segment demonstrates virtualization and process management using a Linux kernel. The instructor runs multiple instances of a simple program simultaneously on a single CPU system, showcasing time-sharing and virtualization. This allows multiple programs to run concurrently, with the operating system managing the allocation of resources.
+
+**Key Takeaways**
+* The instructor demonstrates running multiple instances of a program using the ampersand (&) symbol to run them in the background.
+* The operating system enables time-sharing, allowing multiple programs to run on a single CPU.
+* Virtualization enables multiple programs to run simultaneously, with each program having its own virtual resources.
+
+**Important Terms**
+* **Time-sharing**: a technique used by the operating system to allocate CPU time to multiple programs, allowing them to run concurrently.
+* **Virtualization**: a technique used to create a virtual environment, allowing multiple programs to run simultaneously on a single physical resource.

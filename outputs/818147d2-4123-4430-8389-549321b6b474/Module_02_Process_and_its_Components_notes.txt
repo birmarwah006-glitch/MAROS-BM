@@ -1,0 +1,17 @@
+# Process and its Components
+
+**Overview**
+A process is a software abstraction provided by the Operating System (OS) for a program, representing a running program with its own memory space and system resources. It is a dynamic entity, whereas a program is a static entity, consisting of code and data. The key difference between a program and a process is that a program is a passive entity, while a process is an active entity, executing the program's instructions.
+
+**Key Takeaways**
+* A process is a wrapper around a program, providing a separate memory space and system resources.
+* The components of a process include memory (stack, heap, and code), CPU registers (program counter, stack pointer, and general-purpose registers), and context or state-related information (process ID, user ID, file descriptors, and input/output devices).
+* A process control block (PCB) is a data structure that stores important information about a process, including its state, memory allocation, and system resources.
+* A process has its own memory space, which includes static data, dynamic memory allocation (heap), and a stack for storing function calls and local variables.
+* The CPU registers, including the program counter and stack pointer, play a crucial role in executing the process's instructions and managing its memory.
+
+**Important Terms and Definitions**
+* **Process**: A software abstraction provided by the OS for a program, representing a running program with its own memory space and system resources.
+* **Program**: A static entity, consisting of code and data, which is executed by a process.
+* **Process Control Block (PCB)**: A data structure that stores important information about a process, including its state, memory allocation, and system resources.
+* **Context or State-Related Information**: Information about a process, including its process ID, user ID, file descriptors, and input/output devices, which is stored in the PCB.
