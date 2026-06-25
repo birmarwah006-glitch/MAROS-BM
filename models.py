@@ -4,6 +4,7 @@ from typing import Optional
 from datetime import datetime
 from enum import Enum
 
+
 # ─────────────────────────────────────────────
 # JOB
 # ─────────────────────────────────────────────
@@ -18,11 +19,12 @@ class JobStatus(str, Enum):
     failed       = "failed"
 
 class Job(BaseModel):
-    job_id      : str
-    status      : JobStatus
-    progress    : int = 0          # 0–100
-    error       : Optional[str] = None
-    created_at  : datetime
+    job_id     : str
+    status     : JobStatus
+    progress   : int = 0
+    error      : Optional[str] = None
+    created_at : datetime
+
 
 # ─────────────────────────────────────────────
 # MODULE
@@ -31,12 +33,13 @@ class Job(BaseModel):
 class Module(BaseModel):
     module_id    : int
     concept      : str
-    start        : str             # "MM:SS"
-    end          : str             # "MM:SS"
+    start        : str
+    end          : str
     duration_sec : float
-    video_url    : str             # "/modules/{id}/video"
+    video_url    : str
     notes        : str
     transcript   : str
+
 
 # ─────────────────────────────────────────────
 # MANIFEST
@@ -49,14 +52,15 @@ class Manifest(BaseModel):
     modules       : list[Module]
     generated_at  : datetime
 
+
 # ─────────────────────────────────────────────
 # QUIZ
 # ─────────────────────────────────────────────
 
 class QuizQuestion(BaseModel):
     question       : str
-    options        : dict[str, str]   # {"A": "...", "B": "...", ...}
-    correct_answer : str              # "A" | "B" | "C" | "D"
+    options        : dict[str, str]
+    correct_answer : str
     explanation    : str
     module_id      : int
 
@@ -66,6 +70,7 @@ class Quiz(BaseModel):
     topic        : str
     questions    : list[QuizQuestion]
     generated_at : datetime
+
 
 # ─────────────────────────────────────────────
 # CHAT
@@ -82,7 +87,6 @@ class ChatMessage(BaseModel):
     timestamp : datetime
 
 
-
 # ─────────────────────────────────────────────
 # REQUESTS
 # ─────────────────────────────────────────────
@@ -92,9 +96,11 @@ class QuizGenerateRequest(BaseModel):
     module_id     : int
     num_questions : int = 5
 
-
 class ChatRequest(BaseModel):
-    job_id    : Optional[str] = None
     message   : str
+    job_id    : Optional[str] = None
     module_id : Optional[int] = None
+    paper_id  : Optional[str] = None
     history   : list[ChatMessage] = []
+    role      : str = "student"
+    mode      : str = "videos"        # "videos" | "papers" | "assignments"

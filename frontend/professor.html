@@ -5,6 +5,129 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MAROS — Professor</title>
 <link rel="stylesheet" href="style.css">
+<style>
+
+
+
+  /* ── Tab Bar ── */
+  .tab-bar {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+  }
+  .tab-btn {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--muted2);
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 10px 18px;
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-bottom: -1px;
+  }
+  .tab-btn:hover { color: var(--fg); }
+  .tab-btn.active { color: var(--green); border-bottom-color: var(--green); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── Assigned Item Card ── */
+  .assigned-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .assigned-card-body { flex: 1; min-width: 0; }
+  .assigned-card-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--fg);
+    margin-bottom: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .assigned-card-meta {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--muted2);
+  }
+
+  /* ── Toggle Switch ── */
+  .toggle {
+    position: relative;
+    width: 40px;
+    height: 22px;
+    flex-shrink: 0;
+  }
+  .toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+  .toggle-track {
+    position: absolute;
+    inset: 0;
+    background: var(--border2);
+    border-radius: 11px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .toggle input:checked + .toggle-track { background: var(--green); }
+  .toggle-thumb {
+    position: absolute;
+    top: 3px; left: 3px;
+    width: 16px; height: 16px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.2s;
+    pointer-events: none;
+  }
+  .toggle input:checked ~ .toggle-thumb { transform: translateX(18px); }
+
+  /* ── Submission List ── */
+  .sub-count {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--green);
+    cursor: pointer;
+    text-decoration: underline;
+    margin-left: 8px;
+  }
+  .sub-drawer {
+    display: none;
+    margin-top: 10px;
+    padding: 12px;
+    background: rgba(200,240,96,0.03);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  .sub-drawer.open { display: block; }
+  .sub-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted2);
+  }
+  .sub-row:last-child { border-bottom: none; }
+  .sub-row a { color: var(--green); text-decoration: none; }
+
+  /* ── Visibility label ── */
+  .vis-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--muted2);
+    margin-left: 6px;
+  }
+</style>
 </head>
 <body>
 
@@ -23,31 +146,107 @@
   <!-- MAIN -->
   <div class="portal-main">
 
-    <div class="section-label">Lecture Video</div>
-    <div class="upload-zone" id="upload-zone">
-      <input type="file" id="video-input" accept="video/*,audio/*">
-      <span class="upload-icon">🎬</span>
-      <div class="upload-title" id="upload-title">Upload lecture video or audio</div>
-      <div class="upload-sub">MP4, MOV, AVI, MP3, WAV · processed by Chipper</div>
+    <!-- TAB BAR -->
+    <div class="tab-bar">
+      <button class="tab-btn active" data-tab="lecture">LECTURE</button>
+      <button class="tab-btn" data-tab="papers">PAPERS</button>
+      <button class="tab-btn" data-tab="assignments">ASSIGNMENTS</button>
     </div>
 
-    <button class="btn btn-primary" id="process-btn" disabled>
-      ⚡ Process with Chipper
-    </button>
+    <!-- ══════════════════════════════════════ -->
+    <!-- TAB: LECTURE                          -->
+    <!-- ══════════════════════════════════════ -->
+    <div class="tab-panel active" id="tab-lecture">
 
-    <div class="progress-wrap" id="progress-wrap" style="display:none">
-      <div class="progress-label">
-        <span id="progress-status">Processing...</span>
-        <span id="progress-pct">0%</span>
+      <div class="section-label">Lecture Video</div>
+      <div class="upload-zone" id="upload-zone">
+        <input type="file" id="video-input" accept="video/*,audio/*">
+        <div class="upload-title" id="upload-title">Upload lecture video or audio</div>
+        <div class="upload-sub">MP4, MOV, AVI, MP3, WAV — processed by Chipper</div>
       </div>
-      <div class="progress-bar">
-        <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+
+      <button class="btn btn-primary" id="process-btn" disabled>
+        Process with Chipper
+      </button>
+
+      <div class="progress-wrap" id="progress-wrap" style="display:none">
+        <div class="progress-label">
+          <span id="progress-status">Processing...</span>
+          <span id="progress-pct">0%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+        </div>
       </div>
+
+      <div id="modules-section" style="display:none; margin-top:32px">
+        <div class="section-label">Concept Modules</div>
+        <div class="module-grid" id="module-grid"></div>
+      </div>
+
     </div>
 
-    <div id="modules-section" style="display:none; margin-top:32px">
-      <div class="section-label">Concept Modules</div>
-      <div class="module-grid" id="module-grid"></div>
+    <!-- ══════════════════════════════════════ -->
+    <!-- TAB: PAPERS                           -->
+    <!-- ══════════════════════════════════════ -->
+    <div class="tab-panel" id="tab-papers">
+
+      <div class="section-label">Assign Research Paper</div>
+      <div class="upload-zone" id="paper-upload-zone">
+        <input type="file" id="paper-input" accept="application/pdf">
+        <div class="upload-title" id="paper-upload-title">Upload a research paper (PDF)</div>
+        <div class="upload-sub">Title and abstract auto-extracted — students can generate a podcast from it</div>
+      </div>
+      <button class="btn btn-primary" id="paper-assign-btn" disabled style="margin-bottom:32px">
+        Assign to Students
+      </button>
+
+      <div class="section-label">Assigned Papers</div>
+      <div id="papers-list">
+        <div style="font-family:var(--font-mono); font-size:12px; color:var(--muted2)">Loading...</div>
+      </div>
+
+    </div>
+
+    <!-- ══════════════════════════════════════ -->
+    <!-- TAB: ASSIGNMENTS                      -->
+    <!-- ══════════════════════════════════════ -->
+    <div class="tab-panel" id="tab-assignments">
+
+      <div class="section-label">New Assignment</div>
+      <div class="upload-zone" id="assign-upload-zone">
+        <input type="file" id="assign-input">
+        <div class="upload-title" id="assign-upload-title">Upload assignment file (PDF, DOCX, etc)</div>
+        <div class="upload-sub">Students will see it under the Assignments tab</div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:16px 0">
+        <div>
+          <div style="font-family:var(--font-mono); font-size:10px; color:var(--muted2); margin-bottom:6px">TITLE (optional)</div>
+          <input id="assign-title" type="text" placeholder="e.g. OS Lab 3 — Scheduling"
+            style="width:100%; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:10px 12px; color:var(--fg); font-size:13px; box-sizing:border-box">
+        </div>
+        <div>
+          <div style="font-family:var(--font-mono); font-size:10px; color:var(--muted2); margin-bottom:6px">DUE DATE (optional)</div>
+          <input id="assign-due" type="date"
+            style="width:100%; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:10px 12px; color:var(--fg); font-size:13px; box-sizing:border-box">
+        </div>
+      </div>
+      <div style="margin-bottom:16px">
+        <div style="font-family:var(--font-mono); font-size:10px; color:var(--muted2); margin-bottom:6px">DESCRIPTION (optional)</div>
+        <textarea id="assign-desc" placeholder="Instructions or notes for students..." rows="3"
+          style="width:100%; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:10px 12px; color:var(--fg); font-size:13px; resize:vertical; box-sizing:border-box"></textarea>
+      </div>
+
+      <button class="btn btn-primary" id="assign-post-btn" disabled style="margin-bottom:32px">
+        Post Assignment
+      </button>
+
+      <div class="section-label">Posted Assignments</div>
+      <div id="assignments-list">
+        <div style="font-family:var(--font-mono); font-size:12px; color:var(--muted2)">Loading...</div>
+      </div>
+
     </div>
 
   </div>
@@ -55,10 +254,10 @@
   <!-- OAK SIDEBAR -->
   <div class="oak-sidebar">
     <div class="oak-header">
-      <div class="oak-avatar">🌿</div>
+      <div class="oak-avatar">&#127807;</div>
       <div>
         <div class="oak-name">Prof Oak</div>
-        <div class="oak-status">● Teaching Assistant Mode</div>
+        <div class="oak-status">&#9679; Teaching Assistant Mode</div>
       </div>
     </div>
 
@@ -71,12 +270,7 @@
     </div>
 
     <div class="oak-input-row">
-      <input
-        class="oak-input"
-        id="oak-input"
-        type="text"
-        placeholder="Ask Oak anything..."
-      >
+      <input class="oak-input" id="oak-input" type="text" placeholder="Ask Oak anything...">
       <button class="oak-send" id="oak-send-btn">↑</button>
     </div>
   </div>
@@ -84,40 +278,48 @@
 </div>
 
 <script type="module">
-// Oak stub — Three.js disabled for local demo
+import { submitJob, pollJob, getManifest, generateQuiz, chatWithOak, STATE, assignPaper } from './api.js';
+const BASE = 'http://localhost:8000';
+
 function initOak() {}
 function setOakMode() {}
 function setOakTalking() {}
-import { submitJob, pollJob, getManifest, generateQuiz, chatWithOak, STATE } from './api.js';
 
-// ── Init Oak ──
-initOak('oak-canvas');
-setOakMode('corner');
 
-// ── State ──
+
+// ── Tab switching ──
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(`tab-${btn.dataset.tab}`).classList.add('active');
+  });
+});
+
+// ═══════════════════════════════════════════
+// LECTURE TAB
+// ═══════════════════════════════════════════
+
 let selectedFile   = null;
 let pollInterval   = null;
-let chatHistory    = [];
 let currentJobId   = null;
 let currentModules = [];
+let chatHistory    = [];
 
-// ── File Select ──
 document.getElementById('video-input').addEventListener('change', (e) => {
   selectedFile = e.target.files[0];
   if (!selectedFile) return;
-  document.getElementById('upload-title').textContent = '✓ ' + selectedFile.name;
+  document.getElementById('upload-title').textContent = selectedFile.name;
   document.getElementById('upload-zone').classList.add('has-file');
   document.getElementById('process-btn').disabled = false;
 });
 
-// ── Process ──
 document.getElementById('process-btn').addEventListener('click', async () => {
   if (!selectedFile) return;
-
   const btn = document.getElementById('process-btn');
   btn.disabled    = true;
-  btn.textContent = '⏳ Uploading...';
-
+  btn.textContent = 'Uploading...';
   document.getElementById('progress-wrap').style.display   = 'block';
   document.getElementById('modules-section').style.display = 'none';
 
@@ -125,59 +327,44 @@ document.getElementById('process-btn').addEventListener('click', async () => {
     const job    = await submitJob(selectedFile);
     currentJobId = job.job_id;
     STATE.setJobId(job.job_id);
-
-    btn.textContent = '⚙ Processing...';
-    addOakMessage('oak', `Job started! Processing "${selectedFile.name}". I'll let you know when the modules are ready.`);
+    btn.textContent = 'Processing...';
 
     pollInterval = setInterval(async () => {
       try {
         const status = await pollJob(currentJobId);
         updateProgress(status);
-
         if (status.status === 'done') {
           clearInterval(pollInterval);
           const manifest = await getManifest(currentJobId);
           currentModules = manifest.modules;
           STATE.setModules(manifest.modules);
           renderModules(manifest.modules);
-          btn.textContent = '✓ Done';
-          addOakMessage('oak', `Chipper identified ${manifest.modules.length} concept modules. Click any module to generate a quiz for it.`);
+          btn.textContent = 'Done';
         }
-
         if (status.status === 'failed') {
           clearInterval(pollInterval);
           btn.disabled    = false;
-          btn.textContent = '⚡ Process with Chipper';
-          addOakMessage('oak', `Processing failed: ${status.error}. Please try again.`);
+          btn.textContent = 'Process with Chipper';
         }
-
       } catch(e) { console.error(e); }
     }, 2000);
-
   } catch(e) {
     btn.disabled    = false;
-    btn.textContent = '⚡ Process with Chipper';
-    addOakMessage('oak', `Upload failed: ${e.message}`);
+    btn.textContent = 'Process with Chipper';
   }
 });
 
-// ── Progress UI ──
 function updateProgress(status) {
   const statusMap = {
-    queued       : 'Queued...',
-    transcribing : 'Transcribing lecture...',
-    segmenting   : 'Identifying concept modules...',
-    cutting      : 'Cutting video clips...',
-    summarizing  : 'Generating notes...',
-    done         : 'Complete!',
-    failed       : 'Failed'
+    queued: 'Queued...', transcribing: 'Transcribing lecture...',
+    segmenting: 'Identifying concept modules...', cutting: 'Cutting video clips...',
+    summarizing: 'Generating notes...', done: 'Complete!', failed: 'Failed'
   };
   document.getElementById('progress-status').textContent = statusMap[status.status] || status.status;
   document.getElementById('progress-pct').textContent    = status.progress + '%';
   document.getElementById('progress-fill').style.width   = status.progress + '%';
 }
 
-// ── Render Modules ──
 function renderModules(modules) {
   const grid = document.getElementById('module-grid');
   grid.innerHTML = '';
@@ -190,7 +377,7 @@ function renderModules(modules) {
         <div class="module-concept">${m.concept}</div>
         <div class="module-meta">${m.duration_sec}s · ${m.start} → ${m.end}</div>
       </div>
-      <div class="module-arrow">→</div>
+      <div class="module-arrow">&#8594;</div>
     `;
     card.addEventListener('click', () => generateModuleQuiz(m));
     grid.appendChild(card);
@@ -198,20 +385,230 @@ function renderModules(modules) {
   document.getElementById('modules-section').style.display = 'block';
 }
 
-// ── Generate Quiz ──
 async function generateModuleQuiz(module) {
   addOakMessage('oak', `Generating quiz for "${module.concept}"...`);
-  setOakTalking(true);
   try {
     const quiz = await generateQuiz(currentJobId, module.module_id);
-    addOakMessage('oak', `Quiz ready! ${quiz.questions.length} questions generated for "${module.concept}". Students can now access it.`);
+    addOakMessage('oak', `Quiz ready — ${quiz.questions.length} questions for "${module.concept}".`);
   } catch(e) {
     addOakMessage('oak', `Quiz generation failed: ${e.message}`);
   }
-  setOakTalking(false);
 }
 
-// ── Oak Chat ──
+// ═══════════════════════════════════════════
+// PAPERS TAB
+// ═══════════════════════════════════════════
+
+let selectedPaperFile = null;
+
+document.getElementById('paper-input').addEventListener('change', (e) => {
+  selectedPaperFile = e.target.files[0];
+  if (!selectedPaperFile) return;
+  document.getElementById('paper-upload-title').textContent = selectedPaperFile.name;
+  document.getElementById('paper-upload-zone').classList.add('has-file');
+  document.getElementById('paper-assign-btn').disabled = false;
+});
+
+document.getElementById('paper-assign-btn').addEventListener('click', async () => {
+  if (!selectedPaperFile) return;
+  const btn = document.getElementById('paper-assign-btn');
+  btn.disabled    = true;
+  btn.textContent = 'Uploading and extracting...';
+  try {
+    await assignPaper(selectedPaperFile);
+    btn.textContent = 'Assigned';
+    addOakMessage('oak', 'Paper assigned. Students can now generate a podcast from it.');
+    selectedPaperFile = null;
+    document.getElementById('paper-input').value = '';
+    document.getElementById('paper-upload-title').textContent = 'Upload a research paper (PDF)';
+    document.getElementById('paper-upload-zone').classList.remove('has-file');
+    loadPapers();
+    setTimeout(() => { btn.textContent = 'Assign to Students'; btn.disabled = true; }, 1500);
+  } catch(e) {
+    btn.disabled    = false;
+    btn.textContent = 'Assign to Students';
+    addOakMessage('oak', `Paper upload failed: ${e.message}`);
+  }
+});
+
+async function loadPapers() {
+  try {
+    const res     = await fetch(`${BASE}/papers?visible_only=false`);
+    const papers  = await res.json();
+    const list    = document.getElementById('papers-list');
+    list.innerHTML = '';
+
+    if (!papers.length) {
+      list.innerHTML = '<div style="font-family:var(--font-mono); font-size:12px; color:var(--muted2)">No papers assigned yet.</div>';
+      return;
+    }
+
+    papers.forEach(p => {
+      const card = document.createElement('div');
+      card.className = 'assigned-card';
+      const toggleId = `ptoggle-${p.paper_id}`;
+      const isVisible = p.visible !== false;
+
+      card.innerHTML = `
+        <div style="font-size:18px; flex-shrink:0">&#128196;</div>
+        <div class="assigned-card-body">
+          <div class="assigned-card-title">${p.title}</div>
+          <div class="assigned-card-meta">${p.has_podcast ? 'Podcast ready' : 'No podcast yet'} &nbsp;·&nbsp; Assigned ${new Date(p.assigned_at).toLocaleDateString()}</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px; flex-shrink:0">
+          <label class="toggle">
+            <input type="checkbox" id="${toggleId}" ${isVisible ? 'checked' : ''}>
+            <div class="toggle-track"></div>
+            <div class="toggle-thumb"></div>
+          </label>
+          <span class="vis-label" id="vislabel-p-${p.paper_id}">${isVisible ? 'Visible' : 'Hidden'}</span>
+        </div>
+      `;
+      list.appendChild(card);
+
+      document.getElementById(toggleId).addEventListener('change', async (e) => {
+        const visible = e.target.checked;
+        await fetch(`${BASE}/papers/${p.paper_id}/visibility?visible=${visible}`, { method: 'PATCH' });
+        document.getElementById(`vislabel-p-${p.paper_id}`).textContent = visible ? 'Visible' : 'Hidden';
+      });
+    });
+  } catch(e) {
+    document.getElementById('papers-list').innerHTML =
+      `<div style="font-family:var(--font-mono); font-size:12px; color:var(--muted2)">Failed to load papers.</div>`;
+  }
+}
+
+// ═══════════════════════════════════════════
+// ASSIGNMENTS TAB
+// ═══════════════════════════════════════════
+
+let selectedAssignFile = null;
+
+document.getElementById('assign-input').addEventListener('change', (e) => {
+  selectedAssignFile = e.target.files[0];
+  if (!selectedAssignFile) return;
+  document.getElementById('assign-upload-title').textContent = selectedAssignFile.name;
+  document.getElementById('assign-upload-zone').classList.add('has-file');
+  document.getElementById('assign-post-btn').disabled = false;
+});
+
+document.getElementById('assign-post-btn').addEventListener('click', async () => {
+  if (!selectedAssignFile) return;
+  const btn = document.getElementById('assign-post-btn');
+  btn.disabled    = true;
+  btn.textContent = 'Posting...';
+
+  try {
+    const fd = new FormData();
+    fd.append('file', selectedAssignFile);
+    fd.append('title',       document.getElementById('assign-title').value || selectedAssignFile.name);
+    fd.append('description', document.getElementById('assign-desc').value);
+    fd.append('due_date',    document.getElementById('assign-due').value);
+
+    const res = await fetch(`${BASE}/assignments`, { method: 'POST', body: fd });
+    if (!res.ok) throw new Error(`${res.status}`);
+
+    btn.textContent = 'Posted';
+    selectedAssignFile = null;
+    document.getElementById('assign-input').value = '';
+    document.getElementById('assign-upload-title').textContent = 'Upload assignment file (PDF, DOCX, etc)';
+    document.getElementById('assign-upload-zone').classList.remove('has-file');
+    document.getElementById('assign-title').value = '';
+    document.getElementById('assign-desc').value  = '';
+    document.getElementById('assign-due').value   = '';
+    loadAssignments();
+    setTimeout(() => { btn.textContent = 'Post Assignment'; btn.disabled = true; }, 1500);
+  } catch(e) {
+    btn.disabled    = false;
+    btn.textContent = 'Post Assignment';
+    addOakMessage('oak', `Failed to post assignment: ${e.message}`);
+  }
+});
+
+async function loadAssignments() {
+  try {
+    const res         = await fetch(`${BASE}/assignments?visible_only=false`);
+    const assignments = await res.json();
+    const list        = document.getElementById('assignments-list');
+    list.innerHTML    = '';
+
+    if (!assignments.length) {
+      list.innerHTML = '<div style="font-family:var(--font-mono); font-size:12px; color:var(--muted2)">No assignments posted yet.</div>';
+      return;
+    }
+
+    assignments.forEach(a => {
+      const card      = document.createElement('div');
+      card.className  = 'assigned-card';
+      card.style.flexDirection = 'column';
+      card.style.alignItems    = 'stretch';
+
+      const toggleId  = `atoggle-${a.assignment_id}`;
+      const drawerId  = `drawer-${a.assignment_id}`;
+      const isVisible = a.visible !== false;
+      const subCount  = a.submissions?.length || 0;
+
+      card.innerHTML = `
+        <div style="display:flex; align-items:center; gap:16px">
+          <div style="font-size:18px; flex-shrink:0">&#128196;</div>
+          <div class="assigned-card-body">
+            <div class="assigned-card-title">${a.title}</div>
+            <div class="assigned-card-meta">
+              ${a.due_date ? `Due: ${a.due_date} &nbsp;·&nbsp;` : ''}
+              <span class="sub-count" id="subcount-${a.assignment_id}"
+                    onclick="toggleDrawer('${a.assignment_id}')">
+                ${subCount} submission${subCount !== 1 ? 's' : ''}
+              </span>
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px; flex-shrink:0">
+            <label class="toggle">
+              <input type="checkbox" id="${toggleId}" ${isVisible ? 'checked' : ''}>
+              <div class="toggle-track"></div>
+              <div class="toggle-thumb"></div>
+            </label>
+            <span class="vis-label" id="vislabel-a-${a.assignment_id}">${isVisible ? 'Visible' : 'Hidden'}</span>
+          </div>
+        </div>
+
+        <div class="sub-drawer" id="${drawerId}">
+          ${subCount === 0
+            ? '<div style="font-family:var(--font-mono); font-size:11px; color:var(--muted2)">No submissions yet.</div>'
+            : a.submissions.map(s => `
+                <div class="sub-row">
+                  <span>${s.student_name} — ${s.filename}</span>
+                  <span>
+                    ${new Date(s.submitted_at).toLocaleString()}
+                    &nbsp;
+                    <a href="${BASE}/assignments/${a.assignment_id}/submissions/${s.saved_as}" target="_blank">Download</a>
+                  </span>
+                </div>
+              `).join('')
+          }
+        </div>
+      `;
+      list.appendChild(card);
+
+      document.getElementById(toggleId).addEventListener('change', async (e) => {
+        const visible = e.target.checked;
+        await fetch(`${BASE}/assignments/${a.assignment_id}/visibility?visible=${visible}`, { method: 'PATCH' });
+        document.getElementById(`vislabel-a-${a.assignment_id}`).textContent = visible ? 'Visible' : 'Hidden';
+      });
+    });
+  } catch(e) {
+    document.getElementById('assignments-list').innerHTML =
+      `<div style="font-family:var(--font-mono); font-size:12px; color:var(--muted2)">Failed to load assignments.</div>`;
+  }
+}
+
+window.toggleDrawer = function(id) {
+  document.getElementById(`drawer-${id}`)?.classList.toggle('open');
+};
+
+// ═══════════════════════════════════════════
+// OAK CHAT
+// ═══════════════════════════════════════════
+
 async function sendMessage() {
   const input = document.getElementById('oak-input');
   const msg   = input.value.trim();
@@ -220,17 +617,12 @@ async function sendMessage() {
 
   addOakMessage('user', msg);
   chatHistory.push({ role: 'user', content: msg, timestamp: new Date().toISOString() });
-
   showTyping();
-  setOakTalking(true);
 
   try {
     const reply = await chatWithOak({
-      message  : msg,
-      jobId    : currentJobId,
-      moduleId : null,
-      history  : chatHistory,
-      role     : 'professor'
+      message: msg, jobId: currentJobId, moduleId: null,
+      history: chatHistory, role: 'professor'
     });
     removeTyping();
     addOakMessage('oak', reply.content);
@@ -239,27 +631,21 @@ async function sendMessage() {
     removeTyping();
     addOakMessage('oak', `Connection issue: ${e.message}`);
   }
-  setOakTalking(false);
 }
 
-// ── Event Listeners for chat ──
 document.getElementById('oak-send-btn').addEventListener('click', sendMessage);
 document.getElementById('oak-input').addEventListener('keydown', (e) => {
   if (e.key === 'Enter') sendMessage();
 });
 
-// ── Chat Helpers ──
 function addOakMessage(role, text) {
   const msgs = document.getElementById('oak-messages');
   const div  = document.createElement('div');
   div.className = `oak-msg ${role}`;
-  div.innerHTML = role === 'oak'
-    ? `<div class="oak-label">PROF OAK</div>${text}`
-    : text;
+  div.innerHTML = role === 'oak' ? `<div class="oak-label">PROF OAK</div>${text}` : text;
   msgs.appendChild(div);
   msgs.scrollTop = msgs.scrollHeight;
 }
-
 function showTyping() {
   const msgs = document.getElementById('oak-messages');
   const div  = document.createElement('div');
@@ -269,10 +655,13 @@ function showTyping() {
   msgs.appendChild(div);
   msgs.scrollTop = msgs.scrollHeight;
 }
+function removeTyping() { document.getElementById('typing')?.remove(); }
 
-function removeTyping() {
-  document.getElementById('typing')?.remove();
-}
+// ── Boot ──
+initOak('oak-canvas');
+setOakMode('corner');
+loadPapers();
+loadAssignments();
 </script>
 </body>
 </html>
