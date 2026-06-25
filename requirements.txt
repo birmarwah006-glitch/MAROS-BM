@@ -6,4 +6,5 @@ openai-whisper
 pydantic>=2.0
 python-multipart
 edge-tts
-pydubpyaudio
+pydub
+pyaudio
