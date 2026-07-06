@@ -1,13 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+  // ── Passcode guard: bounce to landing if not authorized ──
+  if (sessionStorage.getItem('maros_prof') !== '1') {
+    window.location.replace('index.html');
+  }
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MAROS — Professor</title>
 <link rel="stylesheet" href="style.css">
 <style>
-
-
 
   /* ── Tab Bar ── */
   .tab-bar {
@@ -127,11 +131,357 @@
     color: var(--muted2);
     margin-left: 6px;
   }
+
+  /* ═══════════════════════════════════════════ */
+  /* ANALYTICS DASHBOARD                        */
+  /* ═══════════════════════════════════════════ */
+
+  /* ── Stat Cards ── */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--green);
+    opacity: 0.6;
+  }
+  .stat-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--fg);
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .stat-value .stat-unit {
+    font-size: 16px;
+    font-weight: 400;
+    color: var(--muted2);
+  }
+  .stat-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--muted2);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* ── Accuracy ring ── */
+  .accuracy-ring {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .accuracy-ring svg {
+    flex-shrink: 0;
+  }
+
+  /* ── Section headers ── */
+  .analytics-section {
+    margin-bottom: 32px;
+  }
+  .analytics-section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+  .analytics-section-title {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted2);
+  }
+
+  /* ── Concept bars ── */
+  .concept-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .concept-row:last-child { border-bottom: none; }
+  .concept-rank {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--muted2);
+    width: 18px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .concept-name {
+    font-size: 13px;
+    color: var(--fg);
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .concept-bar-wrap {
+    width: 120px;
+    height: 8px;
+    background: var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .concept-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.6s ease;
+  }
+  .concept-stats {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    width: 100px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  /* ── Performer lists ── */
+  .performer-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .performer-row:last-child { border-bottom: none; }
+  .performer-name { flex: 1; color: var(--fg); min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .performer-roll {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--muted2);
+  }
+  .performer-acc {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  /* ── Student table ── */
+  .stu-table {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    border-collapse: collapse;
+  }
+  .stu-table th {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted2);
+    text-align: left;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(200,240,96,0.03);
+    cursor: pointer;
+    user-select: none;
+  }
+  .stu-table th:hover { color: var(--fg); }
+  .stu-table th.sorted { color: var(--green); }
+  .stu-table td {
+    padding: 10px 16px;
+    font-size: 13px;
+    color: var(--fg);
+    border-bottom: 1px solid var(--border);
+  }
+  .stu-table tr:last-child td { border-bottom: none; }
+  .stu-table tr:hover td { background: rgba(200,240,96,0.03); }
+  .stu-acc {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .stu-bar {
+    display: inline-block;
+    height: 4px;
+    border-radius: 2px;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+
+  /* ── Misconception cards ── */
+  .misc-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    margin-bottom: 8px;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+  .misc-icon {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(255,107,107,0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    margin-top: 1px;
+  }
+  .misc-body { flex: 1; min-width: 0; }
+  .misc-concept {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--green);
+    letter-spacing: 0.04em;
+    margin-bottom: 4px;
+  }
+  .misc-text {
+    font-size: 12px;
+    color: var(--muted2);
+    line-height: 1.5;
+  }
+  .misc-question {
+    font-size: 11px;
+    color: var(--muted2);
+    opacity: 0.6;
+    margin-top: 4px;
+    font-style: italic;
+  }
+
+  /* ── Activity feed ── */
+  .activity-feed {
+    max-height: 320px;
+    overflow-y: auto;
+  }
+  .activity-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+  }
+  .activity-item:last-child { border-bottom: none; }
+  .activity-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .activity-dot.quiz { background: var(--green); }
+  .activity-dot.chat { background: #5b9aff; }
+  .activity-dot.struggle { background: #ff6b6b; }
+  .activity-dot.other { background: var(--muted2); }
+  .activity-text {
+    flex: 1;
+    color: var(--muted2);
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .activity-text strong { color: var(--fg); font-weight: 500; }
+  .activity-time {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--muted2);
+    opacity: 0.6;
+    flex-shrink: 0;
+  }
+
+  /* ── Report box ── */
+  .report-box {
+    background: var(--surface);
+    border: 1px solid var(--green);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 32px;
+    font-size: 13px;
+    line-height: 1.8;
+    color: var(--fg);
+    white-space: pre-wrap;
+    display: none;
+    position: relative;
+  }
+  .report-box::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--green);
+  }
+  .report-ts {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--muted2);
+    margin-top: 12px;
+    text-align: right;
+  }
+
+  /* ── Empty state ── */
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--muted2);
+  }
+  .empty-state-icon {
+    font-size: 36px;
+    margin-bottom: 12px;
+    opacity: 0.4;
+  }
+  .empty-state-text {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    line-height: 1.6;
+  }
+
+  /* ── Two-column layout for analytics ── */
+  .analytics-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  @media (max-width: 900px) {
+    .analytics-columns { grid-template-columns: 1fr; }
+    .stat-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ── Loading shimmer ── */
+  .shimmer {
+    background: linear-gradient(90deg, var(--surface) 25%, var(--border) 50%, var(--surface) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: var(--radius);
+    height: 20px;
+  }
+  @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
 </style>
 </head>
 <body>
 
 <canvas id="oak-canvas"></canvas>
+<div class="theme-toggle" style="position:fixed;top:20px;right:140px;z-index:200;">
+  <button class="tt-btn on" id="tt-dark">● Dark</button>
+  <button class="tt-btn" id="tt-light">○ Light</button>
+</div>
 
 <!-- HEADER -->
 <div class="header">
@@ -151,6 +501,7 @@
       <button class="tab-btn active" data-tab="lecture">LECTURE</button>
       <button class="tab-btn" data-tab="papers">PAPERS</button>
       <button class="tab-btn" data-tab="assignments">ASSIGNMENTS</button>
+      <button class="tab-btn" data-tab="analytics">ANALYTICS</button>
     </div>
 
     <!-- ══════════════════════════════════════ -->
@@ -163,6 +514,16 @@
         <input type="file" id="video-input" accept="video/*,audio/*">
         <div class="upload-title" id="upload-title">Upload lecture video or audio</div>
         <div class="upload-sub">MP4, MOV, AVI, MP3, WAV — processed by Chipper</div>
+      </div>
+
+      <div style="text-align:center; font-family:var(--font-mono); font-size:10px; color:var(--muted2); margin:12px 0; letter-spacing:0.1em">── OR paste YouTube link ──</div>
+
+      <div style="display:flex; gap:10px; margin-bottom:16px">
+        <input id="yt-url" type="text" placeholder="https://youtube.com/watch?v=..."
+          style="flex:1; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:10px 14px; color:var(--fg); font-size:13px; box-sizing:border-box">
+        <button class="btn btn-primary" id="yt-btn" style="white-space:nowrap; padding:10px 20px">
+          Process YouTube
+        </button>
       </div>
 
       <button class="btn btn-primary" id="process-btn" disabled>
@@ -248,6 +609,139 @@
       </div>
 
     </div>
+    <!-- ↑ ASSIGNMENTS TAB CLOSED ↑ -->
+
+    <!-- ══════════════════════════════════════ -->
+    <!-- TAB: ANALYTICS                        -->
+    <!-- ══════════════════════════════════════ -->
+    <div class="tab-panel" id="tab-analytics">
+
+      <!-- Class Report -->
+      <div class="analytics-section">
+        <div class="analytics-section-head">
+          <div class="analytics-section-title">Class Report</div>
+          <button class="btn btn-primary" id="report-btn" style="padding:8px 18px; font-size:12px">
+            Generate Report
+          </button>
+        </div>
+        <div class="report-box" id="class-report">
+          <div id="report-text"></div>
+          <div class="report-ts" id="report-ts"></div>
+        </div>
+      </div>
+
+      <!-- Loading state -->
+      <div id="analytics-loading" style="display:none">
+        <div class="stat-grid">
+          <div class="stat-card"><div class="shimmer" style="width:60px;height:32px;margin-bottom:8px"></div><div class="shimmer" style="width:100px;height:12px"></div></div>
+          <div class="stat-card"><div class="shimmer" style="width:60px;height:32px;margin-bottom:8px"></div><div class="shimmer" style="width:100px;height:12px"></div></div>
+          <div class="stat-card"><div class="shimmer" style="width:60px;height:32px;margin-bottom:8px"></div><div class="shimmer" style="width:100px;height:12px"></div></div>
+        </div>
+      </div>
+
+      <!-- Empty state -->
+      <div id="analytics-empty" style="display:none">
+        <div class="empty-state">
+          <div class="empty-state-icon">📊</div>
+          <div class="empty-state-text">
+            No quiz data yet.<br>
+            Analytics appear once students start taking quizzes.
+          </div>
+        </div>
+      </div>
+
+      <!-- Populated analytics -->
+      <div id="analytics-content" style="display:none">
+
+        <!-- Top stat cards -->
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-value" id="stat-students">—</div>
+            <div class="stat-label">Active Students</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="stat-answers">—</div>
+            <div class="stat-label">Quiz Answers</div>
+          </div>
+          <div class="stat-card">
+            <div class="accuracy-ring" id="accuracy-ring">
+              <svg width="56" height="56" viewBox="0 0 56 56">
+                <circle cx="28" cy="28" r="24" fill="none" stroke="var(--border)" stroke-width="4"/>
+                <circle cx="28" cy="28" r="24" fill="none" stroke="var(--green)" stroke-width="4"
+                  stroke-dasharray="150.8" stroke-dashoffset="150.8" stroke-linecap="round"
+                  transform="rotate(-90 28 28)" id="accuracy-arc"
+                  style="transition: stroke-dashoffset 1s ease"/>
+              </svg>
+              <div>
+                <div class="stat-value" id="stat-accuracy" style="font-size:24px">—</div>
+                <div class="stat-label">Class Accuracy</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Two columns: Top Performers + Needs Attention -->
+        <div class="analytics-columns">
+
+          <div class="analytics-section">
+            <div class="analytics-section-head">
+              <div class="analytics-section-title">Top Performers</div>
+            </div>
+            <div id="top-performers"></div>
+          </div>
+
+          <div class="analytics-section">
+            <div class="analytics-section-head">
+              <div class="analytics-section-title">Needs Attention (below 50%)</div>
+            </div>
+            <div id="bottom-performers"></div>
+          </div>
+
+        </div>
+
+        <!-- Two columns: Weak Concepts + Activity -->
+        <div class="analytics-columns">
+
+          <!-- LEFT: Where the class struggles -->
+          <div class="analytics-section">
+            <div class="analytics-section-head">
+              <div class="analytics-section-title">Where the Class Struggles</div>
+            </div>
+            <div id="weak-concepts"></div>
+          </div>
+
+          <!-- RIGHT: Recent Activity -->
+          <div class="analytics-section">
+            <div class="analytics-section-head">
+              <div class="analytics-section-title">Recent Activity</div>
+            </div>
+            <div class="activity-feed" id="activity-feed"></div>
+          </div>
+
+        </div>
+
+        <!-- Student Performance -->
+        <div class="analytics-section">
+          <div class="analytics-section-head">
+            <div class="analytics-section-title">Student Performance</div>
+            <div style="font-family:var(--font-mono); font-size:10px; color:var(--muted2)" id="student-count-label"></div>
+          </div>
+          <div id="student-table"></div>
+        </div>
+
+        <!-- Misconceptions -->
+        <div class="analytics-section">
+          <div class="analytics-section-head">
+            <div class="analytics-section-title">Detected Misconceptions</div>
+          </div>
+          <div id="misconception-list"></div>
+        </div>
+
+      </div>
+      <!-- /analytics-content -->
+
+    </div>
+    <!-- ↑ ANALYTICS TAB CLOSED ↑ -->
 
   </div>
 
@@ -286,7 +780,6 @@ function setOakMode() {}
 function setOakTalking() {}
 
 
-
 // ── Tab switching ──
 document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -294,8 +787,281 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById(`tab-${btn.dataset.tab}`).classList.add('active');
+    if (btn.dataset.tab === 'analytics') loadAnalytics();
   });
 });
+
+
+// ═══════════════════════════════════════════
+// ANALYTICS TAB
+// ═══════════════════════════════════════════
+
+let analyticsData = null;
+let studentSortKey = 'accuracy';
+let studentSortAsc = true;
+
+// ── Class report generation ──
+document.getElementById('report-btn').addEventListener('click', async () => {
+  const btn      = document.getElementById('report-btn');
+  const reportEl = document.getElementById('class-report');
+  const textEl   = document.getElementById('report-text');
+  const tsEl     = document.getElementById('report-ts');
+
+  btn.disabled    = true;
+  btn.textContent = 'Analyzing...';
+  reportEl.style.display = 'block';
+  textEl.textContent     = 'Analyzing all student quiz data...';
+  tsEl.textContent       = '';
+
+  try {
+    const res  = await fetch(`${BASE}/professor/report`, { method: 'POST' });
+    if (!res.ok) throw new Error(`${res.status}`);
+    const data = await res.json();
+    textEl.textContent = data.report;
+    if (data.generated_at) {
+      tsEl.textContent = 'Generated ' + new Date(data.generated_at).toLocaleString();
+    }
+  } catch(e) {
+    textEl.textContent = `Report failed: ${e.message}`;
+  } finally {
+    btn.disabled    = false;
+    btn.textContent = 'Generate Report';
+  }
+});
+
+
+async function loadAnalytics() {
+  const loadingEl = document.getElementById('analytics-loading');
+  const emptyEl   = document.getElementById('analytics-empty');
+  const contentEl = document.getElementById('analytics-content');
+
+  loadingEl.style.display = 'block';
+  emptyEl.style.display   = 'none';
+  contentEl.style.display = 'none';
+
+  try {
+    const res  = await fetch(`${BASE}/professor/analytics`);
+    const data = await res.json();
+    analyticsData = data;
+
+    loadingEl.style.display = 'none';
+
+    if (!data.total_answers) {
+      emptyEl.style.display = 'block';
+      return;
+    }
+
+    contentEl.style.display = 'block';
+    renderStatCards(data);
+    renderPerformers(data.top_performers || [], data.bottom_performers || []);
+    renderWeakConcepts(data.weak_concepts);
+    renderStudentTable(data.students);
+    renderMisconceptions(data.misconceptions);
+    renderActivityFeed(data.recent_activity);
+
+  } catch(e) {
+    loadingEl.style.display = 'none';
+    emptyEl.style.display   = 'block';
+    console.error('Analytics load failed:', e);
+  }
+}
+
+
+function renderStatCards(data) {
+  document.getElementById('stat-students').textContent = data.total_students;
+  document.getElementById('stat-answers').textContent  = data.total_answers;
+
+  const pct = Math.round(data.class_accuracy * 100);
+  document.getElementById('stat-accuracy').textContent = pct + '%';
+
+  // Animate the accuracy ring
+  const circumference = 2 * Math.PI * 24; // r=24
+  const offset = circumference - (data.class_accuracy * circumference);
+  const arc = document.getElementById('accuracy-arc');
+  // Set color based on performance
+  const color = pct >= 70 ? 'var(--green)' : pct >= 50 ? '#f0a500' : '#ff6b6b';
+  arc.setAttribute('stroke', color);
+  requestAnimationFrame(() => {
+    arc.style.strokeDashoffset = offset;
+  });
+}
+
+
+function renderPerformers(top, bottom) {
+  const topEl = document.getElementById('top-performers');
+  const botEl = document.getElementById('bottom-performers');
+
+  const row = (s, color) => `
+    <div class="performer-row">
+      <div class="performer-name">${s.name}</div>
+      <div class="performer-roll">${s.roll_no || ''}</div>
+      <div class="performer-acc" style="color:${color}">${Math.round(s.accuracy * 100)}%</div>
+    </div>`;
+
+  topEl.innerHTML = top.length
+    ? top.map(s => row(s, 'var(--green)')).join('')
+    : '<div style="font-family:var(--font-mono);font-size:12px;color:var(--muted2)">No students with 5+ answers yet.</div>';
+
+  botEl.innerHTML = bottom.length
+    ? bottom.map(s => row(s, '#ff6b6b')).join('')
+    : '<div style="font-family:var(--font-mono);font-size:12px;color:var(--muted2)">Nobody below 50% — nice.</div>';
+}
+
+
+function renderWeakConcepts(concepts) {
+  const el = document.getElementById('weak-concepts');
+  if (!concepts.length) {
+    el.innerHTML = '<div style="font-family:var(--font-mono);font-size:12px;color:var(--muted2)">No concept data yet.</div>';
+    return;
+  }
+
+  el.innerHTML = concepts.slice(0, 8).map((c, i) => {
+    const pct   = Math.round(c.error_rate * 100);
+    const color = pct > 60 ? '#ff6b6b' : pct > 40 ? '#f0a500' : 'var(--green)';
+    return `
+      <div class="concept-row">
+        <div class="concept-rank">${i + 1}</div>
+        <div class="concept-name" title="${c.concept}">${c.concept}</div>
+        <div class="concept-bar-wrap">
+          <div class="concept-bar-fill" style="width:${pct}%; background:${color}"></div>
+        </div>
+        <div class="concept-stats" style="color:${color}">
+          ${pct}% wrong · ${c.total_attempts}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+
+function renderStudentTable(students) {
+  const el = document.getElementById('student-table');
+  if (!students.length) {
+    el.innerHTML = '<div style="font-family:var(--font-mono);font-size:12px;color:var(--muted2)">No students yet.</div>';
+    return;
+  }
+
+  document.getElementById('student-count-label').textContent = `${students.length} student${students.length !== 1 ? 's' : ''}`;
+
+  // Sort
+  const sorted = [...students].sort((a, b) => {
+    let va = a[studentSortKey], vb = b[studentSortKey];
+    if (typeof va === 'string') { va = va.toLowerCase(); vb = vb.toLowerCase(); }
+    if (va < vb) return studentSortAsc ? -1 : 1;
+    if (va > vb) return studentSortAsc ? 1 : -1;
+    return 0;
+  });
+
+  const thClass = (key) => studentSortKey === key ? 'sorted' : '';
+  const arrow   = (key) => studentSortKey === key ? (studentSortAsc ? ' ↑' : ' ↓') : '';
+
+  el.innerHTML = `
+    <table class="stu-table">
+      <thead>
+        <tr>
+          <th class="${thClass('name')}" data-sort="name">Student${arrow('name')}</th>
+          <th class="${thClass('roll_no')}" data-sort="roll_no">Roll No${arrow('roll_no')}</th>
+          <th class="${thClass('accuracy')}" data-sort="accuracy">Accuracy${arrow('accuracy')}</th>
+          <th class="${thClass('total_answers')}" data-sort="total_answers">Answers${arrow('total_answers')}</th>
+          <th class="${thClass('correct')}" data-sort="correct">Correct${arrow('correct')}</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${sorted.map(s => {
+          const pct   = Math.round(s.accuracy * 100);
+          const color = pct >= 70 ? 'var(--green)' : pct >= 50 ? '#f0a500' : '#ff6b6b';
+          return `
+            <tr>
+              <td>${s.name}</td>
+              <td style="font-family:var(--font-mono);font-size:11px;color:var(--muted2)">${s.roll_no || ''}</td>
+              <td>
+                <span class="stu-acc" style="color:${color}">${pct}%</span>
+                <span class="stu-bar" style="width:${Math.max(pct * 0.6, 3)}px; background:${color}"></span>
+              </td>
+              <td style="font-family:var(--font-mono);font-size:12px;color:var(--muted2)">${s.total_answers}</td>
+              <td style="font-family:var(--font-mono);font-size:12px;color:var(--muted2)">${s.correct}</td>
+            </tr>`;
+        }).join('')}
+      </tbody>
+    </table>`;
+
+  // Attach sort handlers
+  el.querySelectorAll('th[data-sort]').forEach(th => {
+    th.addEventListener('click', () => {
+      const key = th.dataset.sort;
+      if (studentSortKey === key) {
+        studentSortAsc = !studentSortAsc;
+      } else {
+        studentSortKey = key;
+        studentSortAsc = key === 'name'; // name ascending, numbers descending
+      }
+      renderStudentTable(analyticsData.students);
+    });
+  });
+}
+
+
+function renderMisconceptions(misconceptions) {
+  const el = document.getElementById('misconception-list');
+  if (!misconceptions.length) {
+    el.innerHTML = '<div style="font-family:var(--font-mono);font-size:12px;color:var(--muted2)">None detected yet. Misconceptions appear when students answer quiz questions incorrectly.</div>';
+    return;
+  }
+
+  el.innerHTML = misconceptions.slice(0, 12).map(m => `
+    <div class="misc-card">
+      <div class="misc-icon">⚠</div>
+      <div class="misc-body">
+        <div class="misc-concept">${m.concept || 'General'}</div>
+        <div class="misc-text">${m.misconception || 'No details'}</div>
+        ${m.question ? `<div class="misc-question">"${m.question}"</div>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+
+function renderActivityFeed(activity) {
+  const el = document.getElementById('activity-feed');
+  if (!activity || !activity.length) {
+    el.innerHTML = '<div style="font-family:var(--font-mono);font-size:12px;color:var(--muted2)">No recent activity.</div>';
+    return;
+  }
+
+  const eventLabels = {
+    quiz_complete:  'completed a quiz',
+    oak_response:   'chatted with Oak',
+    struggle_signal:'showed struggle',
+    file_upload:    'uploaded a file',
+    mastery_update: 'mastery updated',
+    class_report:   'report generated',
+    path_suggest:   'viewed suggestions',
+  };
+
+  const dotClass = (evt) => {
+    if (evt.includes('quiz'))     return 'quiz';
+    if (evt.includes('oak') || evt.includes('chat')) return 'chat';
+    if (evt.includes('struggle')) return 'struggle';
+    return 'other';
+  };
+
+  const timeAgo = (ts) => {
+    if (!ts) return '';
+    const diff = (Date.now() - new Date(ts).getTime()) / 1000;
+    if (diff < 60)    return 'just now';
+    if (diff < 3600)  return Math.floor(diff / 60) + 'm ago';
+    if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+    return Math.floor(diff / 86400) + 'd ago';
+  };
+
+  el.innerHTML = activity.slice(0, 25).map(a => `
+    <div class="activity-item">
+      <div class="activity-dot ${dotClass(a.event)}"></div>
+      <div class="activity-text"><strong>${a.student}</strong> ${eventLabels[a.event] || a.event}</div>
+      <div class="activity-time">${timeAgo(a.at)}</div>
+    </div>
+  `).join('');
+}
+
 
 // ═══════════════════════════════════════════
 // LECTURE TAB
@@ -306,6 +1072,58 @@ let pollInterval   = null;
 let currentJobId   = null;
 let currentModules = [];
 let chatHistory    = [];
+
+// ── YouTube link ingest ──
+document.getElementById('yt-btn').addEventListener('click', async () => {
+  const url = document.getElementById('yt-url').value.trim();
+  if (!url) return;
+  const btn = document.getElementById('yt-btn');
+  btn.disabled    = true;
+  btn.textContent = 'Downloading...';
+  document.getElementById('progress-wrap').style.display   = 'block';
+  document.getElementById('modules-section').style.display = 'none';
+
+  try {
+    const res = await fetch(`${BASE}/jobs/youtube`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url }),
+    });
+    if (!res.ok) throw new Error(`${res.status}`);
+    const job    = await res.json();
+    currentJobId = job.job_id;
+    STATE.setJobId(job.job_id);
+    btn.textContent = 'Processing...';
+    addOakMessage('oak', `YouTube video queued. Audio is downloading — processing starts shortly.`);
+
+    pollInterval = setInterval(async () => {
+      try {
+        const status = await pollJob(currentJobId);
+        updateProgress(status);
+        if (status.status === 'done') {
+          clearInterval(pollInterval);
+          const manifest = await getManifest(currentJobId);
+          currentModules = manifest.modules;
+          STATE.setModules(manifest.modules);
+          renderModules(manifest.modules);
+          btn.disabled    = false;
+          btn.textContent = 'Process YouTube';
+          addOakMessage('oak', `YouTube lecture processed — ${manifest.modules.length} modules ready.`);
+        }
+        if (status.status === 'failed') {
+          clearInterval(pollInterval);
+          btn.disabled    = false;
+          btn.textContent = 'Process YouTube';
+          addOakMessage('oak', `Processing failed. Check the URL and try again.`);
+        }
+      } catch(e) { console.error(e); }
+    }, 2000);
+  } catch(e) {
+    btn.disabled    = false;
+    btn.textContent = 'Process YouTube';
+    addOakMessage('oak', `Failed to start: ${e.message}`);
+  }
+});
 
 document.getElementById('video-input').addEventListener('change', (e) => {
   selectedFile = e.target.files[0];
@@ -395,6 +1213,7 @@ async function generateModuleQuiz(module) {
   }
 }
 
+
 // ═══════════════════════════════════════════
 // PAPERS TAB
 // ═══════════════════════════════════════════
@@ -477,6 +1296,7 @@ async function loadPapers() {
       `<div style="font-family:var(--font-mono); font-size:12px; color:var(--muted2)">Failed to load papers.</div>`;
   }
 }
+
 
 // ═══════════════════════════════════════════
 // ASSIGNMENTS TAB
@@ -605,6 +1425,7 @@ window.toggleDrawer = function(id) {
   document.getElementById(`drawer-${id}`)?.classList.toggle('open');
 };
 
+
 // ═══════════════════════════════════════════
 // OAK CHAT
 // ═══════════════════════════════════════════
@@ -662,6 +1483,27 @@ initOak('oak-canvas');
 setOakMode('corner');
 loadPapers();
 loadAssignments();
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const ttDark  = document.getElementById('tt-dark');
+    const ttLight = document.getElementById('tt-light');
+    function applyTheme(theme) {
+      if (theme === 'light') {
+        document.body.classList.add('light');
+        ttDark.classList.remove('on');
+        ttLight.classList.add('on');
+      } else {
+        document.body.classList.remove('light');
+        ttDark.classList.add('on');
+        ttLight.classList.remove('on');
+      }
+      localStorage.setItem('maros_theme', theme);
+    }
+    applyTheme(localStorage.getItem('maros_theme') || 'dark');
+    ttDark.addEventListener('click',  () => applyTheme('dark'));
+    ttLight.addEventListener('click', () => applyTheme('light'));
+  });
 </script>
 </body>
 </html>

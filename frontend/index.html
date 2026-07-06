@@ -5,10 +5,97 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MAROS</title>
 <link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+  /* ── Login Panel ── */
+  .login-panel {
+    display: none;
+    max-width: 360px;
+    margin: 0 auto;
+    padding: 32px 28px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  .login-panel.active { display: block; }
+  .login-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .login-sub {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted2);
+    margin-bottom: 24px;
+  }
+  .login-field { margin-bottom: 16px; }
+  .login-label {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    color: var(--muted2);
+    margin-bottom: 6px;
+  }
+  .login-input {
+    width: 100%;
+    padding: 10px 14px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.15s;
+    box-sizing: border-box;
+  }
+  .login-input:focus { border-color: var(--green); }
+  .login-input::placeholder { color: var(--muted2); font-size: 13px; }
+  .login-btn {
+    width: 100%;
+    padding: 12px;
+    background: var(--green);
+    color: var(--accent-ink);
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s;
+    margin-top: 8px;
+  }
+  .login-btn:hover { opacity: 0.9; }
+  .login-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .login-error {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--red);
+    margin-top: 12px;
+    display: none;
+  }
+  .login-back {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted2);
+    margin-top: 16px;
+    text-align: center;
+    cursor: pointer;
+  }
+  .login-back:hover { color: var(--text); }
+</style>
 </head>
 <body>
 
 <canvas id="oak-canvas"></canvas>
+
+<!-- Theme Toggle -->
+<div class="theme-toggle" style="position:fixed;top:20px;right:24px;z-index:200;">
+  <button class="tt-btn on" id="tt-dark">● Dark</button>
+  <button class="tt-btn" id="tt-light">○ Light</button>
+</div>
 
 <!-- LANDING PAGE -->
 <div class="page active" id="page-landing">
@@ -21,25 +108,188 @@
 
   <p class="landing-sub">MARWAH OPERATING SYSTEM · AI-POWERED LEARNING</p>
 
-  <div class="role-cards">
-    <a class="role-card prof" href="professor.html">
-      <span class="role-icon">🎓</span>
+  <!-- Role cards -->
+  <div class="role-cards" id="role-cards">
+    <div class="role-card prof" id="prof-card" style="cursor:pointer">
+      <span class="role-icon"></span>
       <div class="role-label">Professor</div>
       <p class="role-desc">Upload lectures, generate modules, monitor students.</p>
-    </a>
-    <a class="role-card student" href="student.html">
-      <span class="role-icon">📚</span>
+    </div>
+    <div class="role-card student" id="student-card" style="cursor:pointer">
+      <span class="role-icon"></span>
       <div class="role-label">Student</div>
       <p class="role-desc">Watch clips, take quizzes, chat with Prof Oak.</p>
-    </a>
+    </div>
+  </div>
+
+  <!-- Login panel -->
+  <div class="login-panel" id="login-panel">
+    <div class="login-title">Welcome to MAROS</div>
+    <div class="login-sub">Enter your name and roll number to continue</div>
+
+    <div class="login-field">
+      <label class="login-label">FULL NAME</label>
+      <input class="login-input" id="login-name" type="text" placeholder="Bir Marwah" autocomplete="name">
+    </div>
+
+    <div class="login-field">
+      <label class="login-label">ROLL NUMBER</label>
+      <input class="login-input" id="login-roll" type="text" placeholder="BT23CSE042" autocomplete="username">
+    </div>
+
+    <button class="login-btn" id="login-btn">Continue</button>
+    <div class="login-error" id="login-error"></div>
+    <div class="login-back" id="login-back">← Back to roles</div>
   </div>
 
 </div>
 
 <script type="module">
-  import { initOak, setOakMode } from './oak.js';
-  initOak('oak-canvas');
-  setOakMode('hero');
+  try {
+    const { initOak, setOakMode } = await import('./oak.js');
+    initOak('oak-canvas');
+    setOakMode('hero');
+  } catch(e) {
+    console.warn('[MAROS] Oak 3D model skipped:', e.message);
+  }
+</script>
+
+<script>
+  // ── Theme toggle — must run after body exists, so put at end of body ──
+  document.addEventListener('DOMContentLoaded', () => {
+
+    // ── THEME ──────────────────────────────────────────────────────────
+    const ttDark  = document.getElementById('tt-dark');
+    const ttLight = document.getElementById('tt-light');
+
+    function applyTheme(theme) {
+      if (theme === 'light') {
+        document.body.classList.add('light');
+        ttDark.classList.remove('on');
+        ttLight.classList.add('on');
+      } else {
+        document.body.classList.remove('light');
+        ttDark.classList.add('on');
+        ttLight.classList.remove('on');
+      }
+      localStorage.setItem('maros_theme', theme);
+    }
+
+    // Restore saved preference on load
+    applyTheme(localStorage.getItem('maros_theme') || 'dark');
+
+    ttDark.addEventListener('click',  () => applyTheme('dark'));
+    ttLight.addEventListener('click', () => applyTheme('light'));
+
+    // ── SUPABASE ───────────────────────────────────────────────────────
+    const SUPABASE_URL      = 'https://xkzjzmfevlheoselgtqc.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhremp6bWZldmxoZW9zZWxndHFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1NTI2MDgsImV4cCI6MjA5ODEyODYwOH0.WKwB4sYFDr158pw_hazrq_yfBuQTeT-yXvBUZRRQor8';
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const existingSession = localStorage.getItem('maros_session');
+
+    // ── NAVIGATION ─────────────────────────────────────────────────────
+    const studentCard = document.getElementById('student-card');
+    const roleCards   = document.getElementById('role-cards');
+    const loginPanel  = document.getElementById('login-panel');
+
+    document.getElementById('prof-card').addEventListener('click', () => {
+      if (sessionStorage.getItem('maros_prof') === '1') {
+        window.location.href = 'professor.html';
+        return;
+      }
+      const code = prompt('Enter professor passcode:');
+      if (code === null) return;
+      if (code.trim() === 'VNIT2026') {
+        sessionStorage.setItem('maros_prof', '1');
+        window.location.href = 'professor.html';
+      } else {
+        alert('Incorrect passcode.');
+      }
+    });
+
+    studentCard.addEventListener('click', () => {
+      if (existingSession) { window.location.href = 'student.html'; return; }
+      roleCards.style.display = 'none';
+      loginPanel.classList.add('active');
+      document.getElementById('login-name').focus();
+    });
+
+    document.getElementById('login-back').addEventListener('click', () => {
+      loginPanel.classList.remove('active');
+      roleCards.style.display = '';
+    });
+
+    // ── LOGIN ──────────────────────────────────────────────────────────
+    const loginBtn   = document.getElementById('login-btn');
+    const loginError = document.getElementById('login-error');
+
+    loginBtn.addEventListener('click', handleLogin);
+    document.getElementById('login-roll').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') handleLogin();
+    });
+
+    async function handleLogin() {
+      const name = document.getElementById('login-name').value.trim();
+      const roll = document.getElementById('login-roll').value.trim().toUpperCase();
+
+      if (!name || !roll) { showError('Enter both name and roll number'); return; }
+      if (roll.length < 4) { showError('Enter a valid roll number'); return; }
+
+      loginBtn.disabled    = true;
+      loginBtn.textContent = 'Signing in...';
+      loginError.style.display = 'none';
+
+      const email    = roll.toLowerCase() + '@vnit.maros.edu';
+      const password = 'maros_' + roll;
+
+      try {
+        var result = await sb.auth.signInWithPassword({ email, password });
+        if (result.error) {
+          var signUp = await sb.auth.signUp({
+            email, password,
+            options: { data: { full_name: name, roll_number: roll } }
+          });
+          if (signUp.error) { showError(signUp.error.message || JSON.stringify(signUp.error)); return; }
+          result = signUp;
+        }
+
+        var session = result.data.session;
+        if (session) {
+          localStorage.setItem('maros_session', JSON.stringify({
+            access_token: session.access_token,
+            user_id:      session.user.id,
+            name, roll,
+          }));
+          window.location.href = 'student.html';
+        } else {
+          var retry = await sb.auth.signInWithPassword({ email, password });
+          if (retry.data.session) {
+            localStorage.setItem('maros_session', JSON.stringify({
+              access_token: retry.data.session.access_token,
+              user_id:      retry.data.session.user.id,
+              name, roll,
+            }));
+            window.location.href = 'student.html';
+          } else {
+            showError('Account created. Disable email confirmation in Supabase Auth settings, then try again.');
+          }
+        }
+      } catch (e) {
+        showError('Connection error: ' + e.message);
+      } finally {
+        loginBtn.disabled    = false;
+        loginBtn.textContent = 'Continue';
+      }
+    }
+
+    function showError(msg) {
+      loginError.textContent   = msg;
+      loginError.style.display = 'block';
+      loginBtn.disabled        = false;
+      loginBtn.textContent     = 'Continue';
+    }
+  });
 </script>
 
 </body>

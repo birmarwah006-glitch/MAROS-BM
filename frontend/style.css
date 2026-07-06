@@ -1,8 +1,9 @@
-/* ── MAROS Design System ── */
+/* â”€â”€ MAROS Design System â€” dark + light â”€â”€ */
+/* Toggle: add/remove class "light" on <body> (e.g. document.body.classList.toggle('light')) */
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap');
 
 :root {
-  /* Colors */
+  /* Colors â€” DARK (default) */
   --bg:        #000000;
   --surface:   #0a0a0a;
   --surface2:  #111111;
@@ -11,12 +12,20 @@
   --text:      #f0ede6;
   --muted:     #555550;
   --muted2:    #888880;
+  --stroke:    rgba(255,255,255,0.3);
 
   /* Accents */
   --green:     #c8f060;
+  --accent-ink:#000000;               /* text on top of green fills */
+  --green-soft:rgba(200,240,96,0.08); /* tinted surfaces */
+  --green-line:rgba(200,240,96,0.22); /* tinted borders */
   --blue:      #60c8f0;
+  --blue-soft: rgba(96,200,240,0.08);
+  --blue-line: rgba(96,200,240,0.22);
   --orange:    #f0a060;
   --red:       #f06060;
+  --red-soft:  rgba(240,96,96,0.06);
+  --red-line:  rgba(240,96,96,0.4);
   --purple:    #a060f0;
 
   /* Typography */
@@ -28,7 +37,33 @@
   --radius-lg: 20px;
 }
 
-/* ── RESET ── */
+/* â”€â”€ LIGHT MODE â”€â”€ */
+body.light {
+  --bg:        #f0ece3;
+  --surface:   #ffffff;
+  --surface2:  #f7f3ea;
+  --border:    rgba(20,18,10,0.08);
+  --border2:   rgba(20,18,10,0.16);
+  --text:      #171510;
+  --muted:     #b3ad9d;
+  --muted2:    #6d685b;
+  --stroke:    rgba(20,18,10,0.28);
+
+  --green:     #5b7d0f;
+  --accent-ink:#f4f1e8;
+  --green-soft:rgba(91,125,15,0.10);
+  --green-line:rgba(91,125,15,0.30);
+  --blue:      #1f7bad;
+  --blue-soft: rgba(31,123,173,0.10);
+  --blue-line: rgba(31,123,173,0.30);
+  --orange:    #b06010;
+  --red:       #c0322d;
+  --red-soft:  rgba(192,50,45,0.07);
+  --red-line:  rgba(192,50,45,0.4);
+  --purple:    #7a3fc4;
+}
+
+/* â”€â”€ RESET â”€â”€ */
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -46,9 +81,10 @@ body {
   background: var(--bg);
   color: var(--text);
   -webkit-font-smoothing: antialiased;
+  transition: background 0.5s ease, color 0.5s ease;
 }
 
-/* ── NOISE OVERLAY ── */
+/* â”€â”€ NOISE OVERLAY â”€â”€ */
 body::before {
   content: '';
   position: fixed;
@@ -59,15 +95,47 @@ body::before {
   opacity: 0.4;
 }
 
-/* ── CANVAS (Three.js) ── */
+/* â”€â”€ CANVAS (Three.js) â”€â”€ */
 #oak-canvas {
   position: fixed;
   inset: 0;
   z-index: 0;
   pointer-events: none;
 }
+body.light #oak-canvas { opacity: 0.5; }
 
-/* ── PAGE WRAPPER ── */
+/* â”€â”€ THEME TOGGLE â”€â”€ */
+.theme-toggle {
+  display: flex;
+  gap: 3px;
+  padding: 3px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+}
+
+.tt-btn {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 6px 14px;
+  border-radius: 100px;
+  border: none;
+  background: none;
+  color: var(--muted2);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.tt-btn.on {
+  background: var(--green);
+  color: var(--accent-ink);
+  font-weight: 500;
+}
+
+/* â”€â”€ PAGE WRAPPER â”€â”€ */
 .page {
   position: fixed;
   inset: 0;
@@ -86,14 +154,14 @@ body::before {
   pointer-events: all;
 }
 
-/* ── LANDING ── */
+/* â”€â”€ LANDING â”€â”€ */
 .landing-badge {
   font-family: var(--font-mono);
   font-size: 10px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--green);
-  border: 1px solid rgba(200,240,96,0.2);
+  border: 1px solid var(--green-line);
   padding: 5px 16px;
   border-radius: 100px;
   margin-bottom: 40px;
@@ -112,7 +180,7 @@ body::before {
 
 .landing-title .accent {
   color: transparent;
-  -webkit-text-stroke: 1px rgba(255,255,255,0.3);
+  -webkit-text-stroke: 1px var(--stroke);
 }
 
 .landing-sub {
@@ -134,7 +202,7 @@ body::before {
 .role-card {
   width: 180px;
   padding: 24px 20px;
-  background: rgba(255,255,255,0.03);
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   cursor: pointer;
@@ -147,11 +215,11 @@ body::before {
 
 .role-card:hover {
   transform: translateY(-6px);
-  background: rgba(255,255,255,0.05);
+  background: var(--surface2);
 }
 
-.role-card.prof:hover  { border-color: rgba(200,240,96,0.3); }
-.role-card.student:hover { border-color: rgba(96,200,240,0.3); }
+.role-card.prof:hover    { border-color: var(--green-line); }
+.role-card.student:hover { border-color: var(--blue-line); }
 
 .role-icon {
   font-size: 32px;
@@ -176,7 +244,7 @@ body::before {
   line-height: 1.6;
 }
 
-/* ── HEADER ── */
+/* â”€â”€ HEADER â”€â”€ */
 .header {
   position: fixed;
   top: 0;
@@ -188,7 +256,7 @@ body::before {
   justify-content: space-between;
   padding: 20px 32px;
   border-bottom: 1px solid var(--border);
-  background: rgba(0,0,0,0.6);
+  background: color-mix(in srgb, var(--bg) 72%, transparent);
   backdrop-filter: blur(20px);
 }
 
@@ -208,8 +276,8 @@ body::before {
   border-radius: 100px;
 }
 
-.badge-prof    { color: var(--green); background: rgba(200,240,96,0.08); border: 1px solid rgba(200,240,96,0.2); }
-.badge-student { color: var(--blue);  background: rgba(96,200,240,0.08);  border: 1px solid rgba(96,200,240,0.2); }
+.badge-prof    { color: var(--green); background: var(--green-soft); border: 1px solid var(--green-line); }
+.badge-student { color: var(--blue);  background: var(--blue-soft);  border: 1px solid var(--blue-line); }
 
 .back-btn {
   font-family: var(--font-mono);
@@ -224,7 +292,7 @@ body::before {
 
 .back-btn:hover { color: var(--text); }
 
-/* ── PORTAL LAYOUT ── */
+/* â”€â”€ PORTAL LAYOUT â”€â”€ */
 .portal {
   position: fixed;
   inset: 0;
@@ -253,12 +321,12 @@ body::before {
   height: 100%;
 }
 
-/* ── OAK CHAT SIDEBAR ── */
+/* â”€â”€ OAK CHAT SIDEBAR â”€â”€ */
 .oak-sidebar {
   display: flex;
   flex-direction: column;
   height: 100%;
-  min-height:0;
+  min-height: 0;
   border-left: 1px solid var(--border);
 }
 
@@ -274,15 +342,15 @@ body::before {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: rgba(200,240,96,0.1);
-  border: 1px solid rgba(200,240,96,0.3);
+  background: var(--green-soft);
+  border: 1px solid var(--green-line);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 18px;
 }
 
-.oak-name  { font-size: 14px; font-weight: 700; }
+.oak-name   { font-size: 14px; font-weight: 700; }
 .oak-status { font-family: var(--font-mono); font-size: 10px; color: var(--green); }
 
 .oak-messages {
@@ -304,7 +372,7 @@ body::before {
   animation: fadeUp 0.3s ease;
 }
 
-.oak-msg.oak  {
+.oak-msg.oak {
   background: var(--surface2);
   border: 1px solid var(--border);
   align-self: flex-start;
@@ -312,8 +380,8 @@ body::before {
 }
 
 .oak-msg.user {
-  background: rgba(200,240,96,0.08);
-  border: 1px solid rgba(200,240,96,0.15);
+  background: var(--green-soft);
+  border: 1px solid var(--green-line);
   color: var(--green);
   align-self: flex-end;
   border-bottom-right-radius: 4px;
@@ -347,12 +415,12 @@ body::before {
   transition: border-color 0.2s;
 }
 
-.oak-input:focus { border-color: rgba(200,240,96,0.3); }
+.oak-input:focus { border-color: var(--green-line); }
 .oak-input::placeholder { color: var(--muted); }
 
 .oak-send {
-  background: rgba(200,240,96,0.1);
-  border: 1px solid rgba(200,240,96,0.2);
+  background: var(--green-soft);
+  border: 1px solid var(--green-line);
   border-radius: 8px;
   padding: 10px 16px;
   color: var(--green);
@@ -361,9 +429,9 @@ body::before {
   transition: all 0.2s;
 }
 
-.oak-send:hover { background: rgba(200,240,96,0.18); }
+.oak-send:hover { filter: brightness(1.15); }
 
-/* ── SECTION LABELS ── */
+/* â”€â”€ SECTION LABELS â”€â”€ */
 .section-label {
   font-family: var(--font-mono);
   font-size: 10px;
@@ -373,7 +441,7 @@ body::before {
   margin-bottom: 12px;
 }
 
-/* ── UPLOAD ZONE ── */
+/* â”€â”€ UPLOAD ZONE â”€â”€ */
 .upload-zone {
   border: 1.5px dashed var(--border2);
   border-radius: var(--radius);
@@ -394,13 +462,13 @@ body::before {
   height: 100%;
 }
 
-.upload-zone:hover { border-color: var(--green); background: rgba(200,240,96,0.02); }
-.upload-zone.has-file { border-color: rgba(200,240,96,0.4); background: rgba(200,240,96,0.03); }
-.upload-icon { font-size: 32px; margin-bottom: 12px; display: block; }
+.upload-zone:hover  { border-color: var(--green); background: var(--green-soft); }
+.upload-zone.has-file { border-color: var(--green-line); background: var(--green-soft); }
+.upload-icon  { font-size: 32px; margin-bottom: 12px; display: block; }
 .upload-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
-.upload-sub { font-family: var(--font-mono); font-size: 11px; color: var(--muted2); }
+.upload-sub   { font-family: var(--font-mono); font-size: 11px; color: var(--muted2); }
 
-/* ── PROGRESS ── */
+/* â”€â”€ PROGRESS â”€â”€ */
 .progress-wrap { margin: 16px 0; }
 .progress-label {
   display: flex;
@@ -425,7 +493,7 @@ body::before {
   transition: width 0.4s ease;
 }
 
-/* ── MODULE CARDS ── */
+/* â”€â”€ MODULE CARDS â”€â”€ */
 .module-grid { display: grid; gap: 12px; margin-top: 8px; }
 
 .module-card {
@@ -442,7 +510,7 @@ body::before {
 }
 
 .module-card:hover { border-color: var(--border2); background: var(--surface2); }
-.module-card.active { border-color: rgba(200,240,96,0.3); }
+.module-card.active { border-color: var(--green-line); }
 
 .module-num {
   font-family: var(--font-mono);
@@ -455,7 +523,7 @@ body::before {
 .module-meta { font-family: var(--font-mono); font-size: 11px; color: var(--muted2); }
 .module-arrow { color: var(--muted); font-size: 18px; }
 
-/* ── BUTTONS ── */
+/* â”€â”€ BUTTONS â”€â”€ */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -473,14 +541,14 @@ body::before {
   letter-spacing: 0.02em;
 }
 
-.btn-primary { background: var(--green); color: #000; }
-.btn-primary:hover { background: #d4f070; transform: translateY(-1px); }
+.btn-primary { background: var(--green); color: var(--accent-ink); }
+.btn-primary:hover { filter: brightness(1.08); transform: translateY(-1px); }
 .btn-primary:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
 
 .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border2); }
-.btn-outline:hover { border-color: rgba(255,255,255,0.25); }
+.btn-outline:hover { border-color: var(--muted2); }
 
-/* ── VIDEO PLAYER ── */
+/* â”€â”€ VIDEO PLAYER â”€â”€ */
 .video-wrap {
   border-radius: var(--radius);
   overflow: hidden;
@@ -491,7 +559,7 @@ body::before {
 
 .video-wrap video { width: 100%; display: block; max-height: 360px; }
 
-/* ── QUIZ ── */
+/* â”€â”€ QUIZ â”€â”€ */
 .question-card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -526,8 +594,8 @@ body::before {
 }
 
 .option:hover { border-color: var(--border2); background: var(--surface2); }
-.option.correct { border-color: var(--green); background: rgba(200,240,96,0.06); color: var(--green); }
-.option.wrong   { border-color: var(--red);   background: rgba(240,96,96,0.06);   color: var(--red); }
+.option.correct { border-color: var(--green-line); background: var(--green-soft); color: var(--green); }
+.option.wrong   { border-color: var(--red-line);   background: var(--red-soft);   color: var(--red); }
 
 .option-key {
   font-family: var(--font-mono);
@@ -541,7 +609,7 @@ body::before {
 .explanation {
   margin-top: 12px;
   padding: 12px 14px;
-  background: rgba(200,240,96,0.04);
+  background: var(--green-soft);
   border-left: 2px solid var(--green);
   border-radius: 0 8px 8px 0;
   font-size: 12px;
@@ -550,10 +618,10 @@ body::before {
   display: none;
 }
 
-/* ── SCORE ── */
+/* â”€â”€ SCORE â”€â”€ */
 .score-card {
   background: var(--surface);
-  border: 1px solid rgba(200,240,96,0.2);
+  border: 1px solid var(--green-line);
   border-radius: var(--radius-lg);
   padding: 40px;
   text-align: center;
@@ -572,7 +640,7 @@ body::before {
 
 .score-label { font-family: var(--font-mono); font-size: 12px; color: var(--muted2); }
 
-/* ── TYPING ── */
+/* â”€â”€ TYPING â”€â”€ */
 .typing { display: flex; gap: 4px; align-items: center; padding: 4px 0; }
 .typing span {
   width: 5px; height: 5px;
@@ -583,7 +651,7 @@ body::before {
 .typing span:nth-child(2) { animation-delay: 0.2s; }
 .typing span:nth-child(3) { animation-delay: 0.4s; }
 
-/* ── WAITING STATE ── */
+/* â”€â”€ WAITING STATE â”€â”€ */
 .waiting {
   display: flex;
   flex-direction: column;
@@ -601,18 +669,18 @@ body::before {
   font-family: var(--font-mono);
   font-size: 11px;
   color: var(--blue);
-  background: rgba(96,200,240,0.08);
-  border: 1px solid rgba(96,200,240,0.15);
+  background: var(--blue-soft);
+  border: 1px solid var(--blue-line);
   padding: 8px 20px;
   border-radius: 100px;
 }
 
-/* ── SCROLLBAR ── */
+/* â”€â”€ SCROLLBAR â”€â”€ */
 ::-webkit-scrollbar { width: 3px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 100px; }
 
-/* ── ANIMATIONS ── */
+/* â”€â”€ ANIMATIONS â”€â”€ */
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(14px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -628,7 +696,7 @@ body::before {
   50%       { transform: translateY(-12px); }
 }
 
-/* ── RESPONSIVE ── */
+/* â”€â”€ RESPONSIVE â”€â”€ */
 @media (max-width: 768px) {
   .portal { grid-template-columns: 1fr; }
   .role-cards { flex-direction: column; }

@@ -189,6 +189,11 @@
 <body>
 
 <canvas id="oak-canvas"></canvas>
+<div class="theme-toggle" style="position:fixed;top:20px;right:120px;z-index:200;">
+  <button class="tt-btn on" id="tt-dark">● Dark</button>
+  <button class="tt-btn" id="tt-light">○ Light</button>
+</div>
+
 
 <!-- HEADER -->
 <div class="header">
@@ -208,6 +213,7 @@
       <button class="tab-btn active" data-tab="videos">VIDEOS</button>
       <button class="tab-btn" data-tab="papers">PAPERS</button>
       <button class="tab-btn" data-tab="assignments">ASSIGNMENTS</button>
+      <button class="tab-btn" data-tab="classwork">CLASSWORK</button>
     </div>
 
     <!-- ══════════════════════════════════════ -->
@@ -226,6 +232,27 @@
       <!-- ACTIVE CONTENT -->
       <div id="active-content" style="display:none">
 
+        <!-- LECTURE LIBRARY -->
+        <div id="lecture-library-section" style="margin-bottom:24px">
+          <div id="current-lecture-header" style="
+            background:var(--surface); border:1px solid var(--green); border-radius:var(--radius);
+            padding:14px 18px; display:flex; align-items:center; gap:14px; margin-bottom:10px;
+          ">
+            <div style="flex:1; min-width:0">
+              <div style="font-family:var(--font-mono); font-size:9px; color:var(--green); letter-spacing:0.1em; margin-bottom:3px">CURRENT LECTURE</div>
+              <div id="current-lecture-title" style="font-size:14px; font-weight:600; color:var(--fg); white-space:nowrap; overflow:hidden; text-overflow:ellipsis">—</div>
+              <div id="current-lecture-meta" style="font-family:var(--font-mono); font-size:10px; color:var(--muted2); margin-top:2px"></div>
+            </div>
+            <button id="past-lectures-btn" style="
+              background:none; border:1px solid var(--border); border-radius:6px;
+              color:var(--muted2); cursor:pointer; padding:8px 14px; font-family:var(--font-mono);
+              font-size:10px; letter-spacing:0.05em; white-space:nowrap;
+            ">PAST LECTURES ▾</button>
+          </div>
+
+          <div id="past-lectures-list" style="display:none; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; margin-bottom:10px"></div>
+        </div>
+
         <div id="module-list-section">
           <div class="section-label">Today's Modules</div>
           <div class="module-grid" id="module-grid"></div>
@@ -237,6 +264,11 @@
 
           <div class="video-wrap">
             <video id="video-player" controls></video>
+            <div id="yt-player-wrap" style="display:none; position:relative; padding-bottom:56.25%; height:0">
+              <iframe id="yt-player" style="position:absolute; top:0; left:0; width:100%; height:100%; border:0; border-radius:var(--radius)"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen></iframe>
+            </div>
           </div>
 
           <!-- MODULE NOTES -->
@@ -361,16 +393,30 @@
       </div>
     </div>
 
+    <!-- ══════════════════════════════════════ -->
+    <!-- TAB: CLASSWORK                        -->
+    <!-- ══════════════════════════════════════ -->
+    <div class="tab-panel" id="tab-classwork">
+      <div class="section-label">Your Quiz History</div>
+      <div id="classwork-list">
+        <div style="font-family:var(--font-mono); font-size:12px; color:var(--muted2)">Loading...</div>
+      </div>
+    </div>
+
   </div>
 
   <!-- OAK SIDEBAR -->
-  <div class="oak-sidebar">
+  <div class="oak-sidebar" id="oak-sidebar">
     <div class="oak-header">
       <div class="oak-avatar">&#127807;</div>
-      <div>
+      <div style="flex:1">
         <div class="oak-name">Prof Oak</div>
         <div class="oak-status">&#9679; Student Tutor Mode</div>
       </div>
+      <button id="oak-expand-btn" title="Expand" style="
+        background:none; border:1px solid var(--border); border-radius:6px;
+        color:var(--muted2); cursor:pointer; padding:4px 10px; font-size:13px;
+      ">⛶</button>
     </div>
 
     <div class="oak-messages" id="oak-messages">
@@ -382,6 +428,11 @@
     </div>
 
     <div class="oak-input-row">
+      <input type="file" id="oak-file-input" accept=".pdf,.png,.jpg,.jpeg,.txt,.md" style="display:none">
+      <button id="oak-attach-btn" title="Attach PDF or photo" style="
+        background:none; border:1px solid var(--border); border-radius:8px;
+        color:var(--muted2); cursor:pointer; padding:0 12px; font-size:15px; flex-shrink:0;
+      ">📎</button>
       <input
         class="oak-input"
         id="oak-input"
@@ -391,6 +442,24 @@
       <button class="oak-send" id="oak-send-btn">↑</button>
     </div>
   </div>
+
+  <style>
+    .oak-sidebar.expanded {
+      position: fixed !important;
+      inset: 0 !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      height: 100vh !important;
+      z-index: 1000;
+      border-radius: 0;
+    }
+    .oak-sidebar.expanded .oak-messages { font-size: 15px; }
+    /* Hide everything else when Oak is fullscreen */
+    body.oak-fullscreen .portal-main,
+    body.oak-fullscreen .header {
+      display: none !important;
+    }
+  </style>
 
 </div>
 
@@ -422,23 +491,54 @@ const OAK_MODES = {
     label      : 'Coaching Mode',
     greeting   : "Assignment mode. I won't give you the answer — but I'll help you find it. What have you tried so far?",
     placeholder: 'Walk me through your thinking...'
+  },
+  classwork: {
+    label      : 'Review Mode',
+    greeting   : "This is your quiz history. Click any quiz to review what you got wrong — and ask me to explain anything.",
+    placeholder: 'Ask about a past quiz...'
   }
 };
 
 let currentMode = 'videos';
 
+// ── Per-tab chat threads ──
+// Each tab keeps its own message history (for the LLM) and DOM snapshot (for display)
+const OAK_THREADS = {
+  videos:      { history: [], dom: null, greeted: false },
+  papers:      { history: [], dom: null, greeted: false },
+  assignments: { history: [], dom: null, greeted: false },
+  classwork:   { history: [], dom: null, greeted: false },
+};
+
 function switchOakMode(tab) {
+  const prevMode = currentMode;
+  if (tab === prevMode) return;
+
+  const msgs = document.getElementById('oak-messages');
+
+  // Save current tab's DOM
+  OAK_THREADS[prevMode].dom = msgs.innerHTML;
+
   currentMode = tab;
   const persona = OAK_MODES[tab];
+  const thread  = OAK_THREADS[tab];
 
-  // Update label
+  // Update label + placeholder
   document.querySelector('.oak-status').textContent = '● ' + persona.label;
-
-  // Update placeholder
   document.getElementById('oak-input').placeholder = persona.placeholder;
 
-  // Add mode-change message
-  addOakMessage('oak', persona.greeting);
+  // Restore this tab's conversation, or start fresh with one greeting
+  if (thread.dom !== null) {
+    msgs.innerHTML = thread.dom;
+  } else {
+    msgs.innerHTML = '';
+    addOakMessage('oak', persona.greeting);
+    thread.greeted = true;
+  }
+  msgs.scrollTop = msgs.scrollHeight;
+
+  // Point chatHistory at this tab's thread
+  chatHistory = thread.history;
 }
 
 // ── Tab switching ──
@@ -449,15 +549,67 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.classList.add('active');
     document.getElementById(`tab-${btn.dataset.tab}`).classList.add('active');
     switchOakMode(btn.dataset.tab);   // ← personality switch
+    if (btn.dataset.tab === 'classwork') loadClasswork();
   });
 });
+
+// ═══════════════════════════════════════════
+// CLASSWORK TAB
+// ═══════════════════════════════════════════
+
+async function loadClasswork() {
+  const list = document.getElementById('classwork-list');
+  try {
+    const res  = await fetch(`${BASE}/student/classwork`, { headers: AUTH_HEADERS });
+    const data = await res.json();
+
+    if (!data.quizzes || !data.quizzes.length) {
+      list.innerHTML = '<div style="font-family:var(--font-mono); font-size:12px; color:var(--muted2)">No quizzes taken yet. Complete a module quiz and it\'ll show up here.</div>';
+      return;
+    }
+
+    list.innerHTML = data.quizzes.map((q, idx) => {
+      const scoreColor = q.score_pct >= 70 ? 'var(--green)' : q.score_pct >= 40 ? '#e8c060' : '#ff6b6b';
+      const date = q.taken_at ? new Date(q.taken_at).toLocaleString() : '';
+      return `
+      <div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); margin-bottom:10px; overflow:hidden">
+        <div style="display:flex; align-items:center; gap:16px; padding:16px 20px; cursor:pointer" onclick="toggleQuizDetail(${idx})">
+          <div style="font-size:20px; font-weight:700; color:${scoreColor}; min-width:70px">${q.correct}/${q.total}</div>
+          <div style="flex:1">
+            <div style="font-size:13px; font-weight:600; color:var(--fg)">${q.module_id || 'Quiz'}</div>
+            <div style="font-family:var(--font-mono); font-size:10px; color:var(--muted2)">${date}</div>
+          </div>
+          <div style="color:var(--muted2)">▾</div>
+        </div>
+        <div id="quiz-detail-${idx}" style="display:none; border-top:1px solid var(--border); padding:16px 20px">
+          ${q.questions.map(ques => `
+            <div style="margin-bottom:14px; padding-bottom:14px; border-bottom:1px solid var(--border)">
+              <div style="font-size:12px; color:var(--fg); margin-bottom:6px">${ques.question}</div>
+              <div style="font-family:var(--font-mono); font-size:11px; color:${ques.is_correct ? 'var(--green)' : '#ff6b6b'}">
+                Your answer: ${ques.chosen} ${ques.is_correct ? '✓' : `✗ (correct: ${ques.correct_answer})`}
+              </div>
+              ${ques.misconception ? `<div style="font-family:var(--font-mono); font-size:10px; color:var(--muted2); margin-top:4px">💡 ${ques.misconception}</div>` : ''}
+            </div>
+          `).join('')}
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    list.innerHTML = `<div style="font-family:var(--font-mono); font-size:12px; color:#ff6b6b">Failed to load: ${e.message}</div>`;
+  }
+}
+
+window.toggleQuizDetail = function(idx) {
+  const el = document.getElementById(`quiz-detail-${idx}`);
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+};
 
 
 
 
 
 // ── State ──
-let chatHistory         = [];
+let chatHistory         = OAK_THREADS.videos.history;
 let currentModules      = [];
 let activeModule        = null;
 let activeQuiz          = null;
@@ -470,26 +622,131 @@ let podcastPollInterval = null;
 // ═══════════════════════════════════════════
 
 async function init() {
-  const jobId = STATE.jobId;
-  if (!jobId) {
-    document.getElementById('waiting-pill').textContent = 'No lecture uploaded yet.';
-    return;
-  }
   try {
-    const modules = await getModules(jobId);
-    if (!modules || modules.length === 0) {
-      document.getElementById('waiting-pill').textContent = 'Lecture is still processing...';
-      setTimeout(init, 5000);
+    const res      = await fetch(`${BASE}/lectures`);
+    const lectures = await res.json();
+
+    if (!lectures || lectures.length === 0) {
+      document.getElementById('waiting-pill').textContent = 'No lectures uploaded yet.';
+      setTimeout(init, 8000);
       return;
     }
-    currentModules = modules;
-    STATE.setModules(modules);
+
     document.getElementById('waiting-state').style.display  = 'none';
     document.getElementById('active-content').style.display = 'block';
-    renderModuleList(modules);
+    renderLectureLibrary(lectures);
+
+    // Auto-open the newest lecture
+    await openLecture(lectures[0].job_id);
   } catch(e) {
     document.getElementById('waiting-pill').textContent = 'Checking again...';
-    setTimeout(init, 5000);
+    setTimeout(init, 8000);
+  }
+}
+
+let allLectures = [];
+
+function renderLectureLibrary(lectures) {
+  allLectures = lectures;
+  const list = document.getElementById('past-lectures-list');
+  list.innerHTML = '';
+
+  lectures.forEach((lec, idx) => {
+    const date = lec.generated_at
+      ? new Date(lec.generated_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+      : '';
+
+    // Folder row
+    const row = document.createElement('div');
+    row.style.cssText = `
+      display:flex; align-items:center; gap:14px; padding:12px 18px;
+      border-bottom:1px solid var(--border); cursor:pointer; transition:background 0.15s;
+    `;
+    row.innerHTML = `
+      <div style="font-size:13px">📁</div>
+      <div style="font-family:var(--font-mono); font-size:10px; color:var(--muted2); min-width:80px">${date}</div>
+      <div style="flex:1; font-size:13px; color:var(--fg); white-space:nowrap; overflow:hidden; text-overflow:ellipsis">
+        ${lec.source === 'youtube' ? '▶ ' : ''}${lec.title}
+      </div>
+      <div style="font-family:var(--font-mono); font-size:10px; color:var(--muted2)">${lec.total_modules} modules</div>
+      <div id="folder-arrow-${idx}" style="color:var(--muted2); font-size:11px">▸</div>
+    `;
+    row.addEventListener('mouseenter', () => row.style.background = 'rgba(200,240,96,0.04)');
+    row.addEventListener('mouseleave', () => row.style.background = '');
+    row.addEventListener('click', () => {
+      const drawer = document.getElementById(`folder-modules-${idx}`);
+      const arrow  = document.getElementById(`folder-arrow-${idx}`);
+      const open   = drawer.style.display !== 'none';
+      drawer.style.display = open ? 'none' : 'block';
+      arrow.textContent    = open ? '▸' : '▾';
+    });
+    list.appendChild(row);
+
+    // Nested module drawer
+    const drawer = document.createElement('div');
+    drawer.id = `folder-modules-${idx}`;
+    drawer.style.cssText = 'display:none; background:rgba(0,0,0,0.25); border-bottom:1px solid var(--border)';
+    drawer.innerHTML = (lec.modules || []).map(m => `
+      <div class="folder-module-row" data-job="${lec.job_id}" data-mod="${m.module_id}" style="
+        display:flex; align-items:center; gap:12px; padding:9px 18px 9px 52px;
+        cursor:pointer; transition:background 0.15s;
+      ">
+        <div style="font-family:var(--font-mono); font-size:9px; color:var(--green)">0${m.module_id}</div>
+        <div style="font-size:12px; color:var(--muted2)">${m.concept}</div>
+      </div>
+    `).join('');
+    list.appendChild(drawer);
+  });
+
+  // Module click → open that lecture at that module
+  list.querySelectorAll('.folder-module-row').forEach(el => {
+    el.addEventListener('mouseenter', () => el.style.background = 'rgba(200,240,96,0.05)');
+    el.addEventListener('mouseleave', () => el.style.background = '');
+    el.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const jobId = el.dataset.job;
+      const modId = parseInt(el.dataset.mod);
+      await openLecture(jobId);
+      const mod = currentModules.find(m => m.module_id === modId);
+      if (mod) loadModule(mod);
+      togglePastLectures(false);
+    });
+  });
+}
+
+function togglePastLectures(force) {
+  const list = document.getElementById('past-lectures-list');
+  const btn  = document.getElementById('past-lectures-btn');
+  const show = force !== undefined ? force : list.style.display === 'none';
+  list.style.display = show ? 'block' : 'none';
+  btn.textContent = show ? 'PAST LECTURES ▴' : 'PAST LECTURES ▾';
+}
+
+document.getElementById('past-lectures-btn').addEventListener('click', () => togglePastLectures());
+
+async function openLecture(jobId) {
+  const lec = allLectures.find(l => l.job_id === jobId);
+  if (lec) {
+    const date = lec.generated_at
+      ? new Date(lec.generated_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+      : '';
+    document.getElementById('current-lecture-title').textContent = `${lec.source === 'youtube' ? '▶ ' : ''}${lec.title}`;
+    document.getElementById('current-lecture-meta').textContent  = `${date} · ${lec.total_modules} modules`;
+  }
+
+  STATE.setJobId(jobId);
+  ytInfo = null;   // reset YouTube info cache for the new lecture
+
+  // Hide the player until a module is picked
+  document.getElementById('player-section').style.display = 'none';
+
+  try {
+    const modules  = await getModules(jobId);
+    currentModules = modules;
+    STATE.setModules(modules);
+    renderModuleList(modules);
+  } catch(e) {
+    console.error('Failed to load lecture:', e);
   }
 }
 
@@ -513,6 +770,29 @@ function renderModuleList(modules) {
   });
 }
 
+// ── YouTube source info (fetched once per job) ──
+let ytInfo = null;
+
+async function getYtInfo() {
+  if (ytInfo !== null) return ytInfo;
+  try {
+    const res = await fetch(`${BASE}/jobs/${STATE.jobId}/youtube`);
+    ytInfo = await res.json();
+  } catch(e) {
+    ytInfo = { source: 'upload' };
+  }
+  return ytInfo;
+}
+
+// Parse "MM:SS" or "HH:MM:SS" to seconds
+function timeToSeconds(t) {
+  if (typeof t === 'number') return Math.floor(t);
+  const parts = String(t).split(':').map(Number);
+  if (parts.length === 3) return parts[0]*3600 + parts[1]*60 + parts[2];
+  if (parts.length === 2) return parts[0]*60 + parts[1];
+  return Number(t) || 0;
+}
+
 async function loadModule(module) {
   activeModule = module;
   STATE.setActiveModule(module.module_id);
@@ -525,9 +805,28 @@ async function loadModule(module) {
   document.getElementById('player-section').style.display = 'block';
   document.getElementById('player-label').textContent     = `Module ${module.module_id} — ${module.concept}`;
 
-  const video = document.getElementById('video-player');
-  video.src   = getVideoUrl(STATE.jobId, module.module_id);
-  video.load();
+  // ── Pick the right player: YouTube embed or local video ──
+  const info    = await getYtInfo();
+  const video   = document.getElementById('video-player');
+  const ytWrap  = document.getElementById('yt-player-wrap');
+  const ytFrame = document.getElementById('yt-player');
+
+  if (info.source === 'youtube' && info.video_id) {
+    // YouTube embed with module start/end timestamps
+    video.style.display  = 'none';
+    video.src            = '';
+    ytWrap.style.display = 'block';
+    const start = timeToSeconds(module.start);
+    const end   = timeToSeconds(module.end);
+    ytFrame.src = `https://www.youtube.com/embed/${info.video_id}?start=${start}&end=${end}&rel=0`;
+  } else {
+    // Local video from upload
+    ytWrap.style.display = 'none';
+    ytFrame.src          = '';
+    video.style.display  = 'block';
+    video.src            = getVideoUrl(STATE.jobId, module.module_id);
+    video.load();
+  }
 
   try {
     const data = await getModuleNotes(STATE.jobId, module.module_id);
@@ -607,8 +906,51 @@ window.answerQuestion = function(qi, key) {
     document.getElementById('score-big').textContent    = `${score}/${total}`;
     document.getElementById('score-card').style.display = 'block';
     document.getElementById('score-card').scrollIntoView({ behavior: 'smooth' });
+
+    // ── v2: Submit answers to backend for mastery tracking ──────────
+    submitQuizAnswers(score, total);
   }
 };
+
+// ── v2: Submit quiz answers to backend ──────────────────────────
+async function submitQuizAnswers(score, total) {
+  if (!activeQuiz || !STATE.jobId) return;
+
+  const answers = activeQuiz.questions.map((q, i) => ({
+    question_text:  q.question,
+    options:        q.options,
+    chosen_answer:  answered[i],
+    correct_answer: q.correct_answer,
+    concept_id:     null,
+  }));
+
+  try {
+    const res = await fetch(`${BASE}/quiz/submit`, {
+      method: 'POST',
+      headers: AUTH_HEADERS,
+      body: JSON.stringify({
+        job_id:    STATE.jobId,
+        module_id: activeModule.module_id,
+        answers:   answers,
+      }),
+    });
+
+    if (!res.ok) throw new Error(`${res.status}`);
+    const result = await res.json();
+
+    if (result.misconceptions && result.misconceptions.length > 0) {
+      const lines = result.misconceptions
+        .map(m => `<b>Q${m.question_num}:</b> ${m.reasoning}`)
+        .join('<br><br>');
+      addOakMessage('oak', `You scored ${score}/${total}. Here's what to know:<br><br>${lines}`);
+    } else {
+      addOakMessage('oak', `${score}/${total} — solid work!`);
+    }
+    console.log('[MAROS] Quiz submitted:', result);
+  } catch (e) {
+    console.error('[MAROS] Quiz submit failed (non-fatal):', e);
+  }
+}
 
 // ═══════════════════════════════════════════
 // PAPERS TAB
@@ -778,9 +1120,24 @@ document.getElementById('converter-ask-oak-btn').addEventListener('click', () =>
 
 const BASE = 'http://localhost:8000';
 
+// ── Auth check ──────────────────────────────────────────────────
+const session = JSON.parse(localStorage.getItem('maros_session') || 'null');
+if (!session) {
+  window.location.href = 'index.html';
+}
+
+// Auth headers for API calls
+const AUTH_HEADERS = session ? {
+  'Content-Type': 'application/json',
+  'Authorization': `Bearer ${session.access_token}`,
+} : { 'Content-Type': 'application/json' };
+
+// Show student name in header
+document.querySelector('.role-badge').textContent = session?.name || 'STUDENT';
+
 async function loadAssignments() {
   try {
-    const res = await fetch(`${API_BASE}/assignments`);
+    const res = await fetch(`${BASE}/assignments`);
     const assignments = await res.json();
     renderAssignments(assignments);
   } catch(e) {
@@ -958,7 +1315,12 @@ function addOakMessage(role, text) {
   const msgs = document.getElementById('oak-messages');
   const div  = document.createElement('div');
   div.className = `oak-msg ${role}`;
-  div.innerHTML = role === 'oak' ? `<div class="oak-label">PROF OAK</div>${text}` : text;
+  // Light markdown rendering: **bold**, *italic*, line breaks
+  let rendered = text
+    .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
+    .replace(/\*(.+?)\*/g, '<i>$1</i>')
+    .replace(/\n/g, '<br>');
+  div.innerHTML = role === 'oak' ? `<div class="oak-label">PROF OAK</div>${rendered}` : rendered;
   msgs.appendChild(div);
   msgs.scrollTop = msgs.scrollHeight;
 }
@@ -973,10 +1335,91 @@ function showTyping() {
 }
 function removeTyping() { document.getElementById('typing')?.remove(); }
 
+// ── Oak expand toggle ──
+document.getElementById('oak-expand-btn').addEventListener('click', () => {
+  const sidebar = document.getElementById('oak-sidebar');
+  sidebar.classList.toggle('expanded');
+  document.body.classList.toggle('oak-fullscreen');
+  document.getElementById('oak-expand-btn').textContent =
+    sidebar.classList.contains('expanded') ? '✕' : '⛶';
+});
+
+// ── Oak file upload ──
+document.getElementById('oak-attach-btn').addEventListener('click', () => {
+  document.getElementById('oak-file-input').click();
+});
+
+document.getElementById('oak-file-input').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  addOakMessage('user', `📎 ${file.name}`);
+  showTyping();
+
+  try {
+    const fd = new FormData();
+    fd.append('file', file);
+
+    const headers = {};
+    if (session?.access_token) headers['Authorization'] = `Bearer ${session.access_token}`;
+
+    const res = await fetch(`${BASE}/chat/upload`, {
+      method: 'POST',
+      headers: headers,
+      body: fd,
+    });
+    removeTyping();
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      addOakMessage('oak', `Couldn't read that file: ${err.detail || res.status}`);
+      return;
+    }
+    const result = await res.json();
+    addOakMessage('oak', `Got it — I've read "${result.filename}". Ask me anything about it.`);
+  } catch(err) {
+    removeTyping();
+    addOakMessage('oak', `Upload failed: ${err.message}`);
+  }
+  e.target.value = '';
+});
+
+// ── Logout (click name badge) ──
+document.querySelector('.role-badge').style.cursor = 'pointer';
+document.querySelector('.role-badge').addEventListener('click', () => {
+  if (confirm('Log out?')) {
+    localStorage.removeItem('maros_session');
+    window.location.href = 'index.html';
+  }
+});
+
 // ── Boot ──
 init();
 loadPapers();
 loadAssignments();
+</script>
+
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const ttDark  = document.getElementById('tt-dark');
+    const ttLight = document.getElementById('tt-light');
+    function applyTheme(theme) {
+      if (theme === 'light') {
+        document.body.classList.add('light');
+        ttDark.classList.remove('on');
+        ttLight.classList.add('on');
+      } else {
+        document.body.classList.remove('light');
+        ttDark.classList.add('on');
+        ttLight.classList.remove('on');
+      }
+      localStorage.setItem('maros_theme', theme);
+    }
+    applyTheme(localStorage.getItem('maros_theme') || 'dark');
+    ttDark.addEventListener('click',  () => applyTheme('dark'));
+    ttLight.addEventListener('click', () => applyTheme('light'));
+  });
 </script>
 </body>
 </html>
