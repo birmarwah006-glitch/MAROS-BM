@@ -5,3 +5,5 @@ uploads/
 outputs/
 __pycache__/
 .DS_Store
+output/
+outputs/

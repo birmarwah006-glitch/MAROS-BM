@@ -184,6 +184,18 @@
   }
   .paper-card-meta.ready { color: var(--green); }
   .paper-card-arrow { color: var(--muted2); font-size: 14px; }
+  .paper-delete-btn {
+    background: none;
+    border: none;
+    color: var(--muted2);
+    cursor: pointer;
+    font-size: 14px;
+    padding: 4px 6px;
+    flex-shrink: 0;
+    opacity: 0.5;
+    transition: opacity 0.15s;
+  }
+  .paper-delete-btn:hover { opacity: 1; color: var(--red, #ff6b6b); }
 </style>
 </head>
 <body>
@@ -473,6 +485,13 @@ import {
   listPapers, assignPaper, generatePodcast, getPodcastStatus, getPodcastAudioUrl
 } from './api.js';
 
+
+// ── Title truncation helper (fixes giant paper titles everywhere) ──
+function shortTitle(t, max = 60) {
+  if (!t) return 'Untitled';
+  const clean = String(t).replace(/\s+/g, ' ').trim();
+  return clean.length > max ? clean.slice(0, max - 3) + '…' : clean;
+}
 
 
 // ── Oak persona config (UI only — no prompts) ──
@@ -986,10 +1005,11 @@ function renderPapers(papers) {
     card.innerHTML = `
       <div style="font-size:20px; flex-shrink:0">&#128196;</div>
       <div class="paper-card-body">
-        <div class="paper-card-title">${p.title}</div>
+        <div class="paper-card-title" title="${(p.title || '').replace(/"/g, '&quot;')}">${shortTitle(p.title)}</div>
         <div class="paper-card-meta ${p.has_podcast ? 'ready' : ''}">${p.has_podcast ? 'Podcast ready' : 'Drag to converter'}</div>
       </div>
       <div class="paper-card-arrow">&#8594;</div>
+      <button class="paper-delete-btn" title="Remove paper">✕</button>
     `;
     card.addEventListener('dragstart', (e) => {
       e.dataTransfer.setData('paper_id', p.paper_id);
@@ -997,6 +1017,23 @@ function renderPapers(papers) {
       card.style.opacity = '0.5';
     });
     card.addEventListener('dragend', () => { card.style.opacity = '1'; });
+
+    // Delete button — removes paper via backend, then reloads the list
+    card.querySelector('.paper-delete-btn').addEventListener('click', async (e) => {
+      e.stopPropagation();
+      if (!confirm(`Remove "${shortTitle(p.title, 40)}"?`)) return;
+      try {
+        const res = await fetch(`${BASE}/papers/${p.paper_id}`, {
+          method: 'DELETE',
+          headers: AUTH_HEADERS,
+        });
+        if (!res.ok) throw new Error(`${res.status}`);
+        await loadPapers();
+      } catch(err) {
+        alert('Delete failed: ' + err.message);
+      }
+    });
+
     grid.appendChild(card);
   });
 }
@@ -1051,7 +1088,7 @@ async function startConverterFromFile(file) {
   try {
     const paper = await assignPaper(file);
     activePaper = paper;
-    document.getElementById('converter-title').textContent = `Generating: ${paper.title}`;
+    document.getElementById('converter-title').textContent = `Generating: ${shortTitle(paper.title)}`;
     await generatePodcast(paper.paper_id);
     pollConverter(paper.paper_id, paper.title);
     await loadPapers();
@@ -1091,16 +1128,16 @@ function resetConverter() {
 }
 function showConverterGenerating(title) {
   dropzone.style.display = 'none';
-  document.getElementById('converter-title').textContent = `Generating: ${title}`;
+  document.getElementById('converter-title').textContent = `Generating: ${shortTitle(title)}`;
   document.getElementById('converter-generating').style.display = 'block';
   setTimeout(() => { document.getElementById('converter-progress').style.width = '15%'; }, 100);
 }
 function showConverterReady(paperId, title) {
   document.getElementById('converter-generating').style.display = 'none';
   document.getElementById('converter-ready').style.display      = 'block';
-  document.getElementById('converter-ready-title').textContent  = title.toUpperCase();
+  document.getElementById('converter-ready-title').textContent  = shortTitle(title).toUpperCase();
   document.getElementById('converter-audio').src = getPodcastAudioUrl(paperId);
-  addOakMessage('oak', `Podcast for "${title}" is ready! Give it a listen, then ask me anything.`);
+  addOakMessage('oak', `Podcast for "${shortTitle(title, 40)}" is ready! Give it a listen, then ask me anything.`);
 }
 function showConverterError(msg) {
   document.getElementById('converter-generating').style.display = 'none';

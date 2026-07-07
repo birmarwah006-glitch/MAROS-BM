@@ -1,10 +1,17 @@
 """
-AdaptLearn Podcast Engine
+AdaptLearn / MAROS Podcast Engine v2
 Bir (curious learner) + Mia (expert)
-Stack: Groq (script) + Edge TTS (audio) + pydub (stitch)
+Stack: Cerebras primary + Groq fallback (script) + DuckDuckGo (enrichment)
+       + Edge TTS (audio) + pydub (stitch)
 
-NOTE: simulation generation has been stripped out for the MAROS integration.
-This module only produces the script (turns) + stitched audio file.
+Changes v2:
+- Cerebras (gpt-oss-120b) primary, Groq (llama-3.3-70b) fallback — same as MAROS /chat
+- JSON sanitizer (kills trailing-comma parse errors) + 1 auto-retry per segment
+- Web enrichment: extracts key concepts/examples from the material,
+  DDG-searches them, feeds context into script generation
+- Prompt rework: technical for 2nd/3rd-yr CS, every concept grounded
+  with a real-world example; specific questions/examples in notes get
+  a "why / method" walkthrough
 """
 
 import asyncio
@@ -16,10 +23,14 @@ from pathlib import Path
 from typing import Optional
 import edge_tts
 from pydub import AudioSegment
-from groq import Groq
+
 
 # ── Config ──────────────────────────────────────────────
-GROQ_API_KEY = os.getenv("GROQ_API_KEY", "your_groq_key_here")
+CEREBRAS_API_KEY = os.getenv("CEREBRAS_API_KEY", "")
+GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
+
+CEREBRAS_MODEL = "gpt-oss-120b"
+GROQ_MODEL = "llama-3.3-70b-versatile"
 
 BIR_VOICE = "en-US-AndrewNeural"
 MIA_VOICE = "en-US-JennyNeural"
@@ -30,38 +41,79 @@ OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 SEGMENTS = ["hook", "context", "core", "sowhat", "wrap"]
 
 SEGMENT_INSTRUCTIONS = {
-    "hook":    "Generate ONLY the Hook segment (0-2 min, 8-10 turns). Bir asks a relatable real-world question. Keep it engaging and simple.",
-    "context": "Generate ONLY the Context segment (2-5 min, 10-12 turns). Mia explains what the paper is about simply. Bir asks clarifying questions.",
-    "core":    "Generate ONLY the Core Concept segment (5-12 min, 18-22 turns). Deep dive — analogy first, define every jargon term, complexity ramps up.",
-    "sowhat":  "Generate ONLY the So What segment (12-17 min, 12-15 turns). Real-world applications, why this research matters, future impact.",
-    "wrap":    "Generate ONLY the Wrap Up segment (17-20 min, 8-10 turns). Bir summarizes the whole paper in his own words, Mia corrects and confirms.",
+    "hook":    "Generate ONLY the Hook segment (0-2 min, 8-10 turns). Bir opens with a relatable real-world question or scenario that the material actually answers. Engaging, concrete, no jargon yet.",
+    "context": "Generate ONLY the Context segment (2-5 min, 10-12 turns). Mia frames what the material is about and why it exists — the problem it solves. Bir asks clarifying questions. Ground the 'why' with one real-world example.",
+    "core":    "Generate ONLY the Core Concept segment (5-12 min, 18-22 turns). Deep technical dive. For EACH key concept: precise technical definition -> immediate real-world example -> back to the technical detail. If the material contains a specific example, question, or code/algorithm choice, Bir raises it and Mia walks through WHY it's done that way and the method behind it, step by step.",
+    "sowhat":  "Generate ONLY the So What segment (12-17 min, 12-15 turns). Real applications, where a 2nd/3rd-year CS student would actually hit this (projects, interviews, systems they use daily), and future impact. Stay concrete.",
+    "wrap":    "Generate ONLY the Wrap Up segment (17-20 min, 8-10 turns). Bir summarizes the whole thing in his own words, Mia corrects and confirms. End with one takeaway the listener can apply.",
 }
 
-SYSTEM_PROMPT = """You are a podcast script writer for AdaptLearn, an AI-powered learning platform at VNIT Nagpur.
+SYSTEM_PROMPT = """You are a podcast script writer for MAROS (AdaptLearn), an AI-powered learning platform at VNIT Nagpur.
 
-You write scripts for a 20-minute educational podcast with two hosts:
-- BIR: curious male learner. Asks questions, pushes back, says "wait, I don't get that", summarizes to check understanding. Never lectures.
-- MIA: expert female. Explains clearly. Always gives a real-world analogy BEFORE any technical explanation. Pauses to define every jargon term in one plain sentence immediately when it appears.
+Audience: 2nd and 3rd year CS undergraduates. They are technical — do NOT dumb things down or over-explain basics. But they learn best through concrete examples.
+
+Two hosts:
+- BIR: curious male learner (a sharp CS student). Asks pointed questions, pushes back, says "wait, I don't get that", summarizes to check understanding. Never lectures.
+- MIA: expert female. Precise and technical, but ALWAYS grounds concepts: technical definition first in one tight sentence, then IMMEDIATELY a real-world example that makes it click, then back to the technical thread.
 
 STRICT SCRIPT RULES:
 1. Bir always speaks first in each segment — asks before Mia explains.
-2. Every technical term: Mia defines it immediately in one plain sentence.
-3. Every concept: real-world analogy FIRST, then technical explanation.
-4. Complexity ramps up across segments — early = undergrad friendly, late = research level.
-5. Max 3 sentences per speaking turn.
-6. Bir pushes back at least once per segment: "wait, so [restatement]?"
-7. Wrap-up: Bir summarizes the whole paper in his own words, Mia corrects/confirms.
+2. Every concept pattern: precise definition -> real-world example -> technical depth. The example carries the understanding; the definition carries the rigor.
+3. Do NOT dump raw context. Pick what matters, keep it sharp. Depth over breadth.
+4. If the source material contains a specific example, question, algorithm step, or design choice (e.g. "why this loop", "why this data structure"), address it directly: Mia explains the WHY and the METHOD, not just the what.
+5. Use the web research context ONLY to sharpen explanations and find better examples — the source material is the spine of the episode.
+6. Complexity ramps up across segments — hook is accessible, core is genuinely technical.
+7. Max 3 sentences per speaking turn.
+8. Bir pushes back at least once per segment: "wait, so [restatement]?"
+9. Wrap-up: Bir summarizes everything in his own words, Mia corrects/confirms.
 
-OUTPUT: Return ONLY a valid JSON array. No markdown, no preamble, no explanation.
+OUTPUT: Return ONLY a valid JSON array. No markdown, no code fences, no preamble, no trailing commas.
 Format:
 [
   {"segment": "Hook", "speaker": "Bir", "text": "..."},
-  {"segment": "Hook", "speaker": "Mia", "text": "..."},
-  ...
+  {"segment": "Hook", "speaker": "Mia", "text": "..."}
 ]"""
 
 
-# ── PDF Extractor ────────────────────────────────────────
+# ── LLM Router: Cerebras primary, Groq fallback ─────────
+def llm_chat(messages: list[dict], temperature: float = 0.85, max_tokens: int = 4096) -> str:
+    """Same routing pattern as MAROS /chat: Cerebras first, Groq on failure."""
+    try:
+        from cerebras.cloud.sdk import Cerebras
+        client = Cerebras(api_key=CEREBRAS_API_KEY)
+        resp = client.chat.completions.create(
+            model=CEREBRAS_MODEL,
+            messages=messages,
+            temperature=temperature,
+            max_completion_tokens=max_tokens,
+        )
+        return resp.choices[0].message.content
+    except Exception as e:
+        print(f"  [llm] Cerebras failed ({e}) → falling back to Groq")
+        from groq import Groq
+        client = Groq(api_key=GROQ_API_KEY)
+        resp = client.chat.completions.create(
+            model=GROQ_MODEL,
+            messages=messages,
+            temperature=temperature,
+            max_tokens=max_tokens,
+        )
+        return resp.choices[0].message.content
+
+
+# ── JSON Sanitizer (fixes trailing-comma failures) ──────
+def parse_json_array(raw: str) -> list:
+    raw = re.sub(r"```json|```", "", raw).strip()
+    # slice from first [ to last ] — drops any preamble/postamble text
+    start, end = raw.find("["), raw.rfind("]")
+    if start != -1 and end != -1 and end > start:
+        raw = raw[start:end + 1]
+    # kill trailing commas before ] or }  ← the "Illegal trailing comma" bug
+    raw = re.sub(r",\s*([\]}])", r"\1", raw)
+    return json.loads(raw)
+
+
+# ── PDF Extractor (unchanged) ────────────────────────────
 def extract_from_pdf(pdf_path: str) -> tuple[str, str]:
     import fitz
     doc = fitz.open(pdf_path)
@@ -70,10 +122,6 @@ def extract_from_pdf(pdf_path: str) -> tuple[str, str]:
         text += page.get_text()
     lines = [l.strip() for l in text.split('\n') if l.strip()]
 
-    # Anchor off "Abstract" — the title sits somewhere in the header chunk
-    # before it. Titles are often wrapped across 2+ lines by the PDF layout,
-    # so we find the longest RUN of consecutive "title-like" lines and join
-    # them, rather than just picking a single longest line.
     text_lower_full = text.lower()
     abstract_pos = text_lower_full.find("abstract")
 
@@ -81,8 +129,6 @@ def extract_from_pdf(pdf_path: str) -> tuple[str, str]:
     header_lines = [l.strip() for l in header_text.split('\n') if l.strip()]
 
     def looks_like_author_line(line: str) -> bool:
-        # e.g. "Rina Damdoo1 · Praveen Kumar2" — short names joined by a
-        # middle-dot, often with trailing digit affiliation markers
         return '·' in line or bool(re.search(r'[a-zA-Z]\d\b', line))
 
     def looks_like_title_line(line: str) -> bool:
@@ -116,47 +162,124 @@ def extract_from_pdf(pdf_path: str) -> tuple[str, str]:
     start = text_lower.find("abstract")
     end = text_lower.find("introduction", start)
     if start != -1 and end != -1:
-        abstract = text[start+8:end].strip()
-        # strip a leading "1" or similar section-number artifact some PDFs
-        # leave behind right before "Introduction"
+        abstract = text[start + 8:end].strip()
         abstract = re.sub(r'\s*\d{1,2}\s*$', '', abstract).strip()
     return title, abstract
 
 
-# ── Groq Script Generator (per segment) ─────────────────
+# ── Web Enrichment (DuckDuckGo, same as MAROS search) ────
+def _ddg_search(query: str, max_results: int = 3) -> list[dict]:
+    try:
+        try:
+            from ddgs import DDGS  # newer package name
+        except ImportError:
+            from duckduckgo_search import DDGS
+        with DDGS() as ddgs:
+            return list(ddgs.text(query, max_results=max_results))
+    except Exception as e:
+        print(f"  [search] DDG failed for '{query}': {e}")
+        return []
+
+
+def extract_key_points(title: str, material: str) -> dict:
+    """One LLM pass: pull out searchable concepts + any specific
+    examples/questions embedded in the material (notes often have these)."""
+    raw = llm_chat(
+        [
+            {"role": "system", "content": "You extract key points from study material. Return ONLY valid JSON, no markdown, no trailing commas."},
+            {"role": "user", "content": f"""Title: {title}
+Material:
+{material[:4000]}
+
+Return JSON exactly in this shape:
+{{
+  "concepts": ["2-4 core technical concepts worth researching, as short search queries"],
+  "specifics": ["0-3 specific examples, questions, algorithm steps, or design choices found IN the material that deserve a why/method explanation (empty list if none)"]
+}}"""},
+        ],
+        temperature=0.3,
+        max_tokens=600,
+    )
+    try:
+        data = json.loads(re.sub(r",\s*([\]}])", r"\1", re.sub(r"```json|```", "", raw).strip()))
+        return {
+            "concepts": data.get("concepts", [])[:4],
+            "specifics": data.get("specifics", [])[:3],
+        }
+    except Exception as e:
+        print(f"  [enrich] key-point extraction failed ({e}) — skipping enrichment")
+        return {"concepts": [], "specifics": []}
+
+
+def build_web_context(title: str, material: str) -> tuple[str, list[str]]:
+    """Search DDG on extracted concepts + specifics, return a compact
+    context block (capped) + the list of specifics for the prompt."""
+    points = extract_key_points(title, material)
+    queries = []
+    for c in points["concepts"]:
+        queries.append(f"{c} explained real world example")
+    for s in points["specifics"]:
+        queries.append(f"{s} why how it works")
+
+    chunks = []
+    for q in queries[:6]:
+        print(f"  [search] {q}")
+        for r in _ddg_search(q, max_results=2):
+            body = r.get("body", "").strip()
+            if body:
+                chunks.append(f"- ({q}) {body}")
+
+    context = "\n".join(chunks)[:3500]  # keep it sharp, don't dump
+    return context, points["specifics"]
+
+
+# ── Script Generator (per segment, with retry) ──────────
 def generate_segment_script(
     paper_title: str,
-    abstract: str,
+    material: str,
     domain: str,
     segment: str,
+    web_context: str = "",
+    specifics: list[str] | None = None,
 ) -> list[dict]:
-    client = Groq(api_key=GROQ_API_KEY)
     instruction = SEGMENT_INSTRUCTIONS[segment]
     segment_label = segment.replace("sowhat", "So What").replace("wrap", "Wrap Up").title()
 
-    response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
-        messages=[
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": f"""Paper title: {paper_title}
+    specifics_block = ""
+    if specifics:
+        specifics_block = "\nSpecific points from the material that MUST get a why/method walkthrough somewhere in the episode:\n" + "\n".join(f"- {s}" for s in specifics)
+
+    web_block = f"\nWeb research context (use only to sharpen explanations and examples):\n{web_context}" if web_context else ""
+
+    user_prompt = f"""Title: {paper_title}
 Domain: {domain}
-Abstract:
-{abstract}
+Source material (the spine of the episode):
+{material[:4000]}
+{specifics_block}{web_block}
 
 {instruction}
 Use "{segment_label}" as the segment name in every turn.
-Return ONLY the JSON array. No extra text."""}
-        ],
-        temperature=0.85,
-        max_tokens=4096,
-    )
+Return ONLY the JSON array. No extra text, no trailing commas."""
 
-    raw = response.choices[0].message.content.strip()
-    raw = re.sub(r"```json|```", "", raw).strip()
-    return json.loads(raw)
+    messages = [
+        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "user", "content": user_prompt},
+    ]
+
+    # attempt 1 + one strict retry on parse failure
+    for attempt in range(2):
+        raw = llm_chat(messages, temperature=0.85 if attempt == 0 else 0.5)
+        try:
+            return parse_json_array(raw)
+        except (json.JSONDecodeError, ValueError) as e:
+            print(f"  [{segment}] JSON parse failed (attempt {attempt + 1}): {e}")
+            if attempt == 0:
+                messages.append({"role": "assistant", "content": raw[:2000]})
+                messages.append({"role": "user", "content": "That was not valid JSON. Return ONLY the corrected, strictly valid JSON array. No trailing commas, no markdown fences, no text outside the array."})
+    raise RuntimeError(f"Segment '{segment}' failed JSON parsing after retry")
 
 
-# ── Edge TTS Audio Generator ─────────────────────────────
+# ── Edge TTS Audio Generator (unchanged) ─────────────────
 async def text_to_audio(text: str, voice: str, output_path: Path) -> None:
     communicate = edge_tts.Communicate(text, voice)
     await communicate.save(str(output_path))
@@ -173,7 +296,7 @@ async def generate_all_audio(turns: list[dict], job_id: str) -> list[Path]:
     return paths
 
 
-# ── Audio Stitcher ───────────────────────────────────────
+# ── Audio Stitcher (unchanged) ───────────────────────────
 PAUSE_BETWEEN_TURNS = 600
 PAUSE_BETWEEN_SEGMENTS = 1500
 
@@ -200,61 +323,52 @@ def stitch_audio(turns: list[dict], audio_paths: list[Path], job_id: str) -> Pat
     return output_path
 
 
-# ── Main Pipeline (segment by segment) ──────────────────
+# ── Main Pipeline ────────────────────────────────────────
 async def generate_podcast(
     paper_title: str,
     abstract: str,
     domain: str = "general",
     job_id: Optional[str] = None,
+    enable_web_enrichment: bool = True,
 ) -> dict:
     """
-    Generates the full podcast script + audio for a paper.
-    `job_id` here is used purely as a filename prefix for the audio/turn
-    output — in the MAROS integration this is set to the paper_id so
-    outputs land in OUTPUTS_DIR / paper_id / podcast.json.
+    `abstract` is the source material — paper abstract OR uploaded notes.
+    `job_id` is the filename prefix; in MAROS this is the paper_id.
     """
-
     import uuid
 
     if not job_id:
         job_id = str(uuid.uuid4())[:8]
 
+    # ── Web Enrichment ──────────────────────────────────
+    web_context, specifics = "", []
+    if enable_web_enrichment:
+        print(f"[{job_id}] Enriching material via web search...")
+        web_context, specifics = build_web_context(paper_title, abstract)
+        print(f"[{job_id}]   → {len(web_context)} chars context, {len(specifics)} specifics")
+
     # ── Generate Podcast Script ─────────────────────────
     all_turns = []
-
     for seg in SEGMENTS:
         print(f"[{job_id}] Generating segment: {seg}...")
-
         turns = generate_segment_script(
             paper_title,
             abstract,
             domain,
             seg,
+            web_context=web_context,
+            specifics=specifics,
         )
-
         print(f"[{job_id}]   → {len(turns)} turns")
-
         all_turns.extend(turns)
 
     # ── Generate Audio ──────────────────────────────────
-    print(
-        f"[{job_id}] Total turns: {len(all_turns)} — generating audio..."
-    )
-
-    audio_paths = await generate_all_audio(
-        all_turns,
-        job_id,
-    )
+    print(f"[{job_id}] Total turns: {len(all_turns)} — generating audio...")
+    audio_paths = await generate_all_audio(all_turns, job_id)
 
     # ── Stitch Audio ────────────────────────────────────
     print(f"[{job_id}] Stitching final podcast...")
-
-    final_path = stitch_audio(
-        all_turns,
-        audio_paths,
-        job_id,
-    )
-
+    final_path = stitch_audio(all_turns, audio_paths, job_id)
     print(f"[{job_id}] Done → {final_path}")
 
     return {

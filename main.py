@@ -1333,6 +1333,7 @@ Rules:
 - If they ask "what does X mean?" → ask "how would you implement X?"
 - If they're stuck → break it into the smallest possible concrete step
 - If they haven't started implementing → call it out directly
+- When you write code: before returning it, mentally verify every variable is declared in the scope where it's used (especially variables declared inside loops or blocks) and that every function you call exists in the snippet. Only ship code that runs.
 - Keep responses under 4 sentences + 1 action item""",
 
         "refine": """You are Prof Oak in Research Execution Mode — direct, implementation-obsessed.
@@ -1358,6 +1359,7 @@ Your method:
 - When they have a partial answer → ask them to extend it
 - When they're about to give up → give the smallest possible hint, then ask again
 - Celebrate when they figure it out — make it feel earned
+- If you ever include code (rare — only tiny illustrative snippets), it must be scope-correct and runnable as written.
 
 Tone: patient, warm, slightly challenging. Like a coach who believes in them.
 Max 2-3 sentences per response. Always end with a question.""",
@@ -1446,6 +1448,102 @@ def _load_podcast_context(paper_id: str) -> str:
         print(f"[MAROS] Failed to load podcast context for {paper_id}: {e}")
         return ""
 
+# ─────────────────────────────────────────────
+# CODE VERIFICATION (v3) — check code in Oak replies before students see it
+# ─────────────────────────────────────────────
+import re as _re2
+import io as _io
+
+CODE_BLOCK_RE = _re2.compile(r"```(\w+)?\n(.*?)```", _re2.DOTALL)
+
+def _check_python_code(code: str) -> list:
+    """Deterministic checks for Python blocks: syntax + undefined names."""
+    issues = []
+    try:
+        import ast
+        ast.parse(code)
+    except SyntaxError as e:
+        issues.append(f"Python SyntaxError: {e}")
+        return issues
+    try:
+        from pyflakes.api import check as _pf_check
+        from pyflakes.reporter import Reporter as _pf_Reporter
+        out, err = _io.StringIO(), _io.StringIO()
+        _pf_check(code, "oak_code", _pf_Reporter(out, err))
+        for line in (out.getvalue() + err.getvalue()).splitlines():
+            if "undefined name" in line or "referenced before assignment" in line:
+                issues.append(line.strip())
+    except ImportError:
+        pass  # pyflakes not installed — syntax check alone still ran
+    return issues
+
+
+def _verify_code_reply(reply: str) -> str:
+    """
+    If Oak's reply contains code blocks, verify them before returning to student.
+    - Python: deterministic (ast + pyflakes)
+    - JS/other: one cheap LLM self-review pass at temp 0
+    One repair attempt max. Non-fatal on any failure — worst case returns original.
+    """
+    blocks = CODE_BLOCK_RE.findall(reply)
+    if not blocks:
+        return reply
+
+    issues = []
+    needs_llm_review = False
+    for lang, code in blocks:
+        lang = (lang or "").lower()
+        if lang in ("python", "py"):
+            issues += _check_python_code(code)
+        else:  # js, jsx, ts, or unlabeled — no good pure-python linter, use LLM pass
+            needs_llm_review = True
+
+    if not issues and needs_llm_review:
+        try:
+            verdict = _call_llm(
+                messages=[{
+                    "role": "user",
+                    "content": f"""Review the code in this reply ONLY for bugs that would throw at runtime:
+- variables declared inside a loop/block (const/let) but referenced outside that block
+- variables referenced before declaration
+- calls to functions that don't exist anywhere in the snippet
+- unclosed braces/brackets
+
+If the code is fine, reply with exactly: OK
+If there are bugs, list each on one line as: PROBLEM: <one-line description>
+
+{reply[:6000]}"""
+                }],
+                temperature=0.0,
+                max_tokens=250,
+            ).strip()
+            if not verdict.startswith("OK"):
+                issues += [l.strip() for l in verdict.splitlines() if l.strip()][:5]
+        except Exception as e:
+            print(f"[MAROS] Code self-review skipped (non-fatal): {e}")
+
+    if not issues:
+        return reply
+
+    print(f"[MAROS] Code issues in Oak reply → repairing: {issues}")
+    try:
+        fixed = _call_llm(
+            messages=[{
+                "role": "user",
+                "content": f"""This reply contains code with the following bugs:
+{chr(10).join('- ' + i for i in issues)}
+
+Rewrite the reply with the code FIXED. Keep the tone, explanation, and structure identical — change only what's needed to fix the bugs. Output the full corrected reply and nothing else.
+
+{reply}"""
+            }],
+            temperature=0.1,
+            max_tokens=1200,
+        )
+        return fixed if fixed.strip() else reply
+    except Exception as e:
+        print(f"[MAROS] Code repair failed (non-fatal): {e}")
+        return reply
 
 def _plain_oak_reply(req: ChatRequest, module_context: str) -> str:
     """Oak grounded in module notes / paper abstract — no RAG."""
@@ -1647,6 +1745,9 @@ brainstorm architecture, and push them toward building it.
         reply = _plain_oak_reply(req, module_context)
     except requests.exceptions.RequestException as e:
         raise HTTPException(status_code=502, detail=f"Groq API error: {e}")
+    # ── Verify any code Oak wrote before the student sees it (v3) ─────────
+    if req.mode in ("papers", "assignments"):
+        reply = _verify_code_reply(reply)
 
     # ── Quick Check mastery loop (v2, from GraphMASAL Tutor pattern) ──────
     # If Oak's PREVIOUS message asked a Quick Check and the student just
