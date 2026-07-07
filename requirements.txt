@@ -15,4 +15,4 @@ supabase
 chromadb
 sentence-transformers
 PyMuPDF
-audioop-ltsaudioop-lts
+audioop-lts
