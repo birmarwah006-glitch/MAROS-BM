@@ -1,4 +1,4 @@
-// api.js — all MAROS backend calls
+// api.js — all MAROS backend calls  (v4)
 
 // ── BASE: localhost in dev, same-origin in prod (frontend served by FastAPI /app mount) ──
 export const BASE =
@@ -77,13 +77,97 @@ export async function generateQuiz(jobId, moduleId, numQuestions = 5) {
 }
 
 // ─────────────────────────────────────────────
+// PROFESSOR QUIZ (v4) — PDF → parsed → published
+// ─────────────────────────────────────────────
+
+export async function parseQuizPdf(file) {
+  const fd = new FormData();
+  fd.append('file', file);
+  const res = await fetch(`${BASE}/professor/quiz/parse-pdf`, { method: 'POST', body: fd });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || `Parse failed: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function publishProfQuiz(title, questions) {
+  const res = await fetch(`${BASE}/professor/quiz/publish`, {
+    method  : 'POST',
+    headers : { 'Content-Type': 'application/json' },
+    body    : JSON.stringify({ title, questions })
+  });
+  if (!res.ok) throw new Error(`Publish failed: ${res.status}`);
+  return res.json();
+}
+
+export async function listProfQuizzes(visibleOnly = false) {
+  const res = await fetch(`${BASE}/professor/quizzes?visible_only=${visibleOnly}`);
+  if (!res.ok) throw new Error(`List quizzes failed: ${res.status}`);
+  return res.json();
+}
+
+// Students: visible prof quizzes
+export async function listStudentQuizzes() {
+  const res = await fetch(`${BASE}/quizzes`);
+  if (!res.ok) throw new Error(`List quizzes failed: ${res.status}`);
+  return res.json();
+}
+
+// Student submits a prof-published quiz taken inside Oak chat.
+// answers: [{ question_index, chosen_answer }]
+export async function submitProfQuiz(quizId, answers) {
+  const res = await fetch(`${BASE}/professor/quiz/${quizId}/submit`, {
+    method  : 'POST',
+    headers : authHeaders(),          // student auth → analytics gets student_id
+    body    : JSON.stringify({ answers })
+  });
+  if (!res.ok) throw new Error(`Submit prof quiz failed: ${res.status}`);
+  return res.json();
+}
+
+// ─────────────────────────────────────────────
+// MODULE QUIZ REVIEW (v4)
+// ─────────────────────────────────────────────
+
+export async function reviewModuleQuiz(jobId, moduleId, numQuestions = 5) {
+  const res = await fetch(`${BASE}/professor/module-quiz/review`, {
+    method  : 'POST',
+    headers : { 'Content-Type': 'application/json' },
+    body    : JSON.stringify({ job_id: jobId, module_id: moduleId, num_questions: numQuestions })
+  });
+  if (!res.ok) throw new Error(`Review draft failed: ${res.status}`);
+  return res.json();
+}
+
+export async function publishModuleQuiz(jobId, moduleId, topic, questions) {
+  const res = await fetch(`${BASE}/professor/module-quiz/publish`, {
+    method  : 'POST',
+    headers : { 'Content-Type': 'application/json' },
+    body    : JSON.stringify({ job_id: jobId, module_id: moduleId, topic, questions })
+  });
+  if (!res.ok) throw new Error(`Publish failed: ${res.status}`);
+  return res.json();
+}
+
+// ─────────────────────────────────────────────
+// OAK QUESTION ANALYTICS (v4)
+// ─────────────────────────────────────────────
+
+export async function getOakQuestionAnalytics() {
+  const res = await fetch(`${BASE}/professor/oak-questions`);
+  if (!res.ok) throw new Error(`Oak analytics failed: ${res.status}`);
+  return res.json();
+}
+
+// ─────────────────────────────────────────────
 // CHAT — PROF OAK (now authenticated + persisted server-side)
 // ─────────────────────────────────────────────
 
 export async function chatWithOak({ message, jobId, moduleId, paperId, history, role, mode }) {
   const res = await fetch(`${BASE}/chat`, {
     method  : 'POST',
-    headers : authHeaders(),   // ← THE FIX: identity now travels with every chat
+    headers : authHeaders(),
     body    : JSON.stringify({
       message   : message,
       job_id    : jobId    || null,
@@ -108,20 +192,33 @@ export async function getChatHistory(scope = 'student') {
 }
 
 // ─────────────────────────────────────────────
-// PAPERS
+// PAPERS  (v4: auth travels with upload/list — student podcasts stay per-student)
 // ─────────────────────────────────────────────
 
 export async function assignPaper(file) {
   const fd = new FormData();
   fd.append('file', file);
-  const res = await fetch(`${BASE}/papers`, { method: 'POST', body: fd });
+  const res = await fetch(`${BASE}/papers`, {
+    method  : 'POST',
+    headers : authHeaders(false),   // v4: owner identity — student uploads stay private
+    body    : fd
+  });
   if (!res.ok) throw new Error(`Assign paper failed: ${res.status}`);
   return res.json();
 }
 
 export async function listPapers() {
-  const res = await fetch(`${BASE}/papers`);
+  const res = await fetch(`${BASE}/papers`, { headers: authHeaders() });
   if (!res.ok) throw new Error(`List papers failed: ${res.status}`);
+  return res.json();
+}
+
+export async function deletePaper(paperId) {
+  const res = await fetch(`${BASE}/papers/${paperId}`, {
+    method  : 'DELETE',
+    headers : authHeaders()
+  });
+  if (!res.ok) throw new Error(`Delete paper failed: ${res.status}`);
   return res.json();
 }
 

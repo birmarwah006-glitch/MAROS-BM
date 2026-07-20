@@ -283,23 +283,34 @@
             </div>
           </div>
 
-          <!-- MODULE NOTES -->
-          <div id="notes-section" style="margin-bottom:24px">
-            <div class="section-label">Module Notes</div>
-            <div id="notes-content" style="
-              background: var(--surface);
-              border: 1px solid var(--border);
-              border-radius: var(--radius);
-              padding: 20px;
-              font-size: 13px;
-              line-height: 1.8;
-              color: var(--muted2);
-              white-space: pre-wrap;
-              max-height: 400px;
-              overflow-y: auto;
-            "></div>
-          </div>
+          <!-- MODULE SUMMARY + NOTES -->
+<div id="notes-section" style="margin-bottom:24px">
+  <div class="section-label">Summary</div>
+  <div id="module-summary" style="
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--fg);
+    margin-bottom: 12px;
+  "></div>
 
+  <button class="btn btn-outline" id="toggle-notes-btn" style="margin-bottom:12px; font-size:12px">
+    Show detailed notes
+  </button>
+
+  <div id="notes-content" class="notes-md" style="
+    display: none;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    max-height: 500px;
+    overflow-y: auto;
+  "></div>
+</div>
           <!-- QUIZ -->
           <div id="quiz-section" style="display:none">
             <div class="section-label">Concept Quiz</div>
@@ -484,6 +495,8 @@ import {
   getModules, getVideoUrl, getModuleNotes, generateQuiz, chatWithOak, STATE,
   listPapers, assignPaper, generatePodcast, getPodcastStatus, getPodcastAudioUrl
 } from './api.js';
+
+import { renderNotes } from './notes-renderer.js';
 
 
 // ── Title truncation helper (fixes giant paper titles everywhere) ──
@@ -847,18 +860,50 @@ async function loadModule(module) {
     video.load();
   }
 
-  try {
-    const data = await getModuleNotes(STATE.jobId, module.module_id);
-    document.getElementById('notes-content').textContent = data.notes;
-  } catch(e) {
-    document.getElementById('notes-content').textContent = module.notes || '';
+  // ── Show summary immediately, render detailed notes lazily ──
+const summaryEl = document.getElementById('module-summary');
+const notesEl   = document.getElementById('notes-content');
+const toggleBtn = document.getElementById('toggle-notes-btn');
+
+// Summary: prefer module.summary from manifest; fall back to first sentence of notes.
+summaryEl.textContent = module.summary || (module.notes || '').split('\n').find(l => l.trim() && !l.startsWith('#')) || 'No summary yet.';
+
+// Reset the toggle every time we switch modules.
+notesEl.style.display  = 'none';
+notesEl.innerHTML      = '';
+toggleBtn.textContent  = 'Show detailed notes';
+toggleBtn.dataset.rendered = 'false';
+
+toggleBtn.onclick = async () => {
+  if (notesEl.style.display === 'none') {
+    // First open: fetch + render.  On subsequent opens we already have the DOM.
+    if (toggleBtn.dataset.rendered !== 'true') {
+      toggleBtn.disabled = true;
+      toggleBtn.textContent = 'Loading...';
+      try {
+        const data = await getModuleNotes(STATE.jobId, module.module_id);
+        await renderNotes(data.notes || module.notes || '', notesEl);
+      } catch(e) {
+        await renderNotes(module.notes || '', notesEl);
+      }
+      toggleBtn.dataset.rendered = 'true';
+      toggleBtn.disabled = false;
+    }
+    notesEl.style.display = 'block';
+    toggleBtn.textContent = 'Hide detailed notes';
+  } else {
+    notesEl.style.display = 'none';
+    toggleBtn.textContent = 'Show detailed notes';
   }
+};
 
   document.getElementById('quiz-section').style.display    = 'none';
   document.getElementById('quiz-questions').innerHTML      = '';
   document.getElementById('score-card').style.display      = 'none';
   document.getElementById('quiz-progress-fill').style.width = '0%';
   document.getElementById('quiz-btn').style.display        = 'block';
+  document.getElementById('quiz-btn').disabled              = false;
+  document.getElementById('quiz-btn').textContent           = 'Take Quiz for this Module';
 
   addOakMessage('oak', `Now viewing: "${module.concept}". Ask me anything about this topic.`);
   document.getElementById('player-section').scrollIntoView({ behavior: 'smooth' });
@@ -879,6 +924,9 @@ document.getElementById('quiz-btn').addEventListener('click', async () => {
   } catch(e) {
     btn.disabled    = false;
     btn.textContent = 'Take Quiz for this Module';
+    // FIX: surface the real error instead of failing silently
+    addOakMessage('oak', `Couldn't generate the quiz: ${e.message}. Try again in a moment.`);
+    console.error('[MAROS] Quiz generation failed:', e);
   }
 });
 
@@ -1018,6 +1066,23 @@ function renderPapers(papers) {
     });
     card.addEventListener('dragend', () => { card.style.opacity = '1'; });
 
+
+
+    // If this paper already has a saved podcast, clicking the card
+// (not just dragging it) reopens it directly — no regeneration.
+if (p.has_podcast) {
+  card.style.cursor = 'pointer';
+  card.addEventListener('click', (e) => {
+    if (e.target.closest('.paper-delete-btn')) return;  // don't hijack delete clicks
+    resetConverter();
+    activePaper = { paper_id: p.paper_id, title: p.title };
+    showConverterReady(p.paper_id, p.title);
+    document.getElementById('converter-ready').scrollIntoView({ behavior: 'smooth' });
+  });
+}
+
+
+
     // Delete button — removes paper via backend, then reloads the list
     card.querySelector('.paper-delete-btn').addEventListener('click', async (e) => {
       e.stopPropagation();
@@ -1119,13 +1184,40 @@ function pollConverter(paperId, title) {
 }
 
 function resetConverter() {
-  if (podcastPollInterval) clearInterval(podcastPollInterval);
+  // Clear any in-flight polling.
+  if (podcastPollInterval) {
+    clearInterval(podcastPollInterval);
+    podcastPollInterval = null;
+  }
+
+  // Reset the audio element hard — pause, clear src, unload — so the browser
+  // doesn't reuse the previous podcast's buffer for the next one.
+  const audio = document.getElementById('converter-audio');
+  if (audio) {
+    audio.pause();
+    audio.removeAttribute('src');
+    audio.load();
+  }
+
+  // Reset visible state.
   document.getElementById('converter-generating').style.display = 'none';
   document.getElementById('converter-ready').style.display      = 'none';
   document.getElementById('converter-error').style.display      = 'none';
+  document.getElementById('converter-error').textContent        = '';
   document.getElementById('converter-progress').style.width     = '5%';
+  document.getElementById('converter-title').textContent        = 'Generating podcast...';
+  document.getElementById('converter-ready-title').textContent  = '';
+
+  // Reset the file <input> so picking the SAME file twice fires 'change' again.
+  const pdfInput = document.getElementById('podcast-pdf-input');
+  if (pdfInput) pdfInput.value = '';
+
+  // Clear the tracked paper so the next drop/upload starts clean.
+  activePaper = null;
+
   dropzone.style.display = 'flex';
 }
+
 function showConverterGenerating(title) {
   dropzone.style.display = 'none';
   document.getElementById('converter-title').textContent = `Generating: ${shortTitle(title)}`;

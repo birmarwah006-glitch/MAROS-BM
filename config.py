@@ -38,9 +38,9 @@ OUTPUTS_DIR.mkdir(exist_ok=True)
 # ─────────────────────────────────────────────
 
 WHISPER_MODEL     = os.getenv("WHISPER_MODEL", "base")
-MAX_MODULES       = int(os.getenv("MAX_MODULES", 4))
+MAX_MODULES       = int(os.getenv("MAX_MODULES", 8))
 MIN_CLIP_DURATION = float(os.getenv("MIN_CLIP_DURATION", 5.0))
-TRANSCRIPT_CAP    = int(os.getenv("TRANSCRIPT_CAP", 40000))
+TRANSCRIPT_CAP    = int(os.getenv("TRANSCRIPT_CAP", 120000))
 
 # ─────────────────────────────────────────────
 # GROQ MODEL SETTINGS

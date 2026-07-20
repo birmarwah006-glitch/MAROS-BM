@@ -12,6 +12,13 @@ Changes v2:
 - Prompt rework: technical for 2nd/3rd-yr CS, every concept grounded
   with a real-world example; specific questions/examples in notes get
   a "why / method" walkthrough
+
+Changes v2.1:
+- llm_chat rewritten to use plain `requests` for BOTH Cerebras and Groq,
+  matching the pattern already used in chipper.py/main.py. Removes the
+  `cerebras.cloud.sdk` and `groq` SDK dependencies entirely — those were
+  never installed, so every podcast call was silently eating exceptions
+  and falling straight to Groq, draining its small 100K TPD limit.
 """
 
 import asyncio
@@ -19,6 +26,7 @@ import json
 import os
 import re
 import sys
+import requests
 from pathlib import Path
 from typing import Optional
 import edge_tts
@@ -31,9 +39,11 @@ GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
 
 CEREBRAS_MODEL = "gpt-oss-120b"
 GROQ_MODEL = "llama-3.3-70b-versatile"
+GROQ_BASE_URL = "https://api.groq.com/openai/v1"
 
 BIR_VOICE = "en-US-AndrewNeural"
-MIA_VOICE = "en-US-JennyNeural"
+MIA_VOICE = "en-US-EmmaMultilingualNeural"
+
 
 OUTPUT_DIR = Path("output")
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -77,28 +87,46 @@ Format:
 
 # ── LLM Router: Cerebras primary, Groq fallback ─────────
 def llm_chat(messages: list[dict], temperature: float = 0.85, max_tokens: int = 4096) -> str:
-    """Same routing pattern as MAROS /chat: Cerebras first, Groq on failure."""
-    try:
-        from cerebras.cloud.sdk import Cerebras
-        client = Cerebras(api_key=CEREBRAS_API_KEY)
-        resp = client.chat.completions.create(
-            model=CEREBRAS_MODEL,
-            messages=messages,
-            temperature=temperature,
-            max_completion_tokens=max_tokens,
-        )
-        return resp.choices[0].message.content
-    except Exception as e:
-        print(f"  [llm] Cerebras failed ({e}) → falling back to Groq")
-        from groq import Groq
-        client = Groq(api_key=GROQ_API_KEY)
-        resp = client.chat.completions.create(
-            model=GROQ_MODEL,
-            messages=messages,
-            temperature=temperature,
-            max_tokens=max_tokens,
-        )
-        return resp.choices[0].message.content
+    """Cerebras primary, Groq fallback — plain requests, no SDK dependency.
+    Matches the working pattern already used in chipper.py and main.py."""
+
+    if CEREBRAS_API_KEY:
+        try:
+            res = requests.post(
+                "https://api.cerebras.ai/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {CEREBRAS_API_KEY}",
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "model": CEREBRAS_MODEL,
+                    "messages": messages,
+                    "temperature": temperature,
+                    "max_tokens": max_tokens,
+                },
+                timeout=120,
+            )
+            res.raise_for_status()
+            return res.json()["choices"][0]["message"]["content"]
+        except Exception as e:
+            print(f"  [llm] Cerebras failed ({e}) → falling back to Groq")
+
+    res = requests.post(
+        f"{GROQ_BASE_URL}/chat/completions",
+        headers={
+            "Authorization": f"Bearer {GROQ_API_KEY}",
+            "Content-Type": "application/json",
+        },
+        json={
+            "model": GROQ_MODEL,
+            "messages": messages,
+            "temperature": temperature,
+            "max_tokens": max_tokens,
+        },
+        timeout=120,
+    )
+    res.raise_for_status()
+    return res.json()["choices"][0]["message"]["content"]
 
 
 # ── JSON Sanitizer (fixes trailing-comma failures) ──────
@@ -280,19 +308,51 @@ Return ONLY the JSON array. No extra text, no trailing commas."""
 
 
 # ── Edge TTS Audio Generator (unchanged) ─────────────────
-async def text_to_audio(text: str, voice: str, output_path: Path) -> None:
-    communicate = edge_tts.Communicate(text, voice)
-    await communicate.save(str(output_path))
+
+async def _tts_with_retry(text: str, voice: str, output_path: Path, turn_idx: int, max_attempts: int = 3) -> bool:
+    """Render one turn to disk, retrying on Edge TTS transients.
+    Returns True on success, False if all attempts failed."""
+    for attempt in range(max_attempts):
+        try:
+            communicate = edge_tts.Communicate(text, voice)
+            await communicate.save(str(output_path))
+            # Edge TTS sometimes 'succeeds' but writes 0 bytes — check.
+            if output_path.exists() and output_path.stat().st_size > 100:
+                return True
+            raise RuntimeError("TTS wrote empty/tiny file")
+        except Exception as e:
+            wait = 2 ** attempt   # 1s, 2s, 4s
+            print(f"  [tts] turn {turn_idx} attempt {attempt+1} failed ({e}) — retrying in {wait}s")
+            await asyncio.sleep(wait)
+    print(f"  [tts] turn {turn_idx} PERMANENTLY failed after {max_attempts} attempts")
+    return False
 
 
 async def generate_all_audio(turns: list[dict], job_id: str) -> list[Path]:
+    """Concurrent TTS with per-turn retries and bounded concurrency so
+    Edge TTS doesn't rate-limit us into a total failure."""
+    # Concurrency cap — Edge TTS gets flaky above ~10 concurrent requests.
+    sem = asyncio.Semaphore(8)
+
+    async def _bounded(text, voice, path, idx):
+        async with sem:
+            return await _tts_with_retry(text, voice, path, idx)
+
     tasks, paths = [], []
     for i, turn in enumerate(turns):
         voice = BIR_VOICE if turn["speaker"] == "Bir" else MIA_VOICE
         path = OUTPUT_DIR / f"{job_id}_turn_{i:03d}.mp3"
         paths.append(path)
-        tasks.append(text_to_audio(turn["text"], voice, path))
-    await asyncio.gather(*tasks)
+        tasks.append(_bounded(turn["text"], voice, path, i))
+
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+    successes = sum(1 for r in results if r is True)
+    print(f"  [tts] {successes}/{len(turns)} turns rendered successfully")
+
+    if successes < len(turns) * 0.9:
+        # More than 10% missing — the podcast will have noticeable gaps.
+        raise RuntimeError(f"TTS failed on {len(turns) - successes}/{len(turns)} turns — likely rate-limited")
+
     return paths
 
 
@@ -303,11 +363,18 @@ PAUSE_BETWEEN_SEGMENTS = 1500
 def stitch_audio(turns: list[dict], audio_paths: list[Path], job_id: str) -> Path:
     final = AudioSegment.empty()
     current_segment = None
+    skipped = 0
     for turn, path in zip(turns, audio_paths):
         if not path.exists():
             print(f"  Warning: missing {path}")
+            skipped += 1
             continue
-        clip = AudioSegment.from_mp3(str(path))
+        try:
+            clip = AudioSegment.from_mp3(str(path))
+        except Exception as e:
+            print(f"  Warning: corrupt audio at {path}, skipping ({e})")
+            skipped += 1
+            continue
         if turn["segment"] != current_segment:
             if current_segment is not None:
                 final += AudioSegment.silent(duration=PAUSE_BETWEEN_SEGMENTS)
@@ -315,6 +382,9 @@ def stitch_audio(turns: list[dict], audio_paths: list[Path], job_id: str) -> Pat
         else:
             final += AudioSegment.silent(duration=PAUSE_BETWEEN_TURNS)
         final += clip
+
+    if skipped:
+        print(f"  [stitch] {skipped}/{len(turns)} turns skipped (missing/corrupt audio)")
     output_path = OUTPUT_DIR / f"{job_id}_podcast.mp3"
     final.export(str(output_path), format="mp3", bitrate="128k")
     for path in audio_paths:

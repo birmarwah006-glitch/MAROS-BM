@@ -132,347 +132,67 @@
     margin-left: 6px;
   }
 
-  /* ═══════════════════════════════════════════ */
-  /* ANALYTICS DASHBOARD                        */
-  /* ═══════════════════════════════════════════ */
-
-  /* ── Stat Cards ── */
-  .stat-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    margin-bottom: 32px;
-  }
-  .stat-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 20px 16px;
-    position: relative;
-    overflow: hidden;
-  }
-  .stat-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-    background: var(--green);
-    opacity: 0.6;
-  }
-  .stat-value {
-    font-size: 32px;
-    font-weight: 700;
-    color: var(--fg);
-    line-height: 1;
-    margin-bottom: 6px;
-  }
-  .stat-value .stat-unit {
-    font-size: 16px;
-    font-weight: 400;
-    color: var(--muted2);
-  }
-  .stat-label {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    color: var(--muted2);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
-
-  /* ── Accuracy ring ── */
-  .accuracy-ring {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-  }
-  .accuracy-ring svg {
-    flex-shrink: 0;
-  }
-
-  /* ── Section headers ── */
-  .analytics-section {
-    margin-bottom: 32px;
-  }
-  .analytics-section-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 14px;
-  }
-  .analytics-section-title {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--muted2);
-  }
-
-  /* ── Concept bars ── */
-  .concept-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 0;
-    border-bottom: 1px solid var(--border);
-  }
-  .concept-row:last-child { border-bottom: none; }
-  .concept-rank {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    color: var(--muted2);
-    width: 18px;
-    text-align: right;
-    flex-shrink: 0;
-  }
-  .concept-name {
-    font-size: 13px;
-    color: var(--fg);
-    flex: 1;
-    min-width: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .concept-bar-wrap {
-    width: 120px;
-    height: 8px;
-    background: var(--border);
-    border-radius: 4px;
-    overflow: hidden;
-    flex-shrink: 0;
-  }
-  .concept-bar-fill {
-    height: 100%;
-    border-radius: 4px;
-    transition: width 0.6s ease;
-  }
-  .concept-stats {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    width: 100px;
-    text-align: right;
-    flex-shrink: 0;
-  }
-
-  /* ── Performer lists ── */
-  .performer-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 9px 0;
-    border-bottom: 1px solid var(--border);
-    font-size: 13px;
-  }
-  .performer-row:last-child { border-bottom: none; }
-  .performer-name { flex: 1; color: var(--fg); min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .performer-roll {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    color: var(--muted2);
-  }
-  .performer-acc {
-    font-family: var(--font-mono);
-    font-size: 12px;
-    font-weight: 600;
-    flex-shrink: 0;
-  }
-
-  /* ── Student table ── */
-  .stu-table {
-    width: 100%;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    overflow: hidden;
-    border-collapse: collapse;
-  }
-  .stu-table th {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--muted2);
-    text-align: left;
-    padding: 10px 16px;
-    border-bottom: 1px solid var(--border);
-    background: rgba(200,240,96,0.03);
-    cursor: pointer;
-    user-select: none;
-  }
-  .stu-table th:hover { color: var(--fg); }
-  .stu-table th.sorted { color: var(--green); }
-  .stu-table td {
-    padding: 10px 16px;
-    font-size: 13px;
-    color: var(--fg);
-    border-bottom: 1px solid var(--border);
-  }
-  .stu-table tr:last-child td { border-bottom: none; }
-  .stu-table tr:hover td { background: rgba(200,240,96,0.03); }
-  .stu-acc {
-    font-family: var(--font-mono);
-    font-size: 12px;
-    font-weight: 600;
-  }
-  .stu-bar {
-    display: inline-block;
-    height: 4px;
-    border-radius: 2px;
-    margin-left: 8px;
-    vertical-align: middle;
-  }
-
-  /* ── Misconception cards ── */
-  .misc-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 14px 18px;
-    margin-bottom: 8px;
-    display: flex;
-    gap: 14px;
-    align-items: flex-start;
-  }
-  .misc-icon {
-    flex-shrink: 0;
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    background: rgba(255,107,107,0.12);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 13px;
-    margin-top: 1px;
-  }
-  .misc-body { flex: 1; min-width: 0; }
-  .misc-concept {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    color: var(--green);
-    letter-spacing: 0.04em;
-    margin-bottom: 4px;
-  }
-  .misc-text {
-    font-size: 12px;
-    color: var(--muted2);
-    line-height: 1.5;
-  }
-  .misc-question {
-    font-size: 11px;
-    color: var(--muted2);
-    opacity: 0.6;
-    margin-top: 4px;
-    font-style: italic;
-  }
-
-  /* ── Activity feed ── */
-  .activity-feed {
-    max-height: 320px;
-    overflow-y: auto;
-  }
-  .activity-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 0;
-    border-bottom: 1px solid var(--border);
-    font-size: 12px;
-  }
-  .activity-item:last-child { border-bottom: none; }
-  .activity-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-  .activity-dot.quiz { background: var(--green); }
-  .activity-dot.chat { background: #5b9aff; }
-  .activity-dot.struggle { background: #ff6b6b; }
-  .activity-dot.other { background: var(--muted2); }
-  .activity-text {
-    flex: 1;
-    color: var(--muted2);
-    min-width: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .activity-text strong { color: var(--fg); font-weight: 500; }
-  .activity-time {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    color: var(--muted2);
-    opacity: 0.6;
-    flex-shrink: 0;
-  }
-
-  /* ── Report box ── */
-  .report-box {
-    background: var(--surface);
-    border: 1px solid var(--green);
-    border-radius: var(--radius);
-    padding: 24px;
-    margin-bottom: 32px;
-    font-size: 13px;
-    line-height: 1.8;
-    color: var(--fg);
-    white-space: pre-wrap;
-    display: none;
-    position: relative;
-  }
-  .report-box::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-    background: var(--green);
-  }
-  .report-ts {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    color: var(--muted2);
-    margin-top: 12px;
-    text-align: right;
-  }
-
-  /* ── Empty state ── */
-  .empty-state {
-    text-align: center;
-    padding: 40px 20px;
-    color: var(--muted2);
-  }
-  .empty-state-icon {
-    font-size: 36px;
-    margin-bottom: 12px;
-    opacity: 0.4;
-  }
-  .empty-state-text {
-    font-family: var(--font-mono);
-    font-size: 12px;
-    line-height: 1.6;
-  }
-
-  /* ── Two-column layout for analytics ── */
-  .analytics-columns {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
-  }
-  @media (max-width: 900px) {
-    .analytics-columns { grid-template-columns: 1fr; }
-    .stat-grid { grid-template-columns: 1fr; }
-  }
-
-  /* ── Loading shimmer ── */
-  .shimmer {
-    background: linear-gradient(90deg, var(--surface) 25%, var(--border) 50%, var(--surface) 75%);
-    background-size: 200% 100%;
-    animation: shimmer 1.5s infinite;
-    border-radius: var(--radius);
-    height: 20px;
-  }
+  /* ═══ ANALYTICS DASHBOARD ═══ */
+  .stat-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:32px; }
+  .stat-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px 16px; position:relative; overflow:hidden; }
+  .stat-card::before { content:''; position:absolute; top:0;left:0;right:0; height:2px; background:var(--green); opacity:0.6; }
+  .stat-value { font-size:32px; font-weight:700; color:var(--fg); line-height:1; margin-bottom:6px; }
+  .stat-value .stat-unit { font-size:16px; font-weight:400; color:var(--muted2); }
+  .stat-label { font-family:var(--font-mono); font-size:10px; color:var(--muted2); letter-spacing:0.08em; text-transform:uppercase; }
+  .accuracy-ring { display:flex; align-items:center; gap:14px; }
+  .accuracy-ring svg { flex-shrink:0; }
+  .analytics-section { margin-bottom:32px; }
+  .analytics-section-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
+  .analytics-section-title { font-family:var(--font-mono); font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted2); }
+  .concept-row { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--border); }
+  .concept-row:last-child { border-bottom:none; }
+  .concept-rank { font-family:var(--font-mono); font-size:10px; color:var(--muted2); width:18px; text-align:right; flex-shrink:0; }
+  .concept-name { font-size:13px; color:var(--fg); flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .concept-bar-wrap { width:120px; height:8px; background:var(--border); border-radius:4px; overflow:hidden; flex-shrink:0; }
+  .concept-bar-fill { height:100%; border-radius:4px; transition:width 0.6s ease; }
+  .concept-stats { font-family:var(--font-mono); font-size:10px; width:100px; text-align:right; flex-shrink:0; }
+  .performer-row { display:flex; align-items:center; gap:12px; padding:9px 0; border-bottom:1px solid var(--border); font-size:13px; }
+  .performer-row:last-child { border-bottom:none; }
+  .performer-name { flex:1; color:var(--fg); min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .performer-roll { font-family:var(--font-mono); font-size:10px; color:var(--muted2); }
+  .performer-acc { font-family:var(--font-mono); font-size:12px; font-weight:600; flex-shrink:0; }
+  .stu-table { width:100%; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; border-collapse:collapse; }
+  .stu-table th { font-family:var(--font-mono); font-size:10px; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted2); text-align:left; padding:10px 16px; border-bottom:1px solid var(--border); background:rgba(200,240,96,0.03); cursor:pointer; user-select:none; }
+  .stu-table th:hover { color:var(--fg); }
+  .stu-table th.sorted { color:var(--green); }
+  .stu-table td { padding:10px 16px; font-size:13px; color:var(--fg); border-bottom:1px solid var(--border); }
+  .stu-table tr:last-child td { border-bottom:none; }
+  .stu-table tr:hover td { background:rgba(200,240,96,0.03); }
+  .stu-acc { font-family:var(--font-mono); font-size:12px; font-weight:600; }
+  .stu-bar { display:inline-block; height:4px; border-radius:2px; margin-left:8px; vertical-align:middle; }
+  .misc-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:14px 18px; margin-bottom:8px; display:flex; gap:14px; align-items:flex-start; }
+  .misc-icon { flex-shrink:0; width:28px; height:28px; border-radius:50%; background:rgba(255,107,107,0.12); display:flex; align-items:center; justify-content:center; font-size:13px; margin-top:1px; }
+  .misc-body { flex:1; min-width:0; }
+  .misc-concept { font-family:var(--font-mono); font-size:10px; color:var(--green); letter-spacing:0.04em; margin-bottom:4px; }
+  .misc-text { font-size:12px; color:var(--muted2); line-height:1.5; }
+  .misc-question { font-size:11px; color:var(--muted2); opacity:0.6; margin-top:4px; font-style:italic; }
+  .activity-feed { max-height:320px; overflow-y:auto; }
+  .activity-item { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--border); font-size:12px; }
+  .activity-item:last-child { border-bottom:none; }
+  .activity-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+  .activity-dot.quiz { background:var(--green); }
+  .activity-dot.chat { background:#5b9aff; }
+  .activity-dot.struggle { background:#ff6b6b; }
+  .activity-dot.other { background:var(--muted2); }
+  .activity-text { flex:1; color:var(--muted2); min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .activity-text strong { color:var(--fg); font-weight:500; }
+  .activity-time { font-family:var(--font-mono); font-size:10px; color:var(--muted2); opacity:0.6; flex-shrink:0; }
+  .report-box { background:var(--surface); border:1px solid var(--green); border-radius:var(--radius); padding:24px; margin-bottom:32px; font-size:13px; line-height:1.8; color:var(--fg); white-space:pre-wrap; display:none; position:relative; }
+  .report-box::before { content:''; position:absolute; top:0;left:0;right:0; height:2px; background:var(--green); }
+  .report-ts { font-family:var(--font-mono); font-size:10px; color:var(--muted2); margin-top:12px; text-align:right; }
+  .empty-state { text-align:center; padding:40px 20px; color:var(--muted2); }
+  .empty-state-icon { font-size:36px; margin-bottom:12px; opacity:0.4; }
+  .empty-state-text { font-family:var(--font-mono); font-size:12px; line-height:1.6; }
+  .analytics-columns { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+  @media (max-width:900px) { .analytics-columns{grid-template-columns:1fr} .stat-grid{grid-template-columns:1fr} }
+  .shimmer { background:linear-gradient(90deg,var(--surface) 25%,var(--border) 50%,var(--surface) 75%); background-size:200% 100%; animation:shimmer 1.5s infinite; border-radius:var(--radius); height:20px; }
   @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+  .btn-sm { font-size:11px; padding:6px 14px; }
 </style>
 </head>
 <body>
@@ -483,20 +203,15 @@
   <button class="tt-btn" id="tt-light">○ Light</button>
 </div>
 
-<!-- HEADER -->
 <div class="header">
   <a href="index.html" class="back-btn">← Back</a>
   <div class="logo">MA<span>ROS</span></div>
   <div class="role-badge badge-prof">PROFESSOR</div>
 </div>
 
-<!-- PORTAL -->
 <div class="portal active" id="portal">
-
-  <!-- MAIN -->
   <div class="portal-main">
 
-    <!-- TAB BAR -->
     <div class="tab-bar">
       <button class="tab-btn active" data-tab="lecture">LECTURE</button>
       <button class="tab-btn" data-tab="papers">PAPERS</button>
@@ -504,133 +219,104 @@
       <button class="tab-btn" data-tab="analytics">ANALYTICS</button>
     </div>
 
-    <!-- ══════════════════════════════════════ -->
-    <!-- TAB: LECTURE                          -->
-    <!-- ══════════════════════════════════════ -->
+    <!-- ══════ TAB: LECTURE ══════ -->
     <div class="tab-panel active" id="tab-lecture">
-
       <div class="section-label">Lecture Video</div>
       <div class="upload-zone" id="upload-zone">
         <input type="file" id="video-input" accept="video/*,audio/*">
         <div class="upload-title" id="upload-title">Upload lecture video or audio</div>
         <div class="upload-sub">MP4, MOV, AVI, MP3, WAV — processed by Chipper</div>
       </div>
-
       <div style="text-align:center; font-family:var(--font-mono); font-size:10px; color:var(--muted2); margin:12px 0; letter-spacing:0.1em">── OR paste YouTube link ──</div>
-
       <div style="display:flex; gap:10px; margin-bottom:16px">
-        <input id="yt-url" type="text" placeholder="https://youtube.com/watch?v=..."
-          style="flex:1; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:10px 14px; color:var(--fg); font-size:13px; box-sizing:border-box">
-        <button class="btn btn-primary" id="yt-btn" style="white-space:nowrap; padding:10px 20px">
-          Process YouTube
-        </button>
+        <input id="yt-url" type="text" placeholder="https://youtube.com/watch?v=..." style="flex:1; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:10px 14px; color:var(--fg); font-size:13px; box-sizing:border-box">
+        <button class="btn btn-primary" id="yt-btn" style="white-space:nowrap; padding:10px 20px">Process YouTube</button>
       </div>
-
-      <button class="btn btn-primary" id="process-btn" disabled>
-        Process with Chipper
-      </button>
-
+      <button class="btn btn-primary" id="process-btn" disabled>Process with Chipper</button>
       <div class="progress-wrap" id="progress-wrap" style="display:none">
-        <div class="progress-label">
-          <span id="progress-status">Processing...</span>
-          <span id="progress-pct">0%</span>
-        </div>
-        <div class="progress-bar">
-          <div class="progress-fill" id="progress-fill" style="width:0%"></div>
-        </div>
+        <div class="progress-label"><span id="progress-status">Processing...</span><span id="progress-pct">0%</span></div>
+        <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
       </div>
-
       <div id="modules-section" style="display:none; margin-top:32px">
         <div class="section-label">Concept Modules</div>
         <div class="module-grid" id="module-grid"></div>
       </div>
 
+      <!-- ══════ QUIZ CREATION (moved from QUIZZES tab) ══════ -->
+      <div style="margin-top:40px; padding-top:32px; border-top:1px solid var(--border)">
+        <div class="section-label">Create Quiz from PDF</div>
+        <div class="upload-zone" id="quiz-upload-zone">
+          <input type="file" id="quiz-pdf-input" accept="application/pdf">
+          <div class="upload-title" id="quiz-upload-title">Upload a PDF with 5–10 questions</div>
+          <div class="upload-sub">Questions are extracted automatically — you review before students see anything</div>
+        </div>
+        <button class="btn btn-primary" id="quiz-parse-btn" disabled style="margin-bottom:24px">Extract Questions</button>
+        <div id="quiz-draft-section" style="display:none; margin-bottom:32px">
+          <div class="section-label">Review Before Publishing</div>
+          <div style="margin-bottom:12px">
+            <input id="quiz-draft-title" type="text" placeholder="Quiz title" style="width:100%; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:10px 12px; color:var(--fg); font-size:13px; box-sizing:border-box">
+          </div>
+          <div id="quiz-draft-warnings" style="font-family:var(--font-mono); font-size:11px; color:#f0a500; margin-bottom:12px"></div>
+          <div id="quiz-draft-questions"></div>
+          <div style="display:flex; gap:10px; margin-top:16px">
+            <button class="btn btn-primary" id="quiz-publish-btn">Publish to Students</button>
+            <button class="btn btn-outline" id="quiz-discard-btn">Discard</button>
+          </div>
+        </div>
+        <div class="section-label">Published Quizzes</div>
+        <div id="prof-quizzes-list"><div style="font-family:var(--font-mono); font-size:12px; color:var(--muted2)">Loading...</div></div>
+      </div>
     </div>
 
-    <!-- ══════════════════════════════════════ -->
-    <!-- TAB: PAPERS                           -->
-    <!-- ══════════════════════════════════════ -->
+    <!-- ══════ TAB: PAPERS ══════ -->
     <div class="tab-panel" id="tab-papers">
-
       <div class="section-label">Assign Research Paper</div>
       <div class="upload-zone" id="paper-upload-zone">
         <input type="file" id="paper-input" accept="application/pdf">
         <div class="upload-title" id="paper-upload-title">Upload a research paper (PDF)</div>
         <div class="upload-sub">Title and abstract auto-extracted — students can generate a podcast from it</div>
       </div>
-      <button class="btn btn-primary" id="paper-assign-btn" disabled style="margin-bottom:32px">
-        Assign to Students
-      </button>
-
+      <button class="btn btn-primary" id="paper-assign-btn" disabled style="margin-bottom:32px">Assign to Students</button>
       <div class="section-label">Assigned Papers</div>
-      <div id="papers-list">
-        <div style="font-family:var(--font-mono); font-size:12px; color:var(--muted2)">Loading...</div>
-      </div>
-
+      <div id="papers-list"><div style="font-family:var(--font-mono); font-size:12px; color:var(--muted2)">Loading...</div></div>
     </div>
 
-    <!-- ══════════════════════════════════════ -->
-    <!-- TAB: ASSIGNMENTS                      -->
-    <!-- ══════════════════════════════════════ -->
+    <!-- ══════ TAB: ASSIGNMENTS ══════ -->
     <div class="tab-panel" id="tab-assignments">
-
       <div class="section-label">New Assignment</div>
       <div class="upload-zone" id="assign-upload-zone">
         <input type="file" id="assign-input">
         <div class="upload-title" id="assign-upload-title">Upload assignment file (PDF, DOCX, etc)</div>
         <div class="upload-sub">Students will see it under the Assignments tab</div>
       </div>
-
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:16px 0">
         <div>
           <div style="font-family:var(--font-mono); font-size:10px; color:var(--muted2); margin-bottom:6px">TITLE (optional)</div>
-          <input id="assign-title" type="text" placeholder="e.g. OS Lab 3 — Scheduling"
-            style="width:100%; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:10px 12px; color:var(--fg); font-size:13px; box-sizing:border-box">
+          <input id="assign-title" type="text" placeholder="e.g. OS Lab 3 — Scheduling" style="width:100%; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:10px 12px; color:var(--fg); font-size:13px; box-sizing:border-box">
         </div>
         <div>
           <div style="font-family:var(--font-mono); font-size:10px; color:var(--muted2); margin-bottom:6px">DUE DATE (optional)</div>
-          <input id="assign-due" type="date"
-            style="width:100%; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:10px 12px; color:var(--fg); font-size:13px; box-sizing:border-box">
+          <input id="assign-due" type="date" style="width:100%; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:10px 12px; color:var(--fg); font-size:13px; box-sizing:border-box">
         </div>
       </div>
       <div style="margin-bottom:16px">
         <div style="font-family:var(--font-mono); font-size:10px; color:var(--muted2); margin-bottom:6px">DESCRIPTION (optional)</div>
-        <textarea id="assign-desc" placeholder="Instructions or notes for students..." rows="3"
-          style="width:100%; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:10px 12px; color:var(--fg); font-size:13px; resize:vertical; box-sizing:border-box"></textarea>
+        <textarea id="assign-desc" placeholder="Instructions or notes for students..." rows="3" style="width:100%; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:10px 12px; color:var(--fg); font-size:13px; resize:vertical; box-sizing:border-box"></textarea>
       </div>
-
-      <button class="btn btn-primary" id="assign-post-btn" disabled style="margin-bottom:32px">
-        Post Assignment
-      </button>
-
+      <button class="btn btn-primary" id="assign-post-btn" disabled style="margin-bottom:32px">Post Assignment</button>
       <div class="section-label">Posted Assignments</div>
-      <div id="assignments-list">
-        <div style="font-family:var(--font-mono); font-size:12px; color:var(--muted2)">Loading...</div>
-      </div>
-
+      <div id="assignments-list"><div style="font-family:var(--font-mono); font-size:12px; color:var(--muted2)">Loading...</div></div>
     </div>
-    <!-- ↑ ASSIGNMENTS TAB CLOSED ↑ -->
 
-    <!-- ══════════════════════════════════════ -->
-    <!-- TAB: ANALYTICS                        -->
-    <!-- ══════════════════════════════════════ -->
+    <!-- ══════ TAB: ANALYTICS ══════ -->
     <div class="tab-panel" id="tab-analytics">
-
-      <!-- Class Report -->
       <div class="analytics-section">
         <div class="analytics-section-head">
           <div class="analytics-section-title">Class Report</div>
-          <button class="btn btn-primary" id="report-btn" style="padding:8px 18px; font-size:12px">
-            Generate Report
-          </button>
+          <button class="btn btn-primary" id="report-btn" style="padding:8px 18px; font-size:12px">Generate Report</button>
         </div>
-        <div class="report-box" id="class-report">
-          <div id="report-text"></div>
-          <div class="report-ts" id="report-ts"></div>
-        </div>
+        <div class="report-box" id="class-report"><div id="report-text"></div><div class="report-ts" id="report-ts"></div></div>
       </div>
-
-      <!-- Loading state -->
       <div id="analytics-loading" style="display:none">
         <div class="stat-grid">
           <div class="stat-card"><div class="shimmer" style="width:60px;height:32px;margin-bottom:8px"></div><div class="shimmer" style="width:100px;height:12px"></div></div>
@@ -638,110 +324,41 @@
           <div class="stat-card"><div class="shimmer" style="width:60px;height:32px;margin-bottom:8px"></div><div class="shimmer" style="width:100px;height:12px"></div></div>
         </div>
       </div>
-
-      <!-- Empty state -->
-      <div id="analytics-empty" style="display:none">
-        <div class="empty-state">
-          <div class="empty-state-icon">📊</div>
-          <div class="empty-state-text">
-            No quiz data yet.<br>
-            Analytics appear once students start taking quizzes.
-          </div>
-        </div>
-      </div>
-
-      <!-- Populated analytics -->
+      <div id="analytics-empty" style="display:none"><div class="empty-state"><div class="empty-state-icon">📊</div><div class="empty-state-text">No quiz data yet.<br>Analytics appear once students start taking quizzes.</div></div></div>
       <div id="analytics-content" style="display:none">
-
-        <!-- Top stat cards -->
         <div class="stat-grid">
-          <div class="stat-card">
-            <div class="stat-value" id="stat-students">—</div>
-            <div class="stat-label">Active Students</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-value" id="stat-answers">—</div>
-            <div class="stat-label">Quiz Answers</div>
-          </div>
+          <div class="stat-card"><div class="stat-value" id="stat-students">—</div><div class="stat-label">Active Students</div></div>
+          <div class="stat-card"><div class="stat-value" id="stat-answers">—</div><div class="stat-label">Quiz Answers</div></div>
           <div class="stat-card">
             <div class="accuracy-ring" id="accuracy-ring">
               <svg width="56" height="56" viewBox="0 0 56 56">
                 <circle cx="28" cy="28" r="24" fill="none" stroke="var(--border)" stroke-width="4"/>
-                <circle cx="28" cy="28" r="24" fill="none" stroke="var(--green)" stroke-width="4"
-                  stroke-dasharray="150.8" stroke-dashoffset="150.8" stroke-linecap="round"
-                  transform="rotate(-90 28 28)" id="accuracy-arc"
-                  style="transition: stroke-dashoffset 1s ease"/>
+                <circle cx="28" cy="28" r="24" fill="none" stroke="var(--green)" stroke-width="4" stroke-dasharray="150.8" stroke-dashoffset="150.8" stroke-linecap="round" transform="rotate(-90 28 28)" id="accuracy-arc" style="transition: stroke-dashoffset 1s ease"/>
               </svg>
-              <div>
-                <div class="stat-value" id="stat-accuracy" style="font-size:24px">—</div>
-                <div class="stat-label">Class Accuracy</div>
-              </div>
+              <div><div class="stat-value" id="stat-accuracy" style="font-size:24px">—</div><div class="stat-label">Class Accuracy</div></div>
             </div>
           </div>
         </div>
-
-        <!-- Two columns: Top Performers + Needs Attention -->
         <div class="analytics-columns">
-
-          <div class="analytics-section">
-            <div class="analytics-section-head">
-              <div class="analytics-section-title">Top Performers</div>
-            </div>
-            <div id="top-performers"></div>
-          </div>
-
-          <div class="analytics-section">
-            <div class="analytics-section-head">
-              <div class="analytics-section-title">Needs Attention (below 50%)</div>
-            </div>
-            <div id="bottom-performers"></div>
-          </div>
-
+          <div class="analytics-section"><div class="analytics-section-head"><div class="analytics-section-title">Top Performers</div></div><div id="top-performers"></div></div>
+          <div class="analytics-section"><div class="analytics-section-head"><div class="analytics-section-title">Needs Attention (below 50%)</div></div><div id="bottom-performers"></div></div>
         </div>
-
-        <!-- Two columns: Weak Concepts + Activity -->
         <div class="analytics-columns">
-
-          <!-- LEFT: Where the class struggles -->
-          <div class="analytics-section">
-            <div class="analytics-section-head">
-              <div class="analytics-section-title">Where the Class Struggles</div>
-            </div>
-            <div id="weak-concepts"></div>
-          </div>
-
-          <!-- RIGHT: Recent Activity -->
-          <div class="analytics-section">
-            <div class="analytics-section-head">
-              <div class="analytics-section-title">Recent Activity</div>
-            </div>
-            <div class="activity-feed" id="activity-feed"></div>
-          </div>
-
+          <div class="analytics-section"><div class="analytics-section-head"><div class="analytics-section-title">Where the Class Struggles</div></div><div id="weak-concepts"></div></div>
+          <div class="analytics-section"><div class="analytics-section-head"><div class="analytics-section-title">Recent Activity</div></div><div class="activity-feed" id="activity-feed"></div></div>
         </div>
-
-        <!-- Student Performance -->
+        <!-- v4: What Students Ask Oak -->
         <div class="analytics-section">
           <div class="analytics-section-head">
-            <div class="analytics-section-title">Student Performance</div>
-            <div style="font-family:var(--font-mono); font-size:10px; color:var(--muted2)" id="student-count-label"></div>
+            <div class="analytics-section-title">What Students Ask Prof Oak</div>
+            <div style="font-family:var(--font-mono); font-size:10px; color:var(--muted2)" id="oakq-total"></div>
           </div>
-          <div id="student-table"></div>
+          <div id="oak-questions"></div>
         </div>
-
-        <!-- Misconceptions -->
-        <div class="analytics-section">
-          <div class="analytics-section-head">
-            <div class="analytics-section-title">Detected Misconceptions</div>
-          </div>
-          <div id="misconception-list"></div>
-        </div>
-
+        <div class="analytics-section"><div class="analytics-section-head"><div class="analytics-section-title">Student Performance</div><div style="font-family:var(--font-mono); font-size:10px; color:var(--muted2)" id="student-count-label"></div></div><div id="student-table"></div></div>
+        <div class="analytics-section"><div class="analytics-section-head"><div class="analytics-section-title">Detected Misconceptions</div></div><div id="misconception-list"></div></div>
       </div>
-      <!-- /analytics-content -->
-
     </div>
-    <!-- ↑ ANALYTICS TAB CLOSED ↑ -->
 
   </div>
 
@@ -749,36 +366,26 @@
   <div class="oak-sidebar">
     <div class="oak-header">
       <div class="oak-avatar">&#127807;</div>
-      <div>
-        <div class="oak-name">Prof Oak</div>
-        <div class="oak-status">&#9679; Teaching Assistant Mode</div>
-      </div>
+      <div><div class="oak-name">Prof Oak</div><div class="oak-status">&#9679; Teaching Assistant Mode</div></div>
     </div>
-
     <div class="oak-messages" id="oak-messages">
-      <div class="oak-msg oak">
-        <div class="oak-label">PROF OAK</div>
-        Hello Professor! Upload your lecture and I'll help you analyze the modules,
-        review quiz questions, and understand how students are engaging.
-      </div>
+      <div class="oak-msg oak"><div class="oak-label">PROF OAK</div>Hello Professor! Upload your lecture and I'll help you analyze the modules, review quiz questions, and understand how students are engaging.</div>
     </div>
-
     <div class="oak-input-row">
       <input class="oak-input" id="oak-input" type="text" placeholder="Ask Oak anything...">
       <button class="oak-send" id="oak-send-btn">↑</button>
     </div>
   </div>
-
 </div>
 
 <script type="module">
-import { submitJob, pollJob, getManifest, generateQuiz, chatWithOak, STATE, assignPaper } from './api.js';
-const BASE = 'http://localhost:8000';
+import { submitJob, pollJob, getManifest, generateQuiz, chatWithOak, STATE, assignPaper,
+         parseQuizPdf, publishProfQuiz, listProfQuizzes, reviewModuleQuiz, publishModuleQuiz,
+         getOakQuestionAnalytics, BASE } from './api.js';
 
 function initOak() {}
 function setOakMode() {}
 function setOakTalking() {}
-
 
 // ── Tab switching ──
 document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -788,721 +395,256 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.classList.add('active');
     document.getElementById(`tab-${btn.dataset.tab}`).classList.add('active');
     if (btn.dataset.tab === 'analytics') loadAnalytics();
+    // quizzes tab removed — quiz creation now lives on the lecture tab (loaded via initial loadProfQuizzes())
   });
 });
 
+// ═══ ANALYTICS ═══
+let analyticsData = null, studentSortKey = 'accuracy', studentSortAsc = true;
 
-// ═══════════════════════════════════════════
-// ANALYTICS TAB
-// ═══════════════════════════════════════════
-
-let analyticsData = null;
-let studentSortKey = 'accuracy';
-let studentSortAsc = true;
-
-// ── Class report generation ──
 document.getElementById('report-btn').addEventListener('click', async () => {
-  const btn      = document.getElementById('report-btn');
-  const reportEl = document.getElementById('class-report');
-  const textEl   = document.getElementById('report-text');
-  const tsEl     = document.getElementById('report-ts');
-
-  btn.disabled    = true;
-  btn.textContent = 'Analyzing...';
-  reportEl.style.display = 'block';
-  textEl.textContent     = 'Analyzing all student quiz data...';
-  tsEl.textContent       = '';
-
-  try {
-    const res  = await fetch(`${BASE}/professor/report`, { method: 'POST' });
-    if (!res.ok) throw new Error(`${res.status}`);
-    const data = await res.json();
-    textEl.textContent = data.report;
-    if (data.generated_at) {
-      tsEl.textContent = 'Generated ' + new Date(data.generated_at).toLocaleString();
-    }
-  } catch(e) {
-    textEl.textContent = `Report failed: ${e.message}`;
-  } finally {
-    btn.disabled    = false;
-    btn.textContent = 'Generate Report';
-  }
+  const btn=document.getElementById('report-btn'), reportEl=document.getElementById('class-report'), textEl=document.getElementById('report-text'), tsEl=document.getElementById('report-ts');
+  btn.disabled=true; btn.textContent='Analyzing...'; reportEl.style.display='block'; textEl.textContent='Analyzing all student quiz data...'; tsEl.textContent='';
+  try { const res=await fetch(`${BASE}/professor/report`,{method:'POST'}); if(!res.ok) throw new Error(`${res.status}`); const data=await res.json(); textEl.textContent=data.report; if(data.generated_at) tsEl.textContent='Generated '+new Date(data.generated_at).toLocaleString(); } catch(e) { textEl.textContent=`Report failed: ${e.message}`; } finally { btn.disabled=false; btn.textContent='Generate Report'; }
 });
-
 
 async function loadAnalytics() {
-  const loadingEl = document.getElementById('analytics-loading');
-  const emptyEl   = document.getElementById('analytics-empty');
-  const contentEl = document.getElementById('analytics-content');
-
-  loadingEl.style.display = 'block';
-  emptyEl.style.display   = 'none';
-  contentEl.style.display = 'none';
-
+  const loadingEl=document.getElementById('analytics-loading'), emptyEl=document.getElementById('analytics-empty'), contentEl=document.getElementById('analytics-content');
+  loadingEl.style.display='block'; emptyEl.style.display='none'; contentEl.style.display='none';
   try {
-    const res  = await fetch(`${BASE}/professor/analytics`);
-    const data = await res.json();
-    analyticsData = data;
-
-    loadingEl.style.display = 'none';
-
-    if (!data.total_answers) {
-      emptyEl.style.display = 'block';
-      return;
-    }
-
-    contentEl.style.display = 'block';
-    renderStatCards(data);
-    renderPerformers(data.top_performers || [], data.bottom_performers || []);
-    renderWeakConcepts(data.weak_concepts);
-    renderStudentTable(data.students);
-    renderMisconceptions(data.misconceptions);
-    renderActivityFeed(data.recent_activity);
-
-  } catch(e) {
-    loadingEl.style.display = 'none';
-    emptyEl.style.display   = 'block';
-    console.error('Analytics load failed:', e);
-  }
+    const res=await fetch(`${BASE}/professor/analytics`); const data=await res.json(); analyticsData=data;
+    loadingEl.style.display='none';
+    if(!data.total_answers){ emptyEl.style.display='block'; return; }
+    contentEl.style.display='block';
+    renderStatCards(data); renderPerformers(data.top_performers||[], data.bottom_performers||[]); renderWeakConcepts(data.weak_concepts); renderStudentTable(data.students); renderMisconceptions(data.misconceptions); renderActivityFeed(data.recent_activity);
+    loadOakQuestions();
+  } catch(e) { loadingEl.style.display='none'; emptyEl.style.display='block'; console.error('Analytics load failed:',e); }
 }
-
 
 function renderStatCards(data) {
-  document.getElementById('stat-students').textContent = data.total_students;
-  document.getElementById('stat-answers').textContent  = data.total_answers;
-
-  const pct = Math.round(data.class_accuracy * 100);
-  document.getElementById('stat-accuracy').textContent = pct + '%';
-
-  // Animate the accuracy ring
-  const circumference = 2 * Math.PI * 24; // r=24
-  const offset = circumference - (data.class_accuracy * circumference);
-  const arc = document.getElementById('accuracy-arc');
-  // Set color based on performance
-  const color = pct >= 70 ? 'var(--green)' : pct >= 50 ? '#f0a500' : '#ff6b6b';
-  arc.setAttribute('stroke', color);
-  requestAnimationFrame(() => {
-    arc.style.strokeDashoffset = offset;
-  });
+  document.getElementById('stat-students').textContent=data.total_students; document.getElementById('stat-answers').textContent=data.total_answers;
+  const pct=Math.round(data.class_accuracy*100); document.getElementById('stat-accuracy').textContent=pct+'%';
+  const circ=2*Math.PI*24, offset=circ-(data.class_accuracy*circ), arc=document.getElementById('accuracy-arc');
+  arc.setAttribute('stroke', pct>=70?'var(--green)':pct>=50?'#f0a500':'#ff6b6b');
+  requestAnimationFrame(()=>{ arc.style.strokeDashoffset=offset; });
 }
-
-
-function renderPerformers(top, bottom) {
-  const topEl = document.getElementById('top-performers');
-  const botEl = document.getElementById('bottom-performers');
-
-  const row = (s, color) => `
-    <div class="performer-row">
-      <div class="performer-name">${s.name}</div>
-      <div class="performer-roll">${s.roll_no || ''}</div>
-      <div class="performer-acc" style="color:${color}">${Math.round(s.accuracy * 100)}%</div>
-    </div>`;
-
-  topEl.innerHTML = top.length
-    ? top.map(s => row(s, 'var(--green)')).join('')
-    : '<div style="font-family:var(--font-mono);font-size:12px;color:var(--muted2)">No students with 5+ answers yet.</div>';
-
-  botEl.innerHTML = bottom.length
-    ? bottom.map(s => row(s, '#ff6b6b')).join('')
-    : '<div style="font-family:var(--font-mono);font-size:12px;color:var(--muted2)">Nobody below 50% — nice.</div>';
+function renderPerformers(top,bottom) {
+  const row=(s,c)=>`<div class="performer-row"><div class="performer-name">${s.name}</div><div class="performer-roll">${s.roll_no||''}</div><div class="performer-acc" style="color:${c}">${Math.round(s.accuracy*100)}%</div></div>`;
+  document.getElementById('top-performers').innerHTML=top.length?top.map(s=>row(s,'var(--green)')).join(''):'<div style="font-family:var(--font-mono);font-size:12px;color:var(--muted2)">No students with 5+ answers yet.</div>';
+  document.getElementById('bottom-performers').innerHTML=bottom.length?bottom.map(s=>row(s,'#ff6b6b')).join(''):'<div style="font-family:var(--font-mono);font-size:12px;color:var(--muted2)">Nobody below 50% — nice.</div>';
 }
-
-
 function renderWeakConcepts(concepts) {
-  const el = document.getElementById('weak-concepts');
-  if (!concepts.length) {
-    el.innerHTML = '<div style="font-family:var(--font-mono);font-size:12px;color:var(--muted2)">No concept data yet.</div>';
-    return;
-  }
-
-  el.innerHTML = concepts.slice(0, 8).map((c, i) => {
-    const pct   = Math.round(c.error_rate * 100);
-    const color = pct > 60 ? '#ff6b6b' : pct > 40 ? '#f0a500' : 'var(--green)';
-    return `
-      <div class="concept-row">
-        <div class="concept-rank">${i + 1}</div>
-        <div class="concept-name" title="${c.concept}">${c.concept}</div>
-        <div class="concept-bar-wrap">
-          <div class="concept-bar-fill" style="width:${pct}%; background:${color}"></div>
-        </div>
-        <div class="concept-stats" style="color:${color}">
-          ${pct}% wrong · ${c.total_attempts}
-        </div>
-      </div>`;
-  }).join('');
+  const el=document.getElementById('weak-concepts');
+  if(!concepts.length){ el.innerHTML='<div style="font-family:var(--font-mono);font-size:12px;color:var(--muted2)">No concept data yet.</div>'; return; }
+  el.innerHTML=concepts.slice(0,8).map((c,i)=>{ const pct=Math.round(c.error_rate*100), color=pct>60?'#ff6b6b':pct>40?'#f0a500':'var(--green)'; return `<div class="concept-row"><div class="concept-rank">${i+1}</div><div class="concept-name" title="${c.concept}">${c.concept}</div><div class="concept-bar-wrap"><div class="concept-bar-fill" style="width:${pct}%; background:${color}"></div></div><div class="concept-stats" style="color:${color}">${pct}% wrong · ${c.total_attempts}</div></div>`; }).join('');
 }
-
-
 function renderStudentTable(students) {
-  const el = document.getElementById('student-table');
-  if (!students.length) {
-    el.innerHTML = '<div style="font-family:var(--font-mono);font-size:12px;color:var(--muted2)">No students yet.</div>';
-    return;
-  }
-
-  document.getElementById('student-count-label').textContent = `${students.length} student${students.length !== 1 ? 's' : ''}`;
-
-  // Sort
-  const sorted = [...students].sort((a, b) => {
-    let va = a[studentSortKey], vb = b[studentSortKey];
-    if (typeof va === 'string') { va = va.toLowerCase(); vb = vb.toLowerCase(); }
-    if (va < vb) return studentSortAsc ? -1 : 1;
-    if (va > vb) return studentSortAsc ? 1 : -1;
-    return 0;
-  });
-
-  const thClass = (key) => studentSortKey === key ? 'sorted' : '';
-  const arrow   = (key) => studentSortKey === key ? (studentSortAsc ? ' ↑' : ' ↓') : '';
-
-  el.innerHTML = `
-    <table class="stu-table">
-      <thead>
-        <tr>
-          <th class="${thClass('name')}" data-sort="name">Student${arrow('name')}</th>
-          <th class="${thClass('roll_no')}" data-sort="roll_no">Roll No${arrow('roll_no')}</th>
-          <th class="${thClass('accuracy')}" data-sort="accuracy">Accuracy${arrow('accuracy')}</th>
-          <th class="${thClass('total_answers')}" data-sort="total_answers">Answers${arrow('total_answers')}</th>
-          <th class="${thClass('correct')}" data-sort="correct">Correct${arrow('correct')}</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${sorted.map(s => {
-          const pct   = Math.round(s.accuracy * 100);
-          const color = pct >= 70 ? 'var(--green)' : pct >= 50 ? '#f0a500' : '#ff6b6b';
-          return `
-            <tr>
-              <td>${s.name}</td>
-              <td style="font-family:var(--font-mono);font-size:11px;color:var(--muted2)">${s.roll_no || ''}</td>
-              <td>
-                <span class="stu-acc" style="color:${color}">${pct}%</span>
-                <span class="stu-bar" style="width:${Math.max(pct * 0.6, 3)}px; background:${color}"></span>
-              </td>
-              <td style="font-family:var(--font-mono);font-size:12px;color:var(--muted2)">${s.total_answers}</td>
-              <td style="font-family:var(--font-mono);font-size:12px;color:var(--muted2)">${s.correct}</td>
-            </tr>`;
-        }).join('')}
-      </tbody>
-    </table>`;
-
-  // Attach sort handlers
-  el.querySelectorAll('th[data-sort]').forEach(th => {
-    th.addEventListener('click', () => {
-      const key = th.dataset.sort;
-      if (studentSortKey === key) {
-        studentSortAsc = !studentSortAsc;
-      } else {
-        studentSortKey = key;
-        studentSortAsc = key === 'name'; // name ascending, numbers descending
-      }
-      renderStudentTable(analyticsData.students);
-    });
-  });
+  const el=document.getElementById('student-table'); if(!students.length){ el.innerHTML='<div style="font-family:var(--font-mono);font-size:12px;color:var(--muted2)">No students yet.</div>'; return; }
+  document.getElementById('student-count-label').textContent=`${students.length} student${students.length!==1?'s':''}`;
+  const sorted=[...students].sort((a,b)=>{ let va=a[studentSortKey],vb=b[studentSortKey]; if(typeof va==='string'){va=va.toLowerCase();vb=vb.toLowerCase();} return va<vb?(studentSortAsc?-1:1):va>vb?(studentSortAsc?1:-1):0; });
+  const thC=k=>studentSortKey===k?'sorted':'', arr=k=>studentSortKey===k?(studentSortAsc?' ↑':' ↓'):'';
+  el.innerHTML=`<table class="stu-table"><thead><tr><th class="${thC('name')}" data-sort="name">Student${arr('name')}</th><th class="${thC('roll_no')}" data-sort="roll_no">Roll No${arr('roll_no')}</th><th class="${thC('accuracy')}" data-sort="accuracy">Accuracy${arr('accuracy')}</th><th class="${thC('total_answers')}" data-sort="total_answers">Answers${arr('total_answers')}</th><th class="${thC('correct')}" data-sort="correct">Correct${arr('correct')}</th></tr></thead><tbody>${sorted.map(s=>{ const pct=Math.round(s.accuracy*100), color=pct>=70?'var(--green)':pct>=50?'#f0a500':'#ff6b6b'; return `<tr><td>${s.name}</td><td style="font-family:var(--font-mono);font-size:11px;color:var(--muted2)">${s.roll_no||''}</td><td><span class="stu-acc" style="color:${color}">${pct}%</span><span class="stu-bar" style="width:${Math.max(pct*0.6,3)}px;background:${color}"></span></td><td style="font-family:var(--font-mono);font-size:12px;color:var(--muted2)">${s.total_answers}</td><td style="font-family:var(--font-mono);font-size:12px;color:var(--muted2)">${s.correct}</td></tr>`; }).join('')}</tbody></table>`;
+  el.querySelectorAll('th[data-sort]').forEach(th=>{ th.addEventListener('click',()=>{ const key=th.dataset.sort; if(studentSortKey===key) studentSortAsc=!studentSortAsc; else { studentSortKey=key; studentSortAsc=key==='name'; } renderStudentTable(analyticsData.students); }); });
 }
-
-
 function renderMisconceptions(misconceptions) {
-  const el = document.getElementById('misconception-list');
-  if (!misconceptions.length) {
-    el.innerHTML = '<div style="font-family:var(--font-mono);font-size:12px;color:var(--muted2)">None detected yet. Misconceptions appear when students answer quiz questions incorrectly.</div>';
-    return;
-  }
-
-  el.innerHTML = misconceptions.slice(0, 12).map(m => `
-    <div class="misc-card">
-      <div class="misc-icon">⚠</div>
-      <div class="misc-body">
-        <div class="misc-concept">${m.concept || 'General'}</div>
-        <div class="misc-text">${m.misconception || 'No details'}</div>
-        ${m.question ? `<div class="misc-question">"${m.question}"</div>` : ''}
-      </div>
-    </div>
-  `).join('');
+  const el=document.getElementById('misconception-list');
+  if(!misconceptions.length){ el.innerHTML='<div style="font-family:var(--font-mono);font-size:12px;color:var(--muted2)">None detected yet.</div>'; return; }
+  el.innerHTML=misconceptions.slice(0,12).map(m=>`<div class="misc-card"><div class="misc-icon">⚠</div><div class="misc-body"><div class="misc-concept">${m.concept||'General'}</div><div class="misc-text">${m.misconception||'No details'}</div>${m.question?`<div class="misc-question">"${m.question}"</div>`:''}</div></div>`).join('');
 }
-
-
 function renderActivityFeed(activity) {
-  const el = document.getElementById('activity-feed');
-  if (!activity || !activity.length) {
-    el.innerHTML = '<div style="font-family:var(--font-mono);font-size:12px;color:var(--muted2)">No recent activity.</div>';
-    return;
-  }
-
-  const eventLabels = {
-    quiz_complete:  'completed a quiz',
-    oak_response:   'chatted with Oak',
-    struggle_signal:'showed struggle',
-    file_upload:    'uploaded a file',
-    mastery_update: 'mastery updated',
-    class_report:   'report generated',
-    path_suggest:   'viewed suggestions',
-  };
-
-  const dotClass = (evt) => {
-    if (evt.includes('quiz'))     return 'quiz';
-    if (evt.includes('oak') || evt.includes('chat')) return 'chat';
-    if (evt.includes('struggle')) return 'struggle';
-    return 'other';
-  };
-
-  const timeAgo = (ts) => {
-    if (!ts) return '';
-    const diff = (Date.now() - new Date(ts).getTime()) / 1000;
-    if (diff < 60)    return 'just now';
-    if (diff < 3600)  return Math.floor(diff / 60) + 'm ago';
-    if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
-    return Math.floor(diff / 86400) + 'd ago';
-  };
-
-  el.innerHTML = activity.slice(0, 25).map(a => `
-    <div class="activity-item">
-      <div class="activity-dot ${dotClass(a.event)}"></div>
-      <div class="activity-text"><strong>${a.student}</strong> ${eventLabels[a.event] || a.event}</div>
-      <div class="activity-time">${timeAgo(a.at)}</div>
-    </div>
-  `).join('');
+  const el=document.getElementById('activity-feed'); if(!activity||!activity.length){ el.innerHTML='<div style="font-family:var(--font-mono);font-size:12px;color:var(--muted2)">No recent activity.</div>'; return; }
+  const labels={quiz_complete:'completed a quiz',oak_response:'chatted with Oak',struggle_signal:'showed struggle',file_upload:'uploaded a file',mastery_update:'mastery updated',class_report:'report generated',path_suggest:'viewed suggestions'};
+  const dot=e=>e.includes('quiz')?'quiz':e.includes('oak')||e.includes('chat')?'chat':e.includes('struggle')?'struggle':'other';
+  const ago=ts=>{ if(!ts)return''; const d=(Date.now()-new Date(ts).getTime())/1000; if(d<60)return'just now'; if(d<3600)return Math.floor(d/60)+'m ago'; if(d<86400)return Math.floor(d/3600)+'h ago'; return Math.floor(d/86400)+'d ago'; };
+  el.innerHTML=activity.slice(0,25).map(a=>`<div class="activity-item"><div class="activity-dot ${dot(a.event)}"></div><div class="activity-text"><strong>${a.student}</strong> ${labels[a.event]||a.event}</div><div class="activity-time">${ago(a.at)}</div></div>`).join('');
 }
 
-
-// ═══════════════════════════════════════════
-// LECTURE TAB
-// ═══════════════════════════════════════════
-
-let selectedFile   = null;
-let pollInterval   = null;
-let currentJobId   = null;
-let currentModules = [];
-let chatHistory    = [];
-
-// ── YouTube link ingest ──
-document.getElementById('yt-btn').addEventListener('click', async () => {
-  const url = document.getElementById('yt-url').value.trim();
-  if (!url) return;
-  const btn = document.getElementById('yt-btn');
-  btn.disabled    = true;
-  btn.textContent = 'Downloading...';
-  document.getElementById('progress-wrap').style.display   = 'block';
-  document.getElementById('modules-section').style.display = 'none';
-
+// ═══ v4: OAK QUESTION ANALYTICS ═══
+async function loadOakQuestions() {
+  const el=document.getElementById('oak-questions'); el.innerHTML='<div class="shimmer" style="height:60px"></div>';
   try {
-    const res = await fetch(`${BASE}/jobs/youtube`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url }),
-    });
-    if (!res.ok) throw new Error(`${res.status}`);
-    const job    = await res.json();
-    currentJobId = job.job_id;
-    STATE.setJobId(job.job_id);
-    btn.textContent = 'Processing...';
-    addOakMessage('oak', `YouTube video queued. Audio is downloading — processing starts shortly.`);
-
-    pollInterval = setInterval(async () => {
-      try {
-        const status = await pollJob(currentJobId);
-        updateProgress(status);
-        if (status.status === 'done') {
-          clearInterval(pollInterval);
-          const manifest = await getManifest(currentJobId);
-          currentModules = manifest.modules;
-          STATE.setModules(manifest.modules);
-          renderModules(manifest.modules);
-          btn.disabled    = false;
-          btn.textContent = 'Process YouTube';
-          addOakMessage('oak', `YouTube lecture processed — ${manifest.modules.length} modules ready.`);
-        }
-        if (status.status === 'failed') {
-          clearInterval(pollInterval);
-          btn.disabled    = false;
-          btn.textContent = 'Process YouTube';
-          addOakMessage('oak', `Processing failed. Check the URL and try again.`);
-        }
-      } catch(e) { console.error(e); }
-    }, 2000);
-  } catch(e) {
-    btn.disabled    = false;
-    btn.textContent = 'Process YouTube';
-    addOakMessage('oak', `Failed to start: ${e.message}`);
-  }
-});
-
-document.getElementById('video-input').addEventListener('change', (e) => {
-  selectedFile = e.target.files[0];
-  if (!selectedFile) return;
-  document.getElementById('upload-title').textContent = selectedFile.name;
-  document.getElementById('upload-zone').classList.add('has-file');
-  document.getElementById('process-btn').disabled = false;
-});
-
-document.getElementById('process-btn').addEventListener('click', async () => {
-  if (!selectedFile) return;
-  const btn = document.getElementById('process-btn');
-  btn.disabled    = true;
-  btn.textContent = 'Uploading...';
-  document.getElementById('progress-wrap').style.display   = 'block';
-  document.getElementById('modules-section').style.display = 'none';
-
-  try {
-    const job    = await submitJob(selectedFile);
-    currentJobId = job.job_id;
-    STATE.setJobId(job.job_id);
-    btn.textContent = 'Processing...';
-
-    pollInterval = setInterval(async () => {
-      try {
-        const status = await pollJob(currentJobId);
-        updateProgress(status);
-        if (status.status === 'done') {
-          clearInterval(pollInterval);
-          const manifest = await getManifest(currentJobId);
-          currentModules = manifest.modules;
-          STATE.setModules(manifest.modules);
-          renderModules(manifest.modules);
-          btn.textContent = 'Done';
-        }
-        if (status.status === 'failed') {
-          clearInterval(pollInterval);
-          btn.disabled    = false;
-          btn.textContent = 'Process with Chipper';
-        }
-      } catch(e) { console.error(e); }
-    }, 2000);
-  } catch(e) {
-    btn.disabled    = false;
-    btn.textContent = 'Process with Chipper';
-  }
-});
-
-function updateProgress(status) {
-  const statusMap = {
-    queued: 'Queued...', transcribing: 'Transcribing lecture...',
-    segmenting: 'Identifying concept modules...', cutting: 'Cutting video clips...',
-    summarizing: 'Generating notes...', done: 'Complete!', failed: 'Failed'
-  };
-  document.getElementById('progress-status').textContent = statusMap[status.status] || status.status;
-  document.getElementById('progress-pct').textContent    = status.progress + '%';
-  document.getElementById('progress-fill').style.width   = status.progress + '%';
+    const data=await getOakQuestionAnalytics();
+    document.getElementById('oakq-total').textContent=data.total_questions?`${data.total_questions} questions · ${data.window||''}`:'';
+    if(!data.total_questions){ el.innerHTML='<div style="font-family:var(--font-mono);font-size:12px;color:var(--muted2)">No Oak questions logged yet.</div>'; return; }
+    el.innerHTML=data.concepts.slice(0,8).map(c=>{
+      const mm=c.quiz_error_rate!==null?`<span style="color:${c.quiz_error_rate>0.4?'#ff6b6b':'var(--muted2)'}">quiz error ${Math.round(c.quiz_error_rate*100)}%</span>`:`<span style="color:#f0a500">no quiz data — asked but never tested</span>`;
+      const ss=(c.samples||[]).map(s=>`<div style="font-size:11px;color:var(--muted2);font-style:italic;padding:3px 0">"${(s.question||'').replace(/</g,'&lt;')}"</div>`).join('');
+      return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;margin-bottom:8px"><div style="display:flex;align-items:center;gap:12px;margin-bottom:6px"><div style="font-size:13px;font-weight:600;color:var(--fg);flex:1">${c.concept}</div><div style="font-family:var(--font-mono);font-size:11px;color:var(--green)">${c.count} q's · ${c.pct}%</div></div><div style="font-family:var(--font-mono);font-size:10px;margin-bottom:6px">${c.unique_students} student${c.unique_students!==1?'s':''} · ${mm}</div>${ss}</div>`;
+    }).join('');
+  } catch(e) { el.innerHTML=`<div style="font-family:var(--font-mono);font-size:12px;color:#ff6b6b">Failed: ${e.message}</div>`; }
 }
 
+// ═══ LECTURE TAB ═══
+let selectedFile=null, pollInterval=null, currentJobId=null, currentModules=[], chatHistory=[];
+
+document.getElementById('yt-btn').addEventListener('click', async()=>{
+  const url=document.getElementById('yt-url').value.trim(); if(!url) return;
+  const btn=document.getElementById('yt-btn'); btn.disabled=true; btn.textContent='Downloading...';
+  document.getElementById('progress-wrap').style.display='block'; document.getElementById('modules-section').style.display='none';
+  try { const res=await fetch(`${BASE}/jobs/youtube`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url})}); if(!res.ok) throw new Error(`${res.status}`); const job=await res.json(); currentJobId=job.job_id; STATE.setJobId(job.job_id); btn.textContent='Processing...'; addOakMessage('oak','YouTube video queued. Audio is downloading — processing starts shortly.');
+    pollInterval=setInterval(async()=>{ try { const status=await pollJob(currentJobId); updateProgress(status); if(status.status==='done'){ clearInterval(pollInterval); const manifest=await getManifest(currentJobId); currentModules=manifest.modules; STATE.setModules(manifest.modules); renderModules(manifest.modules); btn.disabled=false; btn.textContent='Process YouTube'; addOakMessage('oak',`YouTube lecture processed — ${manifest.modules.length} modules ready.`); } if(status.status==='failed'){ clearInterval(pollInterval); btn.disabled=false; btn.textContent='Process YouTube'; addOakMessage('oak','Processing failed. Check the URL and try again.'); } } catch(e){ console.error(e); } },2000);
+  } catch(e){ btn.disabled=false; btn.textContent='Process YouTube'; addOakMessage('oak',`Failed to start: ${e.message}`); }
+});
+document.getElementById('video-input').addEventListener('change',(e)=>{ selectedFile=e.target.files[0]; if(!selectedFile)return; document.getElementById('upload-title').textContent=selectedFile.name; document.getElementById('upload-zone').classList.add('has-file'); document.getElementById('process-btn').disabled=false; });
+document.getElementById('process-btn').addEventListener('click', async()=>{
+  if(!selectedFile) return; const btn=document.getElementById('process-btn'); btn.disabled=true; btn.textContent='Uploading...';
+  document.getElementById('progress-wrap').style.display='block'; document.getElementById('modules-section').style.display='none';
+  try { const job=await submitJob(selectedFile); currentJobId=job.job_id; STATE.setJobId(job.job_id); btn.textContent='Processing...';
+    pollInterval=setInterval(async()=>{ try { const status=await pollJob(currentJobId); updateProgress(status); if(status.status==='done'){ clearInterval(pollInterval); const manifest=await getManifest(currentJobId); currentModules=manifest.modules; STATE.setModules(manifest.modules); renderModules(manifest.modules); btn.textContent='Done'; } if(status.status==='failed'){ clearInterval(pollInterval); btn.disabled=false; btn.textContent='Process with Chipper'; } } catch(e){ console.error(e); } },2000);
+  } catch(e){ btn.disabled=false; btn.textContent='Process with Chipper'; }
+});
+function updateProgress(status) { const m={queued:'Queued...',transcribing:'Transcribing lecture...',segmenting:'Identifying concept modules...',cutting:'Cutting video clips...',summarizing:'Generating notes...',done:'Complete!',failed:'Failed'}; document.getElementById('progress-status').textContent=m[status.status]||status.status; document.getElementById('progress-pct').textContent=status.progress+'%'; document.getElementById('progress-fill').style.width=status.progress+'%'; }
 function renderModules(modules) {
-  const grid = document.getElementById('module-grid');
-  grid.innerHTML = '';
-  modules.forEach(m => {
-    const card = document.createElement('div');
-    card.className = 'module-card';
-    card.innerHTML = `
-      <div class="module-num">0${m.module_id}</div>
-      <div>
-        <div class="module-concept">${m.concept}</div>
-        <div class="module-meta">${m.duration_sec}s · ${m.start} → ${m.end}</div>
-      </div>
-      <div class="module-arrow">&#8594;</div>
-    `;
-    card.addEventListener('click', () => generateModuleQuiz(m));
-    grid.appendChild(card);
+  const grid=document.getElementById('module-grid'); grid.innerHTML='';
+  modules.forEach(m=>{ const card=document.createElement('div'); card.className='module-card';
+    card.innerHTML=`<div class="module-num">0${m.module_id}</div><div><div class="module-concept">${m.concept}</div><div class="module-meta">${m.duration_sec}s · ${m.start} → ${m.end}</div></div><div class="module-arrow">&#8594;</div>`;
+    card.addEventListener('click',()=>generateModuleQuiz(m)); grid.appendChild(card);
+  }); document.getElementById('modules-section').style.display='block';
+}
+// v4: module click opens the review flow instead of autogen
+async function generateModuleQuiz(module) { openModuleReview(module); }
+
+// ═══ v4: MODULE QUIZ REVIEW ═══
+let moduleDraft=null;
+async function openModuleReview(module) {
+  addOakMessage('oak',`Generating draft questions for "${module.concept}" — review them below before students see anything.`);
+  try { moduleDraft=await reviewModuleQuiz(currentJobId, module.module_id); renderModuleDraft(module); } catch(e){ addOakMessage('oak',`Draft generation failed: ${e.message}`); }
+}
+function renderModuleDraft(module) {
+  let panel=document.getElementById('module-review-panel');
+  if(!panel){ panel=document.createElement('div'); panel.id='module-review-panel'; document.getElementById('modules-section').appendChild(panel); }
+  panel.innerHTML=`<div class="section-label" style="margin-top:24px">Review Quiz — ${moduleDraft.topic}</div><div id="module-draft-questions"></div><div style="display:flex;gap:10px;margin-top:14px"><button class="btn btn-primary" id="module-publish-btn">Approve &amp; Publish</button><button class="btn btn-outline" id="module-regen-btn">Regenerate</button></div>`;
+  renderEditableQuestions(moduleDraft.questions,'module-draft-questions');
+  document.getElementById('module-publish-btn').addEventListener('click', async()=>{
+    const btn=document.getElementById('module-publish-btn'); btn.disabled=true; btn.textContent='Publishing...';
+    try { const questions=collectEditedQuestions(moduleDraft.questions,'module-draft-questions'); await publishModuleQuiz(moduleDraft.job_id,moduleDraft.module_id,moduleDraft.topic,questions); panel.innerHTML=''; addOakMessage('oak',`Quiz for "${moduleDraft.topic}" approved — every student now gets these exact questions.`); } catch(e){ btn.disabled=false; btn.textContent='Approve & Publish'; addOakMessage('oak',`Publish failed: ${e.message}`); }
   });
-  document.getElementById('modules-section').style.display = 'block';
+  document.getElementById('module-regen-btn').addEventListener('click',()=>openModuleReview(module));
+  panel.scrollIntoView({behavior:'smooth'});
 }
 
-async function generateModuleQuiz(module) {
-  addOakMessage('oak', `Generating quiz for "${module.concept}"...`);
-  try {
-    const quiz = await generateQuiz(currentJobId, module.module_id);
-    addOakMessage('oak', `Quiz ready — ${quiz.questions.length} questions for "${module.concept}".`);
-  } catch(e) {
-    addOakMessage('oak', `Quiz generation failed: ${e.message}`);
-  }
+// ═══ v4: SHARED EDITABLE QUESTION RENDERER ═══
+function renderEditableQuestions(questions,containerId) {
+  const el=document.getElementById(containerId);
+  el.innerHTML=questions.map((q,i)=>`
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;margin-bottom:10px" data-qi="${i}">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <div style="font-family:var(--font-mono);font-size:10px;color:var(--green)">Q${i+1}</div>
+        ${q.answer_source==='generated'?'<div style="font-family:var(--font-mono);font-size:9px;color:#f0a500">ANSWER AI-GENERATED — VERIFY</div>':''}
+        ${q.converted?'<div style="font-family:var(--font-mono);font-size:9px;color:#f0a500">CONVERTED TO MCQ</div>':''}
+        <div style="flex:1"></div>
+        <button class="btn btn-outline btn-sm" style="font-size:10px;padding:4px 10px" onclick="removeDraftQ('${containerId}',${i})">Remove</button>
+      </div>
+      <textarea data-field="question" rows="2" style="width:100%;background:none;border:1px solid var(--border);border-radius:6px;padding:8px 10px;color:var(--fg);font-size:13px;resize:vertical;box-sizing:border-box;margin-bottom:8px">${q.question}</textarea>
+      ${['A','B','C','D'].map(k=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px"><input type="radio" name="correct-${containerId}-${i}" value="${k}" ${q.correct_answer===k?'checked':''}><span style="font-family:var(--font-mono);font-size:11px;color:var(--muted2);width:14px">${k}</span><input data-opt="${k}" type="text" value="${(q.options[k]||'').replace(/"/g,'&quot;')}" style="flex:1;background:none;border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--fg);font-size:12px"></div>`).join('')}
+      <input data-field="explanation" type="text" value="${(q.explanation||'').replace(/"/g,'&quot;')}" placeholder="Explanation" style="width:100%;background:none;border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--muted2);font-size:11px;box-sizing:border-box;margin-top:5px">
+    </div>`).join('');
+}
+window.removeDraftQ=function(cid,qi){ document.querySelector(`#${cid} [data-qi="${qi}"]`)?.remove(); };
+function collectEditedQuestions(original,containerId) {
+  return Array.from(document.querySelectorAll(`#${containerId} [data-qi]`)).map(card=>{
+    const qi=parseInt(card.dataset.qi), options={};
+    card.querySelectorAll('input[data-opt]').forEach(inp=>{ options[inp.dataset.opt]=inp.value; });
+    return { question:card.querySelector('[data-field="question"]').value.trim(), options, correct_answer:card.querySelector(`input[name="correct-${containerId}-${qi}"]:checked`)?.value||'A', explanation:card.querySelector('[data-field="explanation"]').value.trim(), concept:original[qi]?.concept||null };
+  }).filter(q=>q.question);
 }
 
-
-// ═══════════════════════════════════════════
-// PAPERS TAB
-// ═══════════════════════════════════════════
-
-let selectedPaperFile = null;
-
-document.getElementById('paper-input').addEventListener('change', (e) => {
-  selectedPaperFile = e.target.files[0];
-  if (!selectedPaperFile) return;
-  document.getElementById('paper-upload-title').textContent = selectedPaperFile.name;
-  document.getElementById('paper-upload-zone').classList.add('has-file');
-  document.getElementById('paper-assign-btn').disabled = false;
+// ═══ v4: QUIZZES TAB (PDF → quiz) ═══
+let quizPdfFile=null, quizDraft=null;
+document.getElementById('quiz-pdf-input').addEventListener('change',(e)=>{ quizPdfFile=e.target.files[0]; if(!quizPdfFile)return; document.getElementById('quiz-upload-title').textContent=quizPdfFile.name; document.getElementById('quiz-upload-zone').classList.add('has-file'); document.getElementById('quiz-parse-btn').disabled=false; });
+document.getElementById('quiz-parse-btn').addEventListener('click', async()=>{
+  if(!quizPdfFile) return; const btn=document.getElementById('quiz-parse-btn'); btn.disabled=true; btn.textContent='Extracting questions...';
+  try { quizDraft=await parseQuizPdf(quizPdfFile); document.getElementById('quiz-draft-title').value=quizDraft.title||''; const w=[]; if(quizDraft.generated_answers) w.push(`${quizDraft.generated_answers} answer(s) AI-generated — verify.`); if(quizDraft.converted_to_mcq) w.push(`${quizDraft.converted_to_mcq} question(s) converted to MCQ.`); document.getElementById('quiz-draft-warnings').textContent=w.join(' '); renderEditableQuestions(quizDraft.questions,'quiz-draft-questions'); document.getElementById('quiz-draft-section').style.display='block'; document.getElementById('quiz-draft-section').scrollIntoView({behavior:'smooth'}); } catch(e){ addOakMessage('oak',`PDF parsing failed: ${e.message}`); } finally { btn.textContent='Extract Questions'; btn.disabled=false; }
 });
+document.getElementById('quiz-publish-btn').addEventListener('click', async()=>{
+  const btn=document.getElementById('quiz-publish-btn'); btn.disabled=true; btn.textContent='Publishing...';
+  try { const title=document.getElementById('quiz-draft-title').value.trim()||'Professor Quiz', questions=collectEditedQuestions(quizDraft.questions,'quiz-draft-questions'); if(!questions.length) throw new Error('No questions left'); await publishProfQuiz(title,questions); resetQuizDraft(); loadProfQuizzes(); addOakMessage('oak',`Quiz "${title}" published — students can take it now.`); } catch(e){ addOakMessage('oak',`Publish failed: ${e.message}`); } finally { btn.disabled=false; btn.textContent='Publish to Students'; }
+});
+document.getElementById('quiz-discard-btn').addEventListener('click', resetQuizDraft);
+function resetQuizDraft(){ quizDraft=null; quizPdfFile=null; document.getElementById('quiz-draft-section').style.display='none'; document.getElementById('quiz-pdf-input').value=''; document.getElementById('quiz-upload-title').textContent='Upload a PDF with 5–10 questions'; document.getElementById('quiz-upload-zone').classList.remove('has-file'); document.getElementById('quiz-parse-btn').disabled=true; }
 
-document.getElementById('paper-assign-btn').addEventListener('click', async () => {
-  if (!selectedPaperFile) return;
-  const btn = document.getElementById('paper-assign-btn');
-  btn.disabled    = true;
-  btn.textContent = 'Uploading and extracting...';
+async function loadProfQuizzes() {
+  const list=document.getElementById('prof-quizzes-list');
   try {
-    await assignPaper(selectedPaperFile);
-    btn.textContent = 'Assigned';
-    addOakMessage('oak', 'Paper assigned. Students can now generate a podcast from it.');
-    selectedPaperFile = null;
-    document.getElementById('paper-input').value = '';
-    document.getElementById('paper-upload-title').textContent = 'Upload a research paper (PDF)';
-    document.getElementById('paper-upload-zone').classList.remove('has-file');
-    loadPapers();
-    setTimeout(() => { btn.textContent = 'Assign to Students'; btn.disabled = true; }, 1500);
-  } catch(e) {
-    btn.disabled    = false;
-    btn.textContent = 'Assign to Students';
-    addOakMessage('oak', `Paper upload failed: ${e.message}`);
-  }
-});
+    const quizzes=await listProfQuizzes(false);
+    if(!quizzes.length){ list.innerHTML='<div style="font-family:var(--font-mono);font-size:12px;color:var(--muted2)">No quizzes published yet.</div>'; return; }
+    list.innerHTML='';
+    quizzes.forEach(q=>{
+      const card=document.createElement('div'); card.className='assigned-card'; const vis=q.visible!==false;
+      card.innerHTML=`<div style="font-size:18px;flex-shrink:0">&#128221;</div><div class="assigned-card-body"><div class="assigned-card-title">${q.title}</div><div class="assigned-card-meta">${q.questions.length} questions · Published ${new Date(q.published_at).toLocaleDateString()}</div></div><div style="display:flex;align-items:center;gap:8px;flex-shrink:0"><label class="toggle"><input type="checkbox" id="qtoggle-${q.quiz_id}" ${vis?'checked':''}><div class="toggle-track"></div><div class="toggle-thumb"></div></label><span class="vis-label" id="vislabel-q-${q.quiz_id}">${vis?'Visible':'Hidden'}</span><button class="btn btn-outline btn-sm" style="font-size:10px;padding:4px 10px" data-del="${q.quiz_id}">Delete</button></div>`;
+      list.appendChild(card);
+      document.getElementById(`qtoggle-${q.quiz_id}`).addEventListener('change', async(e)=>{ await fetch(`${BASE}/professor/quizzes/${q.quiz_id}/visibility?visible=${e.target.checked}`,{method:'PATCH'}); document.getElementById(`vislabel-q-${q.quiz_id}`).textContent=e.target.checked?'Visible':'Hidden'; });
+      card.querySelector('[data-del]').addEventListener('click', async()=>{ if(!confirm(`Delete "${q.title}"?`)) return; await fetch(`${BASE}/professor/quizzes/${q.quiz_id}`,{method:'DELETE'}); loadProfQuizzes(); });
+    });
+  } catch(e){ list.innerHTML=`<div style="font-family:var(--font-mono);font-size:12px;color:#ff6b6b">Failed: ${e.message}</div>`; }
+}
 
+// ═══ PAPERS TAB ═══
+let selectedPaperFile=null;
+document.getElementById('paper-input').addEventListener('change',(e)=>{ selectedPaperFile=e.target.files[0]; if(!selectedPaperFile)return; document.getElementById('paper-upload-title').textContent=selectedPaperFile.name; document.getElementById('paper-upload-zone').classList.add('has-file'); document.getElementById('paper-assign-btn').disabled=false; });
+document.getElementById('paper-assign-btn').addEventListener('click', async()=>{
+  if(!selectedPaperFile) return; const btn=document.getElementById('paper-assign-btn'); btn.disabled=true; btn.textContent='Uploading and extracting...';
+  try { await assignPaper(selectedPaperFile); btn.textContent='Assigned'; addOakMessage('oak','Paper assigned. Students can now generate a podcast from it.'); selectedPaperFile=null; document.getElementById('paper-input').value=''; document.getElementById('paper-upload-title').textContent='Upload a research paper (PDF)'; document.getElementById('paper-upload-zone').classList.remove('has-file'); loadPapers(); setTimeout(()=>{ btn.textContent='Assign to Students'; btn.disabled=true; },1500); } catch(e){ btn.disabled=false; btn.textContent='Assign to Students'; addOakMessage('oak',`Paper upload failed: ${e.message}`); }
+});
 async function loadPapers() {
   try {
-    const res     = await fetch(`${BASE}/papers?visible_only=false`);
-    const papers  = await res.json();
-    const list    = document.getElementById('papers-list');
-    list.innerHTML = '';
-
-    if (!papers.length) {
-      list.innerHTML = '<div style="font-family:var(--font-mono); font-size:12px; color:var(--muted2)">No papers assigned yet.</div>';
-      return;
-    }
-
-    papers.forEach(p => {
-      const card = document.createElement('div');
-      card.className = 'assigned-card';
-      const toggleId = `ptoggle-${p.paper_id}`;
-      const isVisible = p.visible !== false;
-
-      card.innerHTML = `
-        <div style="font-size:18px; flex-shrink:0">&#128196;</div>
-        <div class="assigned-card-body">
-          <div class="assigned-card-title">${p.title}</div>
-          <div class="assigned-card-meta">${p.has_podcast ? 'Podcast ready' : 'No podcast yet'} &nbsp;·&nbsp; Assigned ${new Date(p.assigned_at).toLocaleDateString()}</div>
-        </div>
-        <div style="display:flex; align-items:center; gap:8px; flex-shrink:0">
-          <label class="toggle">
-            <input type="checkbox" id="${toggleId}" ${isVisible ? 'checked' : ''}>
-            <div class="toggle-track"></div>
-            <div class="toggle-thumb"></div>
-          </label>
-          <span class="vis-label" id="vislabel-p-${p.paper_id}">${isVisible ? 'Visible' : 'Hidden'}</span>
-        </div>
-      `;
+    const res=await fetch(`${BASE}/papers?visible_only=false`), papers=await res.json(), list=document.getElementById('papers-list'); list.innerHTML='';
+    if(!papers.length){ list.innerHTML='<div style="font-family:var(--font-mono);font-size:12px;color:var(--muted2)">No papers assigned yet.</div>'; return; }
+    papers.forEach(p=>{
+      const card=document.createElement('div'); card.className='assigned-card'; const tid=`ptoggle-${p.paper_id}`, vis=p.visible!==false;
+      card.innerHTML=`<div style="font-size:18px;flex-shrink:0">&#128196;</div><div class="assigned-card-body"><div class="assigned-card-title">${p.title}</div><div class="assigned-card-meta">${p.has_podcast?'Podcast ready':'No podcast yet'} &nbsp;·&nbsp; Assigned ${new Date(p.assigned_at).toLocaleDateString()}</div></div><div style="display:flex;align-items:center;gap:8px;flex-shrink:0"><label class="toggle"><input type="checkbox" id="${tid}" ${vis?'checked':''}><div class="toggle-track"></div><div class="toggle-thumb"></div></label><span class="vis-label" id="vislabel-p-${p.paper_id}">${vis?'Visible':'Hidden'}</span></div>`;
       list.appendChild(card);
-
-      document.getElementById(toggleId).addEventListener('change', async (e) => {
-        const visible = e.target.checked;
-        await fetch(`${BASE}/papers/${p.paper_id}/visibility?visible=${visible}`, { method: 'PATCH' });
-        document.getElementById(`vislabel-p-${p.paper_id}`).textContent = visible ? 'Visible' : 'Hidden';
-      });
+      document.getElementById(tid).addEventListener('change', async(e)=>{ await fetch(`${BASE}/papers/${p.paper_id}/visibility?visible=${e.target.checked}`,{method:'PATCH'}); document.getElementById(`vislabel-p-${p.paper_id}`).textContent=e.target.checked?'Visible':'Hidden'; });
     });
-  } catch(e) {
-    document.getElementById('papers-list').innerHTML =
-      `<div style="font-family:var(--font-mono); font-size:12px; color:var(--muted2)">Failed to load papers.</div>`;
-  }
+  } catch(e){ document.getElementById('papers-list').innerHTML='<div style="font-family:var(--font-mono);font-size:12px;color:var(--muted2)">Failed to load papers.</div>'; }
 }
 
-
-// ═══════════════════════════════════════════
-// ASSIGNMENTS TAB
-// ═══════════════════════════════════════════
-
-let selectedAssignFile = null;
-
-document.getElementById('assign-input').addEventListener('change', (e) => {
-  selectedAssignFile = e.target.files[0];
-  if (!selectedAssignFile) return;
-  document.getElementById('assign-upload-title').textContent = selectedAssignFile.name;
-  document.getElementById('assign-upload-zone').classList.add('has-file');
-  document.getElementById('assign-post-btn').disabled = false;
+// ═══ ASSIGNMENTS TAB ═══
+let selectedAssignFile=null;
+document.getElementById('assign-input').addEventListener('change',(e)=>{ selectedAssignFile=e.target.files[0]; if(!selectedAssignFile)return; document.getElementById('assign-upload-title').textContent=selectedAssignFile.name; document.getElementById('assign-upload-zone').classList.add('has-file'); document.getElementById('assign-post-btn').disabled=false; });
+document.getElementById('assign-post-btn').addEventListener('click', async()=>{
+  if(!selectedAssignFile) return; const btn=document.getElementById('assign-post-btn'); btn.disabled=true; btn.textContent='Posting...';
+  try { const fd=new FormData(); fd.append('file',selectedAssignFile); fd.append('title',document.getElementById('assign-title').value||selectedAssignFile.name); fd.append('description',document.getElementById('assign-desc').value); fd.append('due_date',document.getElementById('assign-due').value);
+    const res=await fetch(`${BASE}/assignments`,{method:'POST',body:fd}); if(!res.ok) throw new Error(`${res.status}`);
+    btn.textContent='Posted'; selectedAssignFile=null; document.getElementById('assign-input').value=''; document.getElementById('assign-upload-title').textContent='Upload assignment file (PDF, DOCX, etc)'; document.getElementById('assign-upload-zone').classList.remove('has-file'); document.getElementById('assign-title').value=''; document.getElementById('assign-desc').value=''; document.getElementById('assign-due').value=''; loadAssignments(); setTimeout(()=>{ btn.textContent='Post Assignment'; btn.disabled=true; },1500);
+  } catch(e){ btn.disabled=false; btn.textContent='Post Assignment'; addOakMessage('oak',`Failed to post assignment: ${e.message}`); }
 });
-
-document.getElementById('assign-post-btn').addEventListener('click', async () => {
-  if (!selectedAssignFile) return;
-  const btn = document.getElementById('assign-post-btn');
-  btn.disabled    = true;
-  btn.textContent = 'Posting...';
-
-  try {
-    const fd = new FormData();
-    fd.append('file', selectedAssignFile);
-    fd.append('title',       document.getElementById('assign-title').value || selectedAssignFile.name);
-    fd.append('description', document.getElementById('assign-desc').value);
-    fd.append('due_date',    document.getElementById('assign-due').value);
-
-    const res = await fetch(`${BASE}/assignments`, { method: 'POST', body: fd });
-    if (!res.ok) throw new Error(`${res.status}`);
-
-    btn.textContent = 'Posted';
-    selectedAssignFile = null;
-    document.getElementById('assign-input').value = '';
-    document.getElementById('assign-upload-title').textContent = 'Upload assignment file (PDF, DOCX, etc)';
-    document.getElementById('assign-upload-zone').classList.remove('has-file');
-    document.getElementById('assign-title').value = '';
-    document.getElementById('assign-desc').value  = '';
-    document.getElementById('assign-due').value   = '';
-    loadAssignments();
-    setTimeout(() => { btn.textContent = 'Post Assignment'; btn.disabled = true; }, 1500);
-  } catch(e) {
-    btn.disabled    = false;
-    btn.textContent = 'Post Assignment';
-    addOakMessage('oak', `Failed to post assignment: ${e.message}`);
-  }
-});
-
 async function loadAssignments() {
   try {
-    const res         = await fetch(`${BASE}/assignments?visible_only=false`);
-    const assignments = await res.json();
-    const list        = document.getElementById('assignments-list');
-    list.innerHTML    = '';
-
-    if (!assignments.length) {
-      list.innerHTML = '<div style="font-family:var(--font-mono); font-size:12px; color:var(--muted2)">No assignments posted yet.</div>';
-      return;
-    }
-
-    assignments.forEach(a => {
-      const card      = document.createElement('div');
-      card.className  = 'assigned-card';
-      card.style.flexDirection = 'column';
-      card.style.alignItems    = 'stretch';
-
-      const toggleId  = `atoggle-${a.assignment_id}`;
-      const drawerId  = `drawer-${a.assignment_id}`;
-      const isVisible = a.visible !== false;
-      const subCount  = a.submissions?.length || 0;
-
-      card.innerHTML = `
-        <div style="display:flex; align-items:center; gap:16px">
-          <div style="font-size:18px; flex-shrink:0">&#128196;</div>
-          <div class="assigned-card-body">
-            <div class="assigned-card-title">${a.title}</div>
-            <div class="assigned-card-meta">
-              ${a.due_date ? `Due: ${a.due_date} &nbsp;·&nbsp;` : ''}
-              <span class="sub-count" id="subcount-${a.assignment_id}"
-                    onclick="toggleDrawer('${a.assignment_id}')">
-                ${subCount} submission${subCount !== 1 ? 's' : ''}
-              </span>
-            </div>
-          </div>
-          <div style="display:flex; align-items:center; gap:8px; flex-shrink:0">
-            <label class="toggle">
-              <input type="checkbox" id="${toggleId}" ${isVisible ? 'checked' : ''}>
-              <div class="toggle-track"></div>
-              <div class="toggle-thumb"></div>
-            </label>
-            <span class="vis-label" id="vislabel-a-${a.assignment_id}">${isVisible ? 'Visible' : 'Hidden'}</span>
-          </div>
-        </div>
-
-        <div class="sub-drawer" id="${drawerId}">
-          ${subCount === 0
-            ? '<div style="font-family:var(--font-mono); font-size:11px; color:var(--muted2)">No submissions yet.</div>'
-            : a.submissions.map(s => `
-                <div class="sub-row">
-                  <span>${s.student_name} — ${s.filename}</span>
-                  <span>
-                    ${new Date(s.submitted_at).toLocaleString()}
-                    &nbsp;
-                    <a href="${BASE}/assignments/${a.assignment_id}/submissions/${s.saved_as}" target="_blank">Download</a>
-                  </span>
-                </div>
-              `).join('')
-          }
-        </div>
-      `;
+    const res=await fetch(`${BASE}/assignments?visible_only=false`), assignments=await res.json(), list=document.getElementById('assignments-list'); list.innerHTML='';
+    if(!assignments.length){ list.innerHTML='<div style="font-family:var(--font-mono);font-size:12px;color:var(--muted2)">No assignments posted yet.</div>'; return; }
+    assignments.forEach(a=>{
+      const card=document.createElement('div'); card.className='assigned-card'; card.style.flexDirection='column'; card.style.alignItems='stretch';
+      const tid=`atoggle-${a.assignment_id}`, did=`drawer-${a.assignment_id}`, vis=a.visible!==false, sc=a.submissions?.length||0;
+      card.innerHTML=`<div style="display:flex;align-items:center;gap:16px"><div style="font-size:18px;flex-shrink:0">&#128196;</div><div class="assigned-card-body"><div class="assigned-card-title">${a.title}</div><div class="assigned-card-meta">${a.due_date?`Due: ${a.due_date} &nbsp;·&nbsp;`:''}<span class="sub-count" id="subcount-${a.assignment_id}" onclick="toggleDrawer('${a.assignment_id}')">${sc} submission${sc!==1?'s':''}</span></div></div><div style="display:flex;align-items:center;gap:8px;flex-shrink:0"><label class="toggle"><input type="checkbox" id="${tid}" ${vis?'checked':''}><div class="toggle-track"></div><div class="toggle-thumb"></div></label><span class="vis-label" id="vislabel-a-${a.assignment_id}">${vis?'Visible':'Hidden'}</span></div></div><div class="sub-drawer" id="${did}">${sc===0?'<div style="font-family:var(--font-mono);font-size:11px;color:var(--muted2)">No submissions yet.</div>':a.submissions.map(s=>`<div class="sub-row"><span>${s.student_name} — ${s.filename}</span><span>${new Date(s.submitted_at).toLocaleString()} &nbsp;<a href="${BASE}/assignments/${a.assignment_id}/submissions/${s.saved_as}" target="_blank">Download</a></span></div>`).join('')}</div>`;
       list.appendChild(card);
-
-      document.getElementById(toggleId).addEventListener('change', async (e) => {
-        const visible = e.target.checked;
-        await fetch(`${BASE}/assignments/${a.assignment_id}/visibility?visible=${visible}`, { method: 'PATCH' });
-        document.getElementById(`vislabel-a-${a.assignment_id}`).textContent = visible ? 'Visible' : 'Hidden';
-      });
+      document.getElementById(tid).addEventListener('change', async(e)=>{ await fetch(`${BASE}/assignments/${a.assignment_id}/visibility?visible=${e.target.checked}`,{method:'PATCH'}); document.getElementById(`vislabel-a-${a.assignment_id}`).textContent=e.target.checked?'Visible':'Hidden'; });
     });
-  } catch(e) {
-    document.getElementById('assignments-list').innerHTML =
-      `<div style="font-family:var(--font-mono); font-size:12px; color:var(--muted2)">Failed to load assignments.</div>`;
-  }
+  } catch(e){ document.getElementById('assignments-list').innerHTML='<div style="font-family:var(--font-mono);font-size:12px;color:var(--muted2)">Failed to load assignments.</div>'; }
 }
+window.toggleDrawer=function(id){ document.getElementById(`drawer-${id}`)?.classList.toggle('open'); };
 
-window.toggleDrawer = function(id) {
-  document.getElementById(`drawer-${id}`)?.classList.toggle('open');
-};
-
-
-// ═══════════════════════════════════════════
-// OAK CHAT
-// ═══════════════════════════════════════════
-
+// ═══ OAK CHAT ═══
 async function sendMessage() {
-  const input = document.getElementById('oak-input');
-  const msg   = input.value.trim();
-  if (!msg) return;
-  input.value = '';
-
-  addOakMessage('user', msg);
-  chatHistory.push({ role: 'user', content: msg, timestamp: new Date().toISOString() });
-  showTyping();
-
-  try {
-    const reply = await chatWithOak({
-      message: msg, jobId: currentJobId, moduleId: null,
-      history: chatHistory, role: 'professor'
-    });
-    removeTyping();
-    addOakMessage('oak', reply.content);
-    chatHistory.push({ role: 'assistant', content: reply.content, timestamp: new Date().toISOString() });
-  } catch(e) {
-    removeTyping();
-    addOakMessage('oak', `Connection issue: ${e.message}`);
-  }
+  const input=document.getElementById('oak-input'), msg=input.value.trim(); if(!msg) return; input.value='';
+  addOakMessage('user',msg); chatHistory.push({role:'user',content:msg,timestamp:new Date().toISOString()}); showTyping();
+  try { const reply=await chatWithOak({message:msg,jobId:currentJobId,moduleId:null,history:chatHistory,role:'professor'}); removeTyping(); addOakMessage('oak',reply.content); chatHistory.push({role:'assistant',content:reply.content,timestamp:new Date().toISOString()}); } catch(e){ removeTyping(); addOakMessage('oak',`Connection issue: ${e.message}`); }
 }
-
 document.getElementById('oak-send-btn').addEventListener('click', sendMessage);
-document.getElementById('oak-input').addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') sendMessage();
-});
-
-function addOakMessage(role, text) {
-  const msgs = document.getElementById('oak-messages');
-  const div  = document.createElement('div');
-  div.className = `oak-msg ${role}`;
-  div.innerHTML = role === 'oak' ? `<div class="oak-label">PROF OAK</div>${text}` : text;
-  msgs.appendChild(div);
-  msgs.scrollTop = msgs.scrollHeight;
-}
-function showTyping() {
-  const msgs = document.getElementById('oak-messages');
-  const div  = document.createElement('div');
-  div.className = 'oak-msg oak';
-  div.id = 'typing';
-  div.innerHTML = '<div class="oak-label">PROF OAK</div><div class="typing"><span></span><span></span><span></span></div>';
-  msgs.appendChild(div);
-  msgs.scrollTop = msgs.scrollHeight;
-}
+document.getElementById('oak-input').addEventListener('keydown',(e)=>{ if(e.key==='Enter') sendMessage(); });
+function addOakMessage(role,text) { const msgs=document.getElementById('oak-messages'), div=document.createElement('div'); div.className=`oak-msg ${role}`; div.innerHTML=role==='oak'?`<div class="oak-label">PROF OAK</div>${text}`:text; msgs.appendChild(div); msgs.scrollTop=msgs.scrollHeight; }
+function showTyping() { const msgs=document.getElementById('oak-messages'), div=document.createElement('div'); div.className='oak-msg oak'; div.id='typing'; div.innerHTML='<div class="oak-label">PROF OAK</div><div class="typing"><span></span><span></span><span></span></div>'; msgs.appendChild(div); msgs.scrollTop=msgs.scrollHeight; }
 function removeTyping() { document.getElementById('typing')?.remove(); }
 
 // ── Boot ──
-initOak('oak-canvas');
-setOakMode('corner');
-loadPapers();
-loadAssignments();
+initOak('oak-canvas'); setOakMode('corner'); loadPapers(); loadAssignments(); loadProfQuizzes();
 </script>
 <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const ttDark  = document.getElementById('tt-dark');
-    const ttLight = document.getElementById('tt-light');
-    function applyTheme(theme) {
-      if (theme === 'light') {
-        document.body.classList.add('light');
-        ttDark.classList.remove('on');
-        ttLight.classList.add('on');
-      } else {
-        document.body.classList.remove('light');
-        ttDark.classList.add('on');
-        ttLight.classList.remove('on');
-      }
-      localStorage.setItem('maros_theme', theme);
-    }
-    applyTheme(localStorage.getItem('maros_theme') || 'dark');
-    ttDark.addEventListener('click',  () => applyTheme('dark'));
-    ttLight.addEventListener('click', () => applyTheme('light'));
+  document.addEventListener('DOMContentLoaded',()=>{
+    const ttDark=document.getElementById('tt-dark'), ttLight=document.getElementById('tt-light');
+    function applyTheme(t){ if(t==='light'){document.body.classList.add('light');ttDark.classList.remove('on');ttLight.classList.add('on');}else{document.body.classList.remove('light');ttDark.classList.add('on');ttLight.classList.remove('on');} localStorage.setItem('maros_theme',t); }
+    applyTheme(localStorage.getItem('maros_theme')||'dark');
+    ttDark.addEventListener('click',()=>applyTheme('dark')); ttLight.addEventListener('click',()=>applyTheme('light'));
   });
 </script>
 </body>

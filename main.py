@@ -98,6 +98,10 @@ ASSIGNMENTS_DIR = OUTPUTS_DIR / "_assignments"
 PAPERS_DIR.mkdir(parents=True, exist_ok=True)
 ASSIGNMENTS_DIR.mkdir(parents=True, exist_ok=True)
 
+# ── v4: professor tools (PDF→quiz, quiz review, Oak question analytics) ──
+from professor_tools import router as prof_router
+app.include_router(prof_router)
+
 
 # ─────────────────────────────────────────────
 # ROOT
@@ -241,9 +245,19 @@ def get_module_notes(job_id: str, module_id: int):
 # ─────────────────────────────────────────────
 # QUIZ
 # ─────────────────────────────────────────────
-
 @app.post("/quiz/generate", response_model=Quiz)
 async def generate_quiz(req: QuizGenerateRequest):
+    published = OUTPUTS_DIR / req.job_id / f"quiz_mod{req.module_id:02d}.json"
+    if published.exists():
+        data = json.loads(published.read_text())
+        return Quiz(
+            quiz_id      = data["quiz_id"],
+            module_id    = data["module_id"],
+            topic        = data["topic"],
+            questions    = [QuizQuestion(**q) for q in data["questions"]],
+            generated_at = datetime.utcnow(),
+        )
+
     manifest_path = OUTPUTS_DIR / req.job_id / "manifest.json"
     if not manifest_path.exists():
         raise HTTPException(status_code=404, detail="Manifest not found.")
@@ -255,7 +269,7 @@ async def generate_quiz(req: QuizGenerateRequest):
         raise HTTPException(status_code=404, detail=f"Module {req.module_id} not found.")
 
     concept    = module["concept"]
-    notes      = module["notes"]
+    notes      = module["notes"][:4000]        # ← FIX: cap notes, was uncapped
     transcript = module["transcript"]
 
     prompt = f"""
@@ -286,19 +300,35 @@ Return ONLY valid JSON, no markdown, no backticks:
 }}
 """
 
-    try:
-        text = _call_llm(
-            messages    = [{"role": "user", "content": prompt}],
-            temperature = 0.3,
-            max_tokens  = 2048
+    # FIX: request json_object mode + bigger token budget, with one retry
+    def _generate_once():
+        res = requests.post(
+            "https://api.cerebras.ai/v1/chat/completions",
+            headers={"Authorization": f"Bearer {CEREBRAS_API_KEY}", "Content-Type": "application/json"},
+            json={
+                "model": CEREBRAS_MODEL,
+                "messages": [{"role": "user", "content": prompt}],
+                "temperature": 0.3,
+                "max_tokens": 3000,                      # ← FIX: was 2048
+                "response_format": {"type": "json_object"},  # ← FIX: force valid JSON
+            },
+            timeout=60,
         )
-    except Exception as e:
-        raise HTTPException(status_code=502, detail=f"Quiz generation failed: {e}")
+        res.raise_for_status()
+        return res.json()["choices"][0]["message"]["content"]
 
-    text = text.replace("```json", "").replace("```", "").strip()
+    text = None
+    for attempt in range(2):
+        try:
+            text = _generate_once()
+            break
+        except Exception as e:
+            print(f"[MAROS] Quiz gen attempt {attempt+1} failed for module {req.module_id}: {e}")
+            if attempt == 1:
+                raise HTTPException(status_code=502, detail=f"Quiz generation failed: {e}")
 
     try:
-        parsed    = json.loads(text)
+        parsed = _extract_json_object(text)   # ← FIX: tolerant extraction, not strict json.loads
         questions = [
             QuizQuestion(
                 module_id      = req.module_id,
@@ -309,7 +339,7 @@ Return ONLY valid JSON, no markdown, no backticks:
             )
             for q in parsed["questions"]
         ]
-    except (KeyError, json.JSONDecodeError) as e:
+    except (KeyError, ValueError, json.JSONDecodeError) as e:
         raise HTTPException(status_code=500, detail=f"Failed to parse quiz response: {e}")
 
     return Quiz(
@@ -320,10 +350,24 @@ Return ONLY valid JSON, no markdown, no backticks:
         generated_at = datetime.utcnow()
     )
 
-
 # ─────────────────────────────────────────────
 # QUIZ SUBMIT — v2: saves answers + diagnoses misconceptions
+# v3.1 FIX: diagnosis hardened — bigger token budget, tolerant JSON
+# extraction, and a guaranteed fallback so students ALWAYS see feedback
+# on wrong answers even if the LLM call fails.
 # ─────────────────────────────────────────────
+
+import re as _re_diag
+
+def _extract_json_object(raw: str) -> dict:
+    """Pull the first {...} JSON object out of an LLM reply, tolerating
+    prose before/after and markdown fences. Raises on failure."""
+    cleaned = raw.replace("```json", "").replace("```", "").strip()
+    m = _re_diag.search(r"\{.*\}", cleaned, _re_diag.DOTALL)
+    if not m:
+        raise ValueError(f"No JSON object found in: {cleaned[:120]!r}")
+    return json.loads(m.group(0))
+
 
 @app.post("/quiz/submit", response_model=QuizSubmitResult)
 async def submit_quiz(
@@ -367,10 +411,10 @@ async def submit_quiz(
                 diag_raw = _call_llm(
                     messages    = [{"role": "user", "content": diag_prompt}],
                     temperature = 0.2,
-                    max_tokens  = 300,
+                    max_tokens  = 500,   # FIX: was 300 — truncated JSON killed the parse
                 )
-                diag_raw = diag_raw.replace("```json", "").replace("```", "").strip()
-                diag     = json.loads(diag_raw)
+                # FIX: tolerant extraction — survives prose wrapping + fences
+                diag = _extract_json_object(diag_raw)
 
                 root_concept_id = diag.get("root_concept", concept_label)
                 misconception   = diag.get("misconception", "")
@@ -385,6 +429,23 @@ async def submit_quiz(
 
             except Exception as e:
                 print(f"[MAROS] Diagnosis failed (non-fatal): {e}")
+                # FIX: guaranteed fallback — student ALWAYS sees per-question
+                # feedback even when the diagnosis LLM call fails.
+                root_concept_id = concept_label
+                misconception   = (
+                    f"You chose {ans.chosen_answer}, but the correct answer "
+                    f"was {ans.correct_answer}. Review this concept: {concept_label}."
+                )
+                diagnosis_conf  = 0.0
+                misconceptions.append({
+                    "question_num":  i + 1,
+                    "root_concept":  concept_label,
+                    "misconception": misconception,
+                    "confidence":    0.0,
+                })
+                # Still decay mastery a little — the answer WAS wrong
+                if user_id:
+                    update_mastery(user_id, concept_label, -0.05)
 
         else:
             # Correct answer → boost mastery
@@ -447,7 +508,7 @@ async def ingest_youtube(
 
     # Extract YouTube video ID and save as sidecar for the student player
     import re as _re
-    vid_match = _re.search(r"(?:v=|youtu\.be/|shorts/|embed/)([A-Za-z0-9_-]{11})", req.url)
+    vid_match = _re.search(r"(?:v=|youtu\.be/|shorts/|embed/|live/)([A-Za-z0-9_-]{11})", req.url)
     video_id  = vid_match.group(1) if vid_match else None
 
     job_out_dir = OUTPUTS_DIR / job.job_id
@@ -686,11 +747,6 @@ def _fetch_all(sb, table: str, order_col: str = None, desc: bool = False) -> lis
         if len(batch) < size:
             return rows
         page += 1
-
-
-
-
-
 
 
 @app.get("/professor/analytics")
@@ -1005,7 +1061,12 @@ def _save_paper_meta(paper_id: str, meta: dict):
 
 
 @app.post("/papers")
-async def assign_paper(file: UploadFile = File(...)):
+async def assign_paper(request: Request, file: UploadFile = File(...)):
+    # v4: if an authed student uploads (podcast converter), the paper is
+    # PRIVATE to them. Prof uploads (no Supabase auth) have owner_id=None
+    # and are visible to everyone. This removes student-generated podcasts
+    # from the professor's Assigned Papers list.
+    owner_id = await get_current_user(request)
     if file.content_type != "application/pdf":
         raise HTTPException(status_code=400, detail="Upload a PDF.")
 
@@ -1030,6 +1091,7 @@ async def assign_paper(file: UploadFile = File(...)):
         "assigned_at": datetime.utcnow().isoformat(),
         "has_podcast": False,
         "visible"    : True,
+        "owner_id"   : owner_id,   # v4: None = professor/global, uuid = that student only
     }
     _save_paper_meta(paper_id, meta)
     print(f"[MAROS] Paper {paper_id} assigned — title: {title[:80]!r}")
@@ -1037,15 +1099,22 @@ async def assign_paper(file: UploadFile = File(...)):
 
 
 @app.get("/papers")
-def list_papers(visible_only: bool = Query(True)):
+async def list_papers(request: Request, visible_only: bool = Query(True)):
+    """v4: prof (unauthed) sees only global papers; a student sees global
+    papers PLUS their own uploads. Other students' uploads are never shown."""
+    user_id = await get_current_user(request)
     if not PAPERS_DIR.exists():
         return []
     out = []
     for d in PAPERS_DIR.iterdir():
         if d.is_dir() and (d / "meta.json").exists():
             m = json.loads((d / "meta.json").read_text())
+            owner = m.get("owner_id")
+            if owner and owner != user_id:
+                continue          # someone else's private paper
             if visible_only and not m.get("visible", True):
                 continue
+            m["mine"] = bool(owner) and owner == user_id
             out.append(m)
     out.sort(key=lambda m: m.get("assigned_at", ""), reverse=True)
     return out
@@ -1063,6 +1132,22 @@ def toggle_paper_visibility(paper_id: str, visible: bool = Query(...)):
     _save_paper_meta(paper_id, meta)
     print(f"[MAROS] Paper {paper_id} visibility → {visible}")
     return meta
+
+
+@app.delete("/papers/{paper_id}")
+async def delete_paper(paper_id: str, request: Request):
+    """v4: students can delete their OWN uploads; only the prof (unauthed
+    prof console) can delete global assigned papers."""
+    user_id = await get_current_user(request)
+    meta    = _load_paper_meta(paper_id)
+    owner   = meta.get("owner_id")
+    if owner and owner != user_id:
+        raise HTTPException(status_code=403, detail="Not your paper.")
+    if not owner and user_id:
+        raise HTTPException(status_code=403, detail="Only the professor can remove assigned papers.")
+    shutil.rmtree(_paper_dir(paper_id))
+    print(f"[MAROS] Paper {paper_id} deleted")
+    return {"deleted": paper_id}
 
 
 # ─────────────────────────────────────────────
@@ -1638,8 +1723,6 @@ async def chat(req: ChatRequest, request: Request):
             print(f"[MAROS] Web search skipped: {e}")
 
 
-          
-
     # ── Professor analytics context (v2) ────────────────────────────────────
     if req.role == "professor":
         try:
@@ -1716,9 +1799,6 @@ brainstorm architecture, and push them toward building it.
 
         module_context += _load_podcast_context(req.paper_id)
 
-    # ── RAG only for videos tab ─────────────────────────────────────────────
-    rag_concept = module_concept or paper_concept
-
     # ── RAG for videos tab — direct ChromaDB, no separate server ─────────
     rag_concept = module_concept or paper_concept
 
@@ -1783,7 +1863,7 @@ brainstorm architecture, and push them toward building it.
         student_id      = user_id,
         event_type      = "oak_response",
         module_id       = f"{req.job_id}_mod{req.module_id:02d}" if req.module_id else None,
-        payload         = {"mode": req.mode, "query": req.message, "source": "direct"},
+        payload         = {"mode": req.mode, "query": req.message, "role": req.role, "source": "direct"},
         response_time_ms = elapsed_ms,
     )
 
