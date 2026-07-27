@@ -7,3 +7,6 @@ __pycache__/
 .DS_Store
 output/
 outputs/
+chroma_db/
+questions/
+.env*

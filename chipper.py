@@ -4,6 +4,7 @@ import json
 import math
 import re
 import time
+import threading
 import subprocess
 import requests
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -57,6 +58,20 @@ def s_to_t(sec: float) -> str:
 CEREBRAS_API_KEY = os.getenv("CEREBRAS_API_KEY", "")
 CEREBRAS_MODEL   = os.getenv("CEREBRAS_MODEL", "gpt-oss-120b")
 
+# ── Concurrency caps ─────────────────────────────────────────────────────────
+# The pipeline fires parallel LLM calls from TWO places at once:
+#   1. _segment_windowed  → up to MAX_WINDOW_WORKERS windows simultaneously
+#   2. cut_clips          → notes + concept map simultaneously, per module
+# Both providers appear to cap concurrent connections far tighter than their
+# advertised token quotas, so those parallel threads were colliding and 429ing
+# each other on nearly every call (Cerebras 429 → Groq fallback → Groq 429).
+# These semaphores make the threads QUEUE on the actual HTTP request instead of
+# firing simultaneously. Tune the numbers against your real dashboard limits —
+# 1 and 2 are conservative starting points, not confirmed ceilings.
+CEREBRAS_SEM = threading.Semaphore(1)
+GROQ_SEM     = threading.Semaphore(2)
+
+
 def _chipper_llm(prompt: str, temperature: float = 0.3, json_mode: bool = False) -> str:
     """Cerebras primary (1M TPD free tier), Groq fallback. OpenAI-compatible.
 
@@ -66,7 +81,12 @@ def _chipper_llm(prompt: str, temperature: float = 0.3, json_mode: bool = False)
     blip on Groq used to raise immediately and take down whichever call
     was in flight (this is what silently killed a notes call while its
     sibling concept-map call succeeded). Now both providers get 2 tries
-    with short backoff before we move on."""
+    with short backoff before we move on.
+
+    The actual requests.post calls are wrapped in per-provider semaphores so
+    concurrent callers queue instead of tripping the concurrent-connection cap.
+    Note the semaphore wraps ONLY the request — raise_for_status and JSON
+    parsing happen outside it, so a slow parse never holds the slot."""
     messages = [{"role": "user", "content": prompt}]
 
     def _is_transient(exc: Exception) -> bool:
@@ -87,12 +107,13 @@ def _chipper_llm(prompt: str, temperature: float = 0.3, json_mode: bool = False)
             body["response_format"] = {"type": "json_object"}
         for attempt in range(2):
             try:
-                res = requests.post(
-                    "https://api.cerebras.ai/v1/chat/completions",
-                    headers={"Authorization": f"Bearer {CEREBRAS_API_KEY}",
-                             "Content-Type": "application/json"},
-                    json=body, timeout=120,
-                )
+                with CEREBRAS_SEM:
+                    res = requests.post(
+                        "https://api.cerebras.ai/v1/chat/completions",
+                        headers={"Authorization": f"Bearer {CEREBRAS_API_KEY}",
+                                 "Content-Type": "application/json"},
+                        json=body, timeout=120,
+                    )
                 res.raise_for_status()
                 return res.json()["choices"][0]["message"]["content"]
             except Exception as e:
@@ -112,10 +133,11 @@ def _chipper_llm(prompt: str, temperature: float = 0.3, json_mode: bool = False)
         body["response_format"] = {"type": "json_object"}
     for attempt in range(2):
         try:
-            res = requests.post(
-                f"{GROQ_BASE_URL}/chat/completions",
-                headers=GROQ_HEADERS, json=body, timeout=120,
-            )
+            with GROQ_SEM:
+                res = requests.post(
+                    f"{GROQ_BASE_URL}/chat/completions",
+                    headers=GROQ_HEADERS, json=body, timeout=120,
+                )
             res.raise_for_status()
             return res.json()["choices"][0]["message"]["content"]
         except Exception as e:
@@ -221,7 +243,8 @@ WINDOW_THRESHOLD_SEC   = 40 * 60   # only window lectures longer than this
 WINDOW_SIZE_SEC        = 20 * 60   # ~20 min "core" per window
 WINDOW_OVERLAP_SEC     = 150       # 2.5 min of shared context on each side, for boundary accuracy
 MAX_MODULES_PER_WINDOW = 4         # 20 min window, 5-min-minimum modules → at most ~4
-MAX_WINDOW_WORKERS     = 6         # cap concurrent LLM calls
+MAX_WINDOW_WORKERS     = 6         # cap concurrent segmentation threads (actual HTTP
+                                   # concurrency is governed by CEREBRAS_SEM / GROQ_SEM)
 
 
 def _fit_transcript(transcript: str) -> str:
@@ -503,7 +526,7 @@ def _generate_detailed_notes(concept: str, transcript_segment: str) -> str:
     text output is the same pattern the original (reliable) summarize()
     and generate_concept_map() already use."""
     prompt = f"""
-You are writing study notes for a university CS course, based on a lecture transcript segment about "{concept}".
+You are writing study notes for a university course, based on a lecture transcript segment about "{concept}".
 
 Output the notes as plain markdown text — no JSON, no code fences wrapping the whole response, just the markdown document itself.
 
@@ -610,10 +633,13 @@ def summarize(concept: str, transcript_segment: str) -> dict:
 
 
 # ─────────────────────────────────────────────
-# CONCEPT MAPS — mindmap/flowchart with lint + error-feedback retry
+# CONCEPT MAPS — multi-shape diagrams with lint + error-feedback retry
 # ─────────────────────────────────────────────
 
-_MERMAID_ALLOWED_HEADERS = ("flowchart TD", "flowchart LR", "graph TD", "graph LR", "mindmap")
+_MERMAID_ALLOWED_HEADERS = (
+    "flowchart TD", "flowchart LR", "graph TD", "graph LR",
+    "mindmap", "timeline", "stateDiagram-v2", "sequenceDiagram", "erDiagram",
+)
 
 
 def _lint_mermaid(src: str) -> str | None:
@@ -623,7 +649,9 @@ def _lint_mermaid(src: str) -> str | None:
     or None if the source looks safe.
 
     This is intentionally a lint, not a parser — real parsing happens in
-    mermaid.js client-side. We only reject things that reliably break it."""
+    mermaid.js client-side. We only reject things that reliably break it,
+    plus a few shapes that PARSE fine but carry no information (a mindmap
+    with zero nesting renders as a flat spoke diagram that explains nothing)."""
     if not src or not src.strip():
         return "Output was empty."
 
@@ -637,15 +665,63 @@ def _lint_mermaid(src: str) -> str | None:
         return (f"First line is '{first_line}' — it must start with one of: "
                 f"{', '.join(_MERMAID_ALLOWED_HEADERS)}.")
 
-    is_mindmap = first_line.startswith("mindmap")
+    is_mindmap  = first_line.startswith("mindmap")
+    is_timeline = first_line.startswith("timeline")
+    is_state    = first_line.startswith("stateDiagram")
+    is_sequence = first_line.startswith("sequenceDiagram")
+    is_er       = first_line.startswith("erDiagram")
 
     if is_mindmap:
         if "-->" in stripped or "---" in stripped:
             return ("mindmap diagrams use INDENTATION for hierarchy, never arrows. "
                     "Remove all --> and --- edges, or switch to a flowchart.")
-        if len(stripped.split("\n")) < 3:
+
+        body_lines = [l for l in stripped.split("\n")[1:] if l.strip()]
+        if len(body_lines) < 3:
             return "mindmap has fewer than 2 nodes under the root — add the sub-ideas."
+
+        # body_lines[0] is the root node; everything after it is branches/detail.
+        # Checking indent variety across the ROOT line too would let a purely
+        # flat map pass (root indent + one child indent = 2 distinct values),
+        # which is exactly the useless 5-spoke shape we're trying to reject.
+        branch_indents = [len(l) - len(l.lstrip()) for l in body_lines[1:]]
+        if len(set(branch_indents)) < 2:
+            return ("mindmap is completely flat — every node is a direct child of the root "
+                    "with no sub-detail. Add at least one level of nested detail under each "
+                    "branch, or switch to a different shape if this content is sequential, "
+                    "chronological, or stateful.")
+
+    elif is_timeline:
+        if len([l for l in stripped.split("\n")[1:] if l.strip()]) < 3:
+            return "timeline has fewer than 2 events — add more entries."
+        if "-->" in stripped or "---" in stripped:
+            return ("timeline uses 'period : event' syntax, not --> arrows. "
+                    "Remove all arrow syntax.")
+        if ":" not in stripped:
+            return ("timeline has no 'period : event' entries — each event line must be "
+                    "'<period> : <event text>'.")
+
+    elif is_state:
+        if "-->" not in stripped:
+            return "stateDiagram-v2 has no transitions (-->) — add the state changes."
+        if "[*]" not in stripped:
+            return ("stateDiagram-v2 should include [*] to mark the start (and ideally the "
+                    "end) state — add at least '[*] --> FirstState'.")
+
+    elif is_sequence:
+        if not any(tok in stripped for tok in ("->>", "-->>", "->", "-->")):
+            return ("sequenceDiagram has no messages between actors — add interactions "
+                    "in the form 'A->>B: message'.")
+        if ":" not in stripped:
+            return "sequenceDiagram messages need a label: use 'A->>B: message text'."
+
+    elif is_er:
+        if not any(tok in stripped for tok in ("||", "o{", "}o", "|{", "}|")):
+            return ("erDiagram has no relationship notation between entities — use e.g. "
+                    "'AUTHOR ||--o{ WORK : writes'.")
+
     else:
+        # flowchart / graph
         # Unquoted parentheses inside [labels] are the #1 flowchart breaker:
         # A[foo (bar)] fails to parse. Require quoted labels instead.
         if re.search(r'\[[^\]"\n]*\(', stripped):
@@ -666,39 +742,97 @@ def _lint_mermaid(src: str) -> str | None:
     return None
 
 
-def generate_concept_map(concept: str, transcript_segment: str) -> str:
+def generate_concept_map(concept: str, transcript_segment: str, subject: str = "") -> str:
     """Generate a Mermaid diagram of this concept's internal structure.
-    Now supports FOUR shapes (mindmap added) and does one lint→feedback→retry
-    pass: if the first output fails _lint_mermaid, the specific error is fed
-    back into a second prompt so the retry actually corrects the mistake
-    instead of re-rolling the same dice. Output is spliced INLINE into the
-    notes at CONCEPT_MAP_MARKER by cut_clips."""
+
+    Supports SEVEN shapes (timeline, stateDiagram-v2, sequenceDiagram,
+    erDiagram, mindmap, flowchart, subgraph-flowchart) and does one
+    lint→feedback→retry pass: if the first output fails _lint_mermaid, the
+    specific error is fed back into a second prompt so the retry actually
+    corrects the mistake instead of re-rolling the same dice. Output is
+    spliced INLINE into the notes at CONCEPT_MAP_MARKER by cut_clips.
+
+    `subject` (e.g. "Biology", "Computer Science") comes from the professor's
+    upload-time selection and is passed through ONLY to inform terminology and
+    label phrasing. It must never influence shape choice — letting genre drive
+    shape reintroduces exactly the stereotyping this prompt is built to avoid
+    ("history lecture, therefore timeline"), which is also why the shape
+    examples below deliberately pair each shape with an unrelated subject."""
+
+    subject_line = f"\nCOURSE SUBJECT: {subject}\n" if subject else ""
 
     base_prompt = f"""
-You are building a concept diagram for a university CS lecture segment about "{concept}".
+You are building a concept diagram for a university lecture segment about "{concept}".
+{subject_line}
+Analyze the transcript's STRUCTURE — not its subject — and pick the ONE diagram shape that fits. The same subject can require different shapes depending on what is actually said. A history lecture can be a mindmap if it covers unordered parallel themes. A biology lecture can be a timeline if it covers dated discoveries. Judge only by the structure of the content.
 
-Analyze the transcript and pick the ONE diagram shape that best fits what's actually discussed:
+- `timeline` — content is CHRONOLOGICAL or DATED, regardless of subject.
+  Example (technology):
+  timeline
+      title Evolution of CPUs
+      1971 : First microprocessor released
+      2001 : Multi-core CPUs appear
 
-- `mindmap` — use when the transcript presents RELATED SUB-IDEAS radiating from one central concept (properties, types, characteristics, aspects) with no strict order between them. Syntax uses pure indentation, root goes in double parens:
+- `stateDiagram-v2` — one entity moves through DISCRETE NAMED STATES with transitions, regardless of subject.
+  Example (law):
+  stateDiagram-v2
+      [*] --> Filed
+      Filed --> UnderReview
+      UnderReview --> Dismissed
+      UnderReview --> Granted
+
+- `sequenceDiagram` — MULTIPLE ACTORS interact with each other in a specific order, regardless of subject.
+  Example (economics):
+  sequenceDiagram
+      Buyer->>Seller: Places order
+      Seller->>Bank: Requests payment
+      Bank->>Seller: Confirms funds
+
+- `erDiagram` — ENTITIES and the RELATIONSHIPS between them, regardless of subject.
+  Example (literature):
+  erDiagram
+      AUTHOR ||--o{{ WORK : writes
+      WORK ||--o{{ EDITION : published_as
+
+- `mindmap` — UNORDERED parallel sub-ideas around one central concept, with no causality or sequence, regardless of subject. Hierarchy is pure indentation; the root goes in double parentheses.
+  Example (chemistry):
   mindmap
-    root(({concept}))
-      Sub idea one
-        Detail
-      Sub idea two
-- `flowchart TD` (top-down flow) — use when the transcript describes a SEQUENCE or PROCESS (steps, control flow, state transitions).
-- `flowchart LR` (left-right flow) — same as above, but use when the natural reading order is horizontal (pipelines, transformations).
-- `flowchart TD` with `subgraph` blocks — use when the transcript describes CONTAINMENT or LAYERS (things inside other things: layers of a stack, components within a subsystem, hierarchy).
+      root((Acids))
+        Strong acids
+          Fully dissociate
+        Weak acids
+          Partially dissociate
+
+- `flowchart TD` (top-down) or `flowchart LR` (left-right) — a SEQUENCE, PROCESS, or CAUSAL CHAIN, regardless of subject. Use LR when the natural reading order is horizontal.
+  Example (psychology):
+  flowchart TD
+      Stimulus --> Perception
+      Perception --> Response
+
+- `flowchart TD` with `subgraph` blocks — CONTAINMENT or LAYERS (things inside other things), regardless of subject.
+  Example (business):
+  flowchart TD
+      subgraph Company
+        subgraph Engineering
+          Frontend
+          Backend
+        end
+      end
+
+CRITICAL: Base your choice ONLY on whether the content is chronological, stateful, interactive, relational, parallel-unordered, sequential-causal, or containment-based. Ignore what subject the lecture is about — the examples above deliberately pair each shape with a different subject so that no subject maps predictably to any shape.
 
 Output ONLY valid Mermaid syntax, nothing else — no markdown fences, no commentary, no prose.
 
 RULES:
-- Pick the shape from the transcript, don't force a flowchart onto containment content or a mindmap onto a process.
-- Node labels must be short (under 6 words) and come from what was actually discussed, not invented.
+- If the transcript centres on explicit dates or years, strongly prefer `timeline`.
+- If the transcript describes something passing through named stages or states, prefer `stateDiagram-v2` over a plain flowchart.
+- Use the COURSE SUBJECT above (when given) only to shape terminology and label wording — never to decide which diagram shape to use.
+- Node and label text must be short (under 6 words) and taken from what was actually discussed, not invented.
 - If a flowchart node label needs parentheses, commas, or special characters, put the label in double quotes: A["label (detail)"]. Never leave parentheses unquoted inside [].
-- mindmap diagrams: hierarchy is INDENTATION ONLY — never use --> arrows in a mindmap.
-- Edge labels use this exact syntax: A -->|label text| B — the closing pipe is followed ONLY by the target node, nothing else. NEVER write A -->|label|> B (that trailing > after the pipe is invalid and breaks the diagram).
-- Only include an edge/branch if the transcript actually implies that relationship — don't force graph shape.
-- 4-10 nodes total. If the segment is too simple to map meaningfully, output a short 2-3 node chain rather than padding.
+- mindmap diagrams: hierarchy is INDENTATION ONLY — never use --> arrows in a mindmap, and never leave every node as a direct child of the root. Each branch needs at least one nested detail beneath it.
+- Edge labels use this exact syntax: A -->|label text| B — the closing pipe is followed ONLY by the target node, nothing else. NEVER write A -->|label|> B (that trailing > is invalid and breaks the diagram).
+- Only include an edge or relationship if the transcript actually implies it — don't force graph shape onto content that doesn't have it.
+- 4-10 nodes / states / entities / events total. If the segment is too simple to map meaningfully, output a short 2-3 node version rather than padding it.
 - No styling directives (no classDef, no style), no click handlers — just structure. The frontend styles the rendered diagram.
 
 TRANSCRIPT:
@@ -727,7 +861,7 @@ Previous output:
 Validation error:
 {err}
 
-Fix exactly this problem and output the corrected diagram. Output ONLY valid Mermaid syntax — no fences, no commentary.
+Fix exactly this problem and output the corrected diagram. If the error says the shape is a poor fit for the content, switch to a shape from the list above that actually fits. Output ONLY valid Mermaid syntax — no fences, no commentary.
 """
     src2 = _clean(_chipper_llm(repair_prompt, temperature=0.2))
     err2 = _lint_mermaid(src2)
@@ -760,20 +894,22 @@ def summarize_with_retry(concept: str, transcript_segment: str, module_num: int)
     }
 
 
-def concept_map_with_retry(concept: str, transcript_segment: str, module_num: int) -> str:
+def concept_map_with_retry(concept: str, transcript_segment: str, module_num: int,
+                           subject: str = "") -> str:
     """Outer retry for transport-level failures (timeouts, 5xx) — the
     syntax-level lint retry lives INSIDE generate_concept_map. Falls back
     to empty string, never a broken diagram."""
     try:
-        return generate_concept_map(concept, transcript_segment)
+        return generate_concept_map(concept, transcript_segment, subject)
     except Exception as e:
         print(f"[MAROS] Concept map attempt 1 failed for module {module_num}: {e} — retrying in 3s")
         time.sleep(3)
         try:
-            return generate_concept_map(concept, transcript_segment)
+            return generate_concept_map(concept, transcript_segment, subject)
         except Exception as e2:
             print(f"[MAROS] Concept map failed for module {module_num}: {e2}")
             return ""
+
 
 # ─────────────────────────────────────────────
 # STEP 4 — CUT CLIPS
@@ -783,9 +919,16 @@ def cut_clips(
     video_path : Path,
     clips      : list[dict],
     segments   : list,
-    job_id     : str
-) -> list[Module]:
-    """Cut video into concept clips, generate notes, return Module list."""
+    job_id     : str,
+    subject    : str = ""
+) -> tuple[list[Module], list[int]]:
+    """Cut video into concept clips, generate notes, return (modules, module
+    numbers whose concept map was dropped).
+
+    The second return value exists because a module whose diagram failed still
+    logs "Module N done" and still ships — previously the only trace was a
+    single stdout line, so a run could quietly produce 5/12 modules with no
+    concept map and nothing downstream would know."""
     jobs.update_job(job_id, status=JobStatus.cutting, progress=60)
 
     job_output_dir = OUTPUTS_DIR / job_id
@@ -794,9 +937,10 @@ def cut_clips(
     except Exception as e:
         raise RuntimeError(f"Could not create output directory: {e}")
 
-    modules     = []
-    success     = 0
-    total_clips = len(clips)
+    modules          = []
+    success          = 0
+    total_clips      = len(clips)
+    missing_diagrams = []   # module numbers where concept map generation was dropped
 
     for i, clip in enumerate(clips):
         if not isinstance(clip, dict) or not all(k in clip for k in ("concept", "start", "end")):
@@ -856,11 +1000,13 @@ def cut_clips(
         # other's output. Run them concurrently so a slow/failing call on
         # one side never blocks or preempts the other, and both always get
         # their full retry budget regardless of what happens to its sibling.
+        # The provider semaphores (CEREBRAS_SEM / GROQ_SEM) keep these two
+        # threads from actually hitting the API at the same instant.
         with ThreadPoolExecutor(max_workers=2) as pool:
             notes_future = pool.submit(summarize_with_retry, concept, clip_transcript, i + 1)
-            map_future = pool.submit(concept_map_with_retry, concept, clip_transcript, i + 1)
-            result = notes_future.result()
-            diagram_src = map_future.result()
+            map_future   = pool.submit(concept_map_with_retry, concept, clip_transcript, i + 1, subject)
+            result       = notes_future.result()
+            diagram_src  = map_future.result()
 
         summary_text = result["summary"]
         notes_body = result["notes"]
@@ -881,6 +1027,7 @@ def cut_clips(
                 notes_body = f"{notes_body}\n\n## Concept map\n\n```mermaid\n{diagram_src}\n```\n"
         else:
             notes_body = notes_body.replace(CONCEPT_MAP_MARKER, "")
+            missing_diagrams.append(i + 1)
 
         # Save notes to disk
         notes_file = job_output_dir / f"Module_{i+1:02d}_{clean}_notes.txt"
@@ -906,16 +1053,23 @@ def cut_clips(
         success += 1
         print(f"[MAROS] Module {i+1} done: {concept}")
 
+    if missing_diagrams:
+        print(f"[MAROS] ⚠  Modules missing concept maps: {missing_diagrams} "
+              f"({len(missing_diagrams)}/{success}) — these need regeneration.")
     print(f"[MAROS] Cutting done — {success}/{total_clips} modules created.")
-    return modules
+    return modules, missing_diagrams
 
 
 # ─────────────────────────────────────────────
 # MAIN PIPELINE
 # ─────────────────────────────────────────────
 
-def run_pipeline(video_path: Path, job_id: str) -> Manifest:
-    """Full Chipper pipeline. Called as a background task by main.py."""
+def run_pipeline(video_path: Path, job_id: str, subject: str = "") -> Manifest:
+    """Full Chipper pipeline. Called as a background task by main.py.
+
+    `subject` (e.g. "Biology", "Computer Science") comes from the professor's
+    upload-time course selection. It only affects concept-map label phrasing —
+    never diagram shape selection. Passing "" is fine and simply omits the hint."""
     _p0 = time.time()
     try:
         transcript, segments = transcribe(video_path, job_id)
@@ -925,7 +1079,7 @@ def run_pipeline(video_path: Path, job_id: str) -> Manifest:
         _p2 = time.time()
         print(f"[MAROS] ⏱  Segmentation: {_p2 - _p1:.1f}s")
 
-        modules              = cut_clips(video_path, clips, segments, job_id)
+        modules, missing_diagrams = cut_clips(video_path, clips, segments, job_id, subject)
         _p3 = time.time()
         print(f"[MAROS] ⏱  Clip cutting: {_p3 - _p2:.1f}s")
         print(f"[MAROS] ⏱  TOTAL PIPELINE: {_p3 - _p0:.1f}s")
@@ -933,13 +1087,23 @@ def run_pipeline(video_path: Path, job_id: str) -> Manifest:
         if not modules:
             raise RuntimeError("No modules were successfully created.")
 
-        manifest = Manifest(
+        # Same defensive pattern as Module.summary above: only pass the newer
+        # fields if the Manifest model actually declares them, so this file
+        # doesn't hard-require a models.py change to run.
+        manifest_fields = getattr(Manifest, "model_fields", getattr(Manifest, "__fields__", {}))
+        manifest_kwargs = dict(
             job_id        = job_id,
             video_source  = video_path.name,
             total_modules = len(modules),
             modules       = modules,
-            generated_at  = datetime.utcnow()
+            generated_at  = datetime.utcnow(),
         )
+        if "subject" in manifest_fields:
+            manifest_kwargs["subject"] = subject
+        if "modules_missing_diagrams" in manifest_fields:
+            manifest_kwargs["modules_missing_diagrams"] = missing_diagrams
+
+        manifest = Manifest(**manifest_kwargs)
 
         # Save manifest to disk
         manifest_path = OUTPUTS_DIR / job_id / "manifest.json"

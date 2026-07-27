@@ -11,10 +11,16 @@
 // multiple CDN fallbacks. If ALL fail, the diagram renders as a styled
 // code block (readable, not broken).
 //
-// NEW: diagrams render inside an interactive "diagram card" — themed to the
+// Diagrams render inside an interactive "diagram card" — themed to the
 // app palette (reads CSS vars at load), with drag-to-pan, zoom buttons,
 // ctrl/cmd+scroll zoom, double-click reset, and a fullscreen toggle.
 // Mindmap branches get the same 5-color semantic palette as the callouts.
+//
+// NEW: content reveals on scroll. #notes-content is an internally-scrolling
+// box (student.html sets max-height:500px; overflow-y:auto), so the reveal
+// observer is rooted on that container, not the page viewport. Diagram cards
+// go further and stagger their nodes/edges in one at a time, so a concept map
+// draws itself rather than appearing fully formed.
 
 // ─── Callout preprocessor ────────────────────────────────────────────────────
 const CALLOUT_TYPES = ['note', 'tip', 'important', 'warning', 'caution'];
@@ -260,7 +266,8 @@ async function _loadMermaid() {
           clusterBorder: p.border,
           titleColor: p.fg,
           // Mindmap branch colors — same semantic palette as the callouts,
-          // so each branch of a mindmap gets its own accent color.
+          // so each branch of a mindmap gets its own accent color. Timeline
+          // sections and state/sequence actors reuse the same cScale ramp.
           'cScale0': p.green,
           'cScale1': p.blue,
           'cScale2': p.purple,
@@ -288,7 +295,16 @@ async function _loadMermaid() {
 const _ZOOM_MIN = 0.4, _ZOOM_MAX = 3, _ZOOM_STEP = 1.2;
 
 function _diagramKind(src) {
-  return src.trim().startsWith('mindmap') ? 'MINDMAP' : 'CONCEPT MAP';
+  // Badge label per Mermaid shape. chipper.py can now emit seven shapes, so
+  // "CONCEPT MAP" is the fallback for flowchart/graph rather than the default
+  // for everything that isn't a mindmap.
+  const first = src.trim().split('\n')[0].trim();
+  if (first.startsWith('mindmap'))         return 'MINDMAP';
+  if (first.startsWith('timeline'))        return 'TIMELINE';
+  if (first.startsWith('stateDiagram'))    return 'STATE DIAGRAM';
+  if (first.startsWith('sequenceDiagram')) return 'SEQUENCE';
+  if (first.startsWith('erDiagram'))       return 'RELATIONSHIPS';
+  return 'CONCEPT MAP';
 }
 
 function _buildDiagramCard(svgHtml, kind) {
@@ -403,6 +419,80 @@ async function _renderMermaidBlocks(container) {
   }
 }
 
+// ─── Scroll reveal ──────────────────────────────────────────────────────────
+// Respect the OS reduced-motion setting: skip all staggering and just show
+// everything. Cheap to honour, and animation here is decoration, not meaning.
+function _prefersReducedMotion() {
+  return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true;
+}
+
+function _animateDiagramNodes(card) {
+  // Stagger the rendered SVG's nodes and edges so a diagram assembles itself
+  // instead of appearing whole. Mermaid's internal class names vary a little
+  // between diagram types (and between minor versions), so this queries several
+  // and degrades to "nothing animates, diagram still visible" if none match —
+  // it never hides content it can't animate back in.
+  const svg = card.querySelector('.mermaid-stage svg');
+  if (!svg) return;
+
+  const nodes = svg.querySelectorAll(
+    '.node, .mindmap-node, g.cluster, .statediagram-state, .actor, .er.entityBox, .timeline-node'
+  );
+  const edges = svg.querySelectorAll(
+    '.edgePath, .edge, path.flowchart-link, .messageLine0, .messageLine1, .relationshipLine'
+  );
+  if (!nodes.length && !edges.length) return;
+
+  [...nodes, ...edges].forEach(el => { el.style.opacity = '0'; });
+
+  nodes.forEach((el, i) => {
+    setTimeout(() => {
+      el.style.transition = 'opacity 0.35s ease';
+      el.style.opacity = '1';
+    }, i * 110);
+  });
+  edges.forEach((el, i) => {
+    setTimeout(() => {
+      el.style.transition = 'opacity 0.35s ease';
+      el.style.opacity = '1';
+    }, i * 110 + 60);
+  });
+}
+
+function _initScrollReveal(container) {
+  const targets = container.querySelectorAll(
+    'h1, h2, h3, h4, p, blockquote, pre, ul, ol, .md-callout, .mermaid-card'
+  );
+  if (!targets.length) return;
+
+  if (_prefersReducedMotion() || typeof IntersectionObserver === 'undefined') {
+    return;  // leave everything visible, no classes added
+  }
+
+  targets.forEach(el => el.classList.add('reveal-hidden'));
+
+  // root MUST be the notes container: student.html renders notes into
+  // #notes-content, which has its own max-height + overflow-y:auto. Using the
+  // default viewport root would mark everything intersecting on open and the
+  // reveal would never fire on actual scroll.
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      entry.target.classList.add('reveal-visible');
+      if (entry.target.classList.contains('mermaid-card')) {
+        _animateDiagramNodes(entry.target);
+      }
+      observer.unobserve(entry.target);   // animate once, not on every scroll pass
+    });
+  }, {
+    root: container,
+    threshold: 0.1,
+    rootMargin: '0px 0px -30px 0px',
+  });
+
+  targets.forEach(el => observer.observe(el));
+}
+
 // ─── Public API ──────────────────────────────────────────────────────────────
 export async function renderNotes(markdownStr, targetEl) {
   if (!targetEl) return;
@@ -422,6 +512,10 @@ export async function renderNotes(markdownStr, targetEl) {
 
   // 3. Render mermaid diagrams (lazy CDN load, graceful fallback)
   await _renderMermaidBlocks(targetEl);
+
+  // 4. Reveal content as the student scrolls the notes panel. Runs LAST so the
+  //    diagram cards already exist in the DOM and get observed alongside text.
+  _initScrollReveal(targetEl);
 }
 
 // ─── CSS — injected once at import time (synchronous, no fetch) ─────────────
@@ -459,8 +553,11 @@ function _injectStyles() {
     .md-callout-caution   { --callout-border: #E5534B; --callout-bg: rgba(229,83,75,0.06); }
 
     /* ── Interactive diagram card ─────────────────────────────────── */
+    /* No mount animation here — the scroll-reveal observer owns the entrance,
+       so the card fades in when it actually scrolls into view instead of the
+       moment it's built (which fired while still offscreen, and double-animated
+       once reveal was added). */
     .mermaid-card {
-      border: 1px solid var(--border);
       border-radius: var(--radius);
       margin: 18px 0;
       overflow: hidden;
@@ -468,15 +565,10 @@ function _injectStyles() {
         linear-gradient(var(--surface), var(--surface)) padding-box,
         linear-gradient(120deg, #57AB5A, #539BF5, #986EE2) border-box;
       border: 1px solid transparent;
-      animation: mm-fade-in 0.4s ease both;
       transition: box-shadow 0.25s ease;
     }
     .mermaid-card:hover {
       box-shadow: 0 4px 24px rgba(87,171,90,0.10), 0 2px 8px rgba(0,0,0,0.18);
-    }
-    @keyframes mm-fade-in {
-      from { opacity: 0; transform: translateY(6px); }
-      to   { opacity: 1; transform: none; }
     }
 
     .mermaid-card-head {
@@ -528,6 +620,7 @@ function _injectStyles() {
     }
     .mm-btn:hover { color: var(--green); border-color: var(--green); background: rgba(87,171,90,0.08); }
     .mm-btn:active { transform: scale(0.92); }
+    .mm-btn:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
 
     .mermaid-viewport {
       position: relative;
@@ -589,6 +682,23 @@ function _injectStyles() {
     }
     .notes-md a { color: var(--green); text-decoration: none; }
     .notes-md a:hover { text-decoration: underline; }
+
+    /* ── Scroll reveal ────────────────────────────────────────────── */
+    .reveal-hidden  { opacity: 0; transform: translateY(14px); }
+    .reveal-visible {
+      opacity: 1;
+      transform: translateY(0);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .reveal-hidden, .reveal-visible {
+        opacity: 1;
+        transform: none;
+        transition: none;
+      }
+      .mermaid-stage { transition: none; }
+    }
   `;
   document.head.appendChild(style);
 }
