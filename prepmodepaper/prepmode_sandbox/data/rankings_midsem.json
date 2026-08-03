@@ -1,0 +1,161 @@
+{
+  "exam_type": "midsem",
+  "decay": 1.0,
+  "mode": "normalized",
+  "total_papers": 5,
+  "years": [
+    2017,
+    2018,
+    2019,
+    2022,
+    2024
+  ],
+  "n_concepts": 12,
+  "generated_at": "2026-08-02T09:45:22.066623+00:00",
+  "concepts": [
+    {
+      "rank": 1,
+      "concept": "paging",
+      "label": "paging",
+      "gloss": "Page-based memory: pages/frames, page tables, TLBs, multi-level page tables, swapping to disk, page-replacement policies. Anything page/page-table/TLB/swap specific.",
+      "concept_score": 1.0,
+      "frequency_points": 6.0,
+      "marks_weight": 26.0,
+      "papers_appeared": 3,
+      "total_papers": 5,
+      "appearance_rate": 0.6
+    },
+    {
+      "rank": 2,
+      "concept": "file-systems",
+      "label": "file systems",
+      "gloss": "The file-system abstraction and implementation: files/directories, inodes, the file API (open/read/write), on-disk layout, locality (FFS-style). The FS data structures and API.",
+      "concept_score": 0.8696,
+      "frequency_points": 6.0,
+      "marks_weight": 20.0,
+      "papers_appeared": 3,
+      "total_papers": 5,
+      "appearance_rate": 0.6
+    },
+    {
+      "rank": 3,
+      "concept": "memory-virtualization",
+      "label": "memory virtualization",
+      "gloss": "Giving each process a private virtual address space: address translation, base-and-bounds, segmentation, virtual vs physical addresses. The abstraction and translation idea; page specifics belong to paging.",
+      "concept_score": 0.7913,
+      "frequency_points": 5.0,
+      "marks_weight": 21.0,
+      "papers_appeared": 4,
+      "total_papers": 5,
+      "appearance_rate": 0.8
+    },
+    {
+      "rank": 4,
+      "concept": "cpu-virtualization",
+      "label": "cpu virtualization",
+      "gloss": "The MECHANISM of sharing one CPU across many processes: limited direct execution, user/kernel mode switching, traps, system calls, timer interrupts. The mechanism, not the process abstraction and not the scheduling policy.",
+      "concept_score": 0.5717,
+      "frequency_points": 4.0,
+      "marks_weight": 15.5,
+      "papers_appeared": 4,
+      "total_papers": 5,
+      "appearance_rate": 0.8
+    },
+    {
+      "rank": 5,
+      "concept": "scheduling",
+      "label": "scheduling",
+      "gloss": "POLICIES for choosing what runs next: FIFO, SJF, STCF, Round Robin, MLFQ, lottery/proportional-share, metrics like turnaround and response time. The policy, not the CPU-sharing mechanism.",
+      "concept_score": 0.5174,
+      "frequency_points": 4.0,
+      "marks_weight": 13.0,
+      "papers_appeared": 2,
+      "total_papers": 5,
+      "appearance_rate": 0.4
+    },
+    {
+      "rank": 6,
+      "concept": "threads",
+      "label": "threads",
+      "gloss": "The thread abstraction and API: creating threads, thread vs process, shared address space, condition variables, semaphores, producer/consumer coordination.",
+      "concept_score": 0.5174,
+      "frequency_points": 4.0,
+      "marks_weight": 13.0,
+      "papers_appeared": 2,
+      "total_papers": 5,
+      "appearance_rate": 0.4
+    },
+    {
+      "rank": 7,
+      "concept": "persistence",
+      "label": "persistence",
+      "gloss": "I/O and storage foundations below the file system: devices, device drivers, the I/O stack, disks (HDD geometry, seek/rotation), RAID. How the OS talks to storage hardware.",
+      "concept_score": 0.3957,
+      "frequency_points": 3.0,
+      "marks_weight": 12.0,
+      "papers_appeared": 2,
+      "total_papers": 5,
+      "appearance_rate": 0.4
+    },
+    {
+      "rank": 8,
+      "concept": "processes",
+      "label": "processes",
+      "gloss": "The process ABSTRACTION: process API (fork/exec/wait), process states, the process control block, address-space layout. What a process is and how you create/control one.",
+      "concept_score": 0.3543,
+      "frequency_points": 4.0,
+      "marks_weight": 5.5,
+      "papers_appeared": 2,
+      "total_papers": 5,
+      "appearance_rate": 0.4
+    },
+    {
+      "rank": 9,
+      "concept": "data-integrity",
+      "label": "data integrity",
+      "gloss": "Keeping data correct across failures: crash consistency, journaling, fsck, write ordering, checksums, fault tolerance.",
+      "concept_score": 0.3304,
+      "frequency_points": 3.0,
+      "marks_weight": 9.0,
+      "papers_appeared": 2,
+      "total_papers": 5,
+      "appearance_rate": 0.4
+    },
+    {
+      "rank": 10,
+      "concept": "concurrency",
+      "label": "concurrency",
+      "gloss": "The general concurrency PROBLEM: race conditions, critical sections, atomicity, why mutual exclusion is needed, shared-state hazards. The problem, above the specific thread API or lock impl.",
+      "concept_score": 0.187,
+      "frequency_points": 2.0,
+      "marks_weight": 7.0,
+      "papers_appeared": 1,
+      "total_papers": 5,
+      "appearance_rate": 0.2
+    },
+    {
+      "rank": 11,
+      "concept": "locks",
+      "label": "locks",
+      "gloss": "Lock implementation and correctness: spinlocks, test-and-set / compare-and-swap, mutexes, lock granularity/contention, and DEADLOCK (its four conditions, avoidance, detection).",
+      "concept_score": 0.0,
+      "frequency_points": 1.0,
+      "marks_weight": 3.0,
+      "papers_appeared": 1,
+      "total_papers": 5,
+      "appearance_rate": 0.2
+    },
+    {
+      "rank": 12,
+      "concept": "computer-architecture",
+      "label": "computer architecture",
+      "gloss": "Hardware foundations the OS builds on: instruction execution, registers, memory hierarchy, caches, interrupts. Raw hardware behavior, NOT the OS abstractions layered over it.",
+      "concept_score": 0.0,
+      "frequency_points": 0,
+      "marks_weight": 0.0,
+      "papers_appeared": 0,
+      "total_papers": 5,
+      "appearance_rate": 0.0
+    }
+  ]
+}

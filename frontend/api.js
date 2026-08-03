@@ -11,6 +11,8 @@ export function authHeaders(json = true) {
   const s = JSON.parse(localStorage.getItem('maros_session') || 'null');
   const h = json ? { 'Content-Type': 'application/json' } : {};
   if (s?.access_token) h['Authorization'] = `Bearer ${s.access_token}`;
+  const profToken = sessionStorage.getItem('maros_prof_token');
+  if (profToken) h['X-Prof-Token'] = profToken;
   return h;
 }
 

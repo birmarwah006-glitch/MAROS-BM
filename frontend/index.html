@@ -200,12 +200,9 @@
       }
       const code = prompt('Enter professor passcode:');
       if (code === null) return;
-      if (code.trim() === 'VNIT2026') {
-        sessionStorage.setItem('maros_prof', '1');
-        window.location.href = 'professor.html';
-      } else {
-        alert('Incorrect passcode.');
-      }
+      sessionStorage.setItem('maros_prof_token', code.trim());
+      sessionStorage.setItem('maros_prof', '1');
+      window.location.href = 'professor.html';
     });
 
     studentCard.addEventListener('click', () => {

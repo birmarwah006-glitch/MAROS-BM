@@ -35,6 +35,22 @@
   .tab-panel { display: none; }
   .tab-panel.active { display: block; }
 
+  /* ── Prep Mode nav button (header) ── */
+  .prep-nav-btn {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--green);
+    background: var(--green-soft);
+    border: 1px solid var(--green-line);
+    border-radius: 100px;
+    padding: 7px 16px;
+    cursor: pointer;
+    transition: filter 0.2s;
+    white-space: nowrap;
+  }
+  .prep-nav-btn:hover { filter: brightness(1.15); }
+
   /* ── Assignment Card ── */
   .assignment-card {
     background: var(--surface);
@@ -211,7 +227,9 @@
 <div class="header">
   <a href="index.html" class="back-btn">← Back</a>
   <div class="logo">MA<span>ROS</span></div>
-  <div class="role-badge badge-student">STUDENT</div>
+  <div style="display:flex; align-items:center; gap:10px">
+    <div class="role-badge badge-student">STUDENT</div>
+  </div>
 </div>
 
 <!-- PORTAL -->
@@ -436,6 +454,10 @@
         <div class="oak-name">Prof Oak</div>
         <div class="oak-status">&#9679; Student Tutor Mode</div>
       </div>
+      <button id="oak-clear-btn" title="Clear this tab's conversation" style="
+        background:none; border:1px solid var(--border); border-radius:6px;
+        color:var(--muted2); cursor:pointer; padding:4px 10px; font-size:12px; margin-right:6px;
+      ">🗑</button>
       <button id="oak-expand-btn" title="Expand" style="
         background:none; border:1px solid var(--border); border-radius:6px;
         color:var(--muted2); cursor:pointer; padding:4px 10px; font-size:13px;
@@ -449,6 +471,12 @@
         I'm here to help you actually get it — not just memorize it.
       </div>
     </div>
+
+    <button id="prep-mode-nav-btn" class="prep-nav-btn" style="
+      margin: 0 16px 10px 16px;
+      width: calc(100% - 32px);
+      text-align: center;
+    ">📘 PREP MODE</button>
 
     <div class="oak-input-row">
       <input type="file" id="oak-file-input" accept=".pdf,.png,.jpg,.jpeg,.txt,.md" style="display:none">
@@ -493,7 +521,8 @@ function setOakTalking() {}
 
 import {
   getModules, getVideoUrl, getModuleNotes, generateQuiz, chatWithOak, STATE,
-  listPapers, assignPaper, generatePodcast, getPodcastStatus, getPodcastAudioUrl
+  listPapers, assignPaper, generatePodcast, getPodcastStatus, getPodcastAudioUrl,
+  getChatHistory
 } from './api.js';
 
 import { renderNotes } from './notes-renderer.js';
@@ -542,6 +571,142 @@ const OAK_THREADS = {
   classwork:   { history: [], dom: null, greeted: false },
 };
 
+// ═══════════════════════════════════════════
+// OAK CONVERSATION PERSISTENCE
+// Saves every tab's thread to localStorage, scoped to the logged-in student.
+// Survives reloads, lecture switches, and navigation. Cleared on logout.
+// NOTE: this is a device-local cache. The research-grade copy belongs in
+// Supabase (see supabase_layer.save_chat_message) — wire that from main.py's
+// chat endpoint so conversations enter the IRB dataset, not just this browser.
+// ═══════════════════════════════════════════
+
+function oakStoreKey() {
+  // Prefer a stable per-account id; fall back gracefully so a missing field
+  // never collapses two students onto the same key.
+  const sid = session?.id || session?.user_id || session?.email || 'anon';
+  return `maros_oak_threads_${sid}`;
+}
+
+function persistThreads() {
+  if (!session) return;
+  try {
+    // Snapshot the currently visible tab before writing — its DOM is live
+    // and may be ahead of OAK_THREADS[currentMode].dom.
+    OAK_THREADS[currentMode].dom =
+      document.getElementById('oak-messages').innerHTML;
+
+    const dump = {};
+    for (const [tab, t] of Object.entries(OAK_THREADS)) {
+      dump[tab] = { history: t.history, dom: t.dom, greeted: t.greeted };
+    }
+    localStorage.setItem(oakStoreKey(), JSON.stringify(dump));
+  } catch (e) {
+    // Non-fatal: a full or disabled localStorage must never break chat.
+    console.warn('[MAROS] Oak persist failed (non-fatal):', e);
+  }
+}
+
+// Render one message array (from the server, {role, content}) into the same
+// bubble HTML addOakMessage produces. Server role 'assistant' maps to 'oak'.
+function bubblesFromMessages(messages) {
+  const md = (text) => String(text)
+    .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
+    .replace(/\*(.+?)\*/g, '<i>$1</i>')
+    .replace(/\n/g, '<br>');
+  return (messages || []).map(m => {
+    const isOak = m.role === 'assistant' || m.role === 'oak';
+    return isOak
+      ? `<div class="oak-msg oak"><div class="oak-label">PROF OAK</div>${md(m.content)}</div>`
+      : `<div class="oak-msg user">${md(m.content)}</div>`;
+  }).join('');
+}
+
+// Restore saved conversations. SERVER is the source of truth (cross-device),
+// so a student sees their chats after logging in on any browser. localStorage
+// is only an offline fallback when the server can't be reached.
+async function restoreThreads() {
+  if (!session) return;
+
+  // 1) Try the server first — GET /chat/history → { threads: { mode: [msgs] } }
+  let serverThreads = null;
+  try {
+    const data = await getChatHistory('student');
+    serverThreads = (data && data.threads) ? data.threads : null;
+  } catch (e) {
+    console.warn('[MAROS] Server chat history unavailable, using local cache:', e);
+  }
+
+  if (serverThreads && Object.keys(serverThreads).length) {
+    for (const tab of Object.keys(OAK_THREADS)) {
+      const msgs = serverThreads[tab];
+      if (Array.isArray(msgs) && msgs.length) {
+        OAK_THREADS[tab].history = msgs.map(m => ({ role: m.role, content: m.content }));
+        // Rebuild the visible conversation: greeting bubble, then the saved turns.
+        const greeting = OAK_MODES[tab].greeting;
+        OAK_THREADS[tab].dom =
+          `<div class="oak-msg oak"><div class="oak-label">PROF OAK</div>${greeting}</div>` +
+          bubblesFromMessages(msgs);
+        OAK_THREADS[tab].greeted = true;
+      }
+    }
+    // keep the local cache in sync with what the server gave us
+    persistThreads();
+    repaintActiveThread();
+    return;
+  }
+
+  // 2) Fallback: local cache (offline / server empty)
+  let dump = null;
+  try { dump = JSON.parse(localStorage.getItem(oakStoreKey()) || 'null'); }
+  catch { dump = null; }
+  if (!dump) return;
+
+  for (const tab of Object.keys(OAK_THREADS)) {
+    if (dump[tab]) {
+      OAK_THREADS[tab].history = Array.isArray(dump[tab].history) ? dump[tab].history : [];
+      OAK_THREADS[tab].dom     = dump[tab].dom ?? null;
+      OAK_THREADS[tab].greeted = dump[tab].greeted || false;
+    }
+  }
+  repaintActiveThread();
+}
+
+// Point the live history ref at the active tab and repaint its saved DOM.
+function repaintActiveThread() {
+  chatHistory = OAK_THREADS[currentMode].history;
+  const savedDom = OAK_THREADS[currentMode].dom;
+  if (savedDom) {
+    const msgs = document.getElementById('oak-messages');
+    msgs.innerHTML = savedDom;
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+}
+
+async function clearCurrentThread() {
+  const persona = OAK_MODES[currentMode];
+  const thread  = OAK_THREADS[currentMode];
+  thread.history.length = 0;
+  thread.dom = null;
+  thread.greeted = false;
+
+  const msgs = document.getElementById('oak-messages');
+  msgs.innerHTML = '';
+  addOakMessage('oak', persona.greeting);   // addOakMessage persists locally for us
+  thread.greeted = true;
+  chatHistory = thread.history;
+
+  // Also clear the SERVER copy for just this tab, so it doesn't reload next login.
+  try {
+    const h = { ...AUTH_HEADERS };
+    await fetch(`${BASE}/chat/history?scope=student&mode=${encodeURIComponent(currentMode)}`, {
+      method: 'DELETE',
+      headers: h,
+    });
+  } catch (e) {
+    console.warn('[MAROS] Server clear failed (local cleared anyway):', e);
+  }
+}
+
 function switchOakMode(tab) {
   const prevMode = currentMode;
   if (tab === prevMode) return;
@@ -571,6 +736,8 @@ function switchOakMode(tab) {
 
   // Point chatHistory at this tab's thread
   chatHistory = thread.history;
+
+  persistThreads();   // remember which tab's DOM is current + any greeting added
 }
 
 // ── Tab switching ──
@@ -1264,6 +1431,11 @@ const AUTH_HEADERS = session ? {
 // Show student name in header
 document.querySelector('.role-badge').textContent = session?.name || 'STUDENT';
 
+// ── Prep Mode nav button ── redirects to the standalone prep mode page
+document.getElementById('prep-mode-nav-btn').addEventListener('click', () => {
+  window.location.href = 'prepmode.html';
+});
+
 async function loadAssignments() {
   try {
     const res = await fetch(`${BASE}/assignments`);
@@ -1412,6 +1584,7 @@ window.sendMessage = async function() {
 
   addOakMessage('user', msg);
   chatHistory.push({ role: 'user', content: msg, timestamp: new Date().toISOString() });
+  persistThreads();   // save the student's turn immediately, before the network call
   showTyping();
   setOakTalking(true);
 
@@ -1428,6 +1601,7 @@ window.sendMessage = async function() {
     removeTyping();
     addOakMessage('oak', reply.content);
     chatHistory.push({ role: 'assistant', content: reply.content, timestamp: new Date().toISOString() });
+    persistThreads();   // save Oak's reply
   } catch(e) {
     removeTyping();
     addOakMessage('oak', `Connection issue: ${e.message}`);
@@ -1452,6 +1626,7 @@ function addOakMessage(role, text) {
   div.innerHTML = role === 'oak' ? `<div class="oak-label">PROF OAK</div>${rendered}` : rendered;
   msgs.appendChild(div);
   msgs.scrollTop = msgs.scrollHeight;
+  persistThreads();   // every rendered message (greeting, system note, chat) is saved
 }
 function showTyping() {
   const msgs = document.getElementById('oak-messages');
@@ -1463,6 +1638,14 @@ function showTyping() {
   msgs.scrollTop = msgs.scrollHeight;
 }
 function removeTyping() { document.getElementById('typing')?.remove(); }
+
+// ── Oak clear-thread button ──
+document.getElementById('oak-clear-btn').addEventListener('click', () => {
+  if (confirm('Clear this tab\'s conversation? This can\'t be undone.')) {
+    clearCurrentThread();
+    persistThreads();
+  }
+});
 
 // ── Oak expand toggle ──
 document.getElementById('oak-expand-btn').addEventListener('click', () => {
@@ -1514,18 +1697,27 @@ document.getElementById('oak-file-input').addEventListener('change', async (e) =
 });
 
 // ── Logout (click name badge) ──
+// IMPORTANT: logout clears only the LOCAL cache, never the server copy — so the
+// student sees their conversations again after logging back in (that's the point).
 document.querySelector('.role-badge').style.cursor = 'pointer';
 document.querySelector('.role-badge').addEventListener('click', () => {
   if (confirm('Log out?')) {
+    const threadKey = oakStoreKey();
     localStorage.removeItem('maros_session');
+    localStorage.removeItem(threadKey);   // local cache only; oak_chats stays on the server
     window.location.href = 'index.html';
   }
 });
 
 // ── Boot ──
-init();
-loadPapers();
-loadAssignments();
+// restoreThreads() is async (it hits the server first). Await it so any saved
+// conversation is repainted before the tabs start adding greetings/messages.
+(async () => {
+  await restoreThreads();
+  init();
+  loadPapers();
+  loadAssignments();
+})();
 </script>
 
 
