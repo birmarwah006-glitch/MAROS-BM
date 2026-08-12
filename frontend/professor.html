@@ -386,6 +386,7 @@
 import { submitJob, pollJob, getManifest, generateQuiz, chatWithOak, STATE, assignPaper,
          parseQuizPdf, publishProfQuiz, listProfQuizzes, reviewModuleQuiz, publishModuleQuiz,
          getOakQuestionAnalytics, getChatHistory, authHeaders, BASE } from './api.js';
+import { renderChatContent } from './notes-renderer.js';
 
 function initOak() {}
 function setOakMode() {}
@@ -402,7 +403,6 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.classList.add('active');
     document.getElementById(`tab-${btn.dataset.tab}`).classList.add('active');
     if (btn.dataset.tab === 'analytics') loadAnalytics();
-    // quizzes tab removed — quiz creation now lives on the lecture tab (loaded via initial loadProfQuizzes())
   });
 });
 
@@ -508,7 +508,6 @@ function renderModules(modules) {
     card.addEventListener('click',()=>generateModuleQuiz(m)); grid.appendChild(card);
   }); document.getElementById('modules-section').style.display='block';
 }
-// v4: module click opens the review flow instead of autogen
 async function generateModuleQuiz(module) { openModuleReview(module); }
 
 // ═══ v4: MODULE QUIZ REVIEW ═══
@@ -631,31 +630,37 @@ async function loadAssignments() {
 }
 window.toggleDrawer=function(id){ document.getElementById(`drawer-${id}`)?.classList.toggle('open'); };
 
-// ═══ OAK CHAT ═══
+// ═══ OAK CHAT — FIXED: renders mermaid diagrams + code blocks via renderChatContent ═══
+async function addOakMessage(role, text) {
+  const msgs = document.getElementById('oak-messages');
+  const div = document.createElement('div');
+  div.className = `oak-msg ${role}`;
+  if (role === 'oak') {
+    div.innerHTML = '<div class="oak-label">PROF OAK</div><div class="oak-msg-body"></div>';
+    msgs.appendChild(div);
+    await renderChatContent(text, div.querySelector('.oak-msg-body'));
+  } else {
+    div.textContent = text;
+    msgs.appendChild(div);
+  }
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
 async function sendMessage() {
   const input=document.getElementById('oak-input'), msg=input.value.trim(); if(!msg) return; input.value='';
-  addOakMessage('user',msg); chatHistory.push({role:'user',content:msg,timestamp:new Date().toISOString()}); showTyping();
-  try { const reply=await chatWithOak({message:msg,jobId:currentJobId,moduleId:null,history:chatHistory,role:'professor'}); removeTyping(); addOakMessage('oak',reply.content); chatHistory.push({role:'assistant',content:reply.content,timestamp:new Date().toISOString()}); } catch(e){ removeTyping(); addOakMessage('oak',`Connection issue: ${e.message}`); }
+  await addOakMessage('user',msg); chatHistory.push({role:'user',content:msg,timestamp:new Date().toISOString()}); showTyping();
+  try { const reply=await chatWithOak({message:msg,jobId:currentJobId,moduleId:null,history:chatHistory,role:'professor'}); removeTyping(); await addOakMessage('oak',reply.content); chatHistory.push({role:'assistant',content:reply.content,timestamp:new Date().toISOString()}); } catch(e){ removeTyping(); await addOakMessage('oak',`Connection issue: ${e.message}`); }
 }
 document.getElementById('oak-send-btn').addEventListener('click', sendMessage);
 document.getElementById('oak-input').addEventListener('keydown',(e)=>{ if(e.key==='Enter') sendMessage(); });
-function addOakMessage(role,text) { const msgs=document.getElementById('oak-messages'), div=document.createElement('div'); div.className=`oak-msg ${role}`; div.innerHTML=role==='oak'?`<div class="oak-label">PROF OAK</div>${text}`:text; msgs.appendChild(div); msgs.scrollTop=msgs.scrollHeight; }
 function showTyping() { const msgs=document.getElementById('oak-messages'), div=document.createElement('div'); div.className='oak-msg oak'; div.id='typing'; div.innerHTML='<div class="oak-label">PROF OAK</div><div class="typing"><span></span><span></span><span></span></div>'; msgs.appendChild(div); msgs.scrollTop=msgs.scrollHeight; }
 function removeTyping() { document.getElementById('typing')?.remove(); }
 
-// ═══ OAK CHAT PERSISTENCE (server-side, shared "professor" thread) ═══
-// The professor logs in with a shared passcode (no per-account id), so all
-// professor chats live under owner_key="professor" in oak_chats. On boot we
-// pull them back so the professor sees prior conversations after logging in.
-const md = (t) => String(t)
-  .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
-  .replace(/\*(.+?)\*/g, '<i>$1</i>')
-  .replace(/\n/g, '<br>');
-
+// ═══ OAK CHAT PERSISTENCE — FIXED: renders restored messages through renderChatContent ═══
 async function restoreProfChat() {
   let threads = null;
   try {
-    const data = await getChatHistory('professor');   // GET /chat/history?scope=professor
+    const data = await getChatHistory('professor');
     threads = (data && data.threads) ? data.threads : null;
   } catch (e) {
     console.warn('[MAROS] Prof chat history unavailable:', e);
@@ -663,8 +668,6 @@ async function restoreProfChat() {
   }
   if (!threads) return;
 
-  // The prof page never sets a mode, so turns are saved under "videos".
-  // Merge every mode's messages just in case, preserving array order.
   const messages = [];
   for (const mode of Object.keys(threads)) {
     if (Array.isArray(threads[mode])) messages.push(...threads[mode]);
@@ -673,21 +676,27 @@ async function restoreProfChat() {
 
   const msgs = document.getElementById('oak-messages');
   // Keep the greeting, then replay saved turns beneath it.
-  msgs.innerHTML =
-    `<div class="oak-msg oak"><div class="oak-label">PROF OAK</div>${PROF_GREETING}</div>` +
-    messages.map(m => {
-      const isOak = m.role === 'assistant' || m.role === 'oak';
-      return isOak
-        ? `<div class="oak-msg oak"><div class="oak-label">PROF OAK</div>${md(m.content)}</div>`
-        : `<div class="oak-msg user">${md(m.content)}</div>`;
-    }).join('');
+  msgs.innerHTML = `<div class="oak-msg oak"><div class="oak-label">PROF OAK</div>${PROF_GREETING}</div>`;
+
+  for (const m of messages) {
+    const isOak = m.role === 'assistant' || m.role === 'oak';
+    const div = document.createElement('div');
+    div.className = isOak ? 'oak-msg oak' : 'oak-msg user';
+    if (isOak) {
+      div.innerHTML = '<div class="oak-label">PROF OAK</div><div class="oak-msg-body"></div>';
+      msgs.appendChild(div);
+      await renderChatContent(m.content, div.querySelector('.oak-msg-body'));
+    } else {
+      div.textContent = m.content;
+      msgs.appendChild(div);
+    }
+  }
   msgs.scrollTop = msgs.scrollHeight;
 
-  // Seed the in-memory history so the LLM keeps context on the next message.
   chatHistory = messages.map(m => ({ role: m.role, content: m.content }));
 }
 
-// Clear button → wipe the server "professor" thread, then reset the sidebar.
+// Clear button
 document.getElementById('oak-clear-btn').addEventListener('click', async () => {
   if (!confirm('Clear the professor conversation? This can\'t be undone.')) return;
   try {
@@ -702,7 +711,7 @@ document.getElementById('oak-clear-btn').addEventListener('click', async () => {
 
 // ── Boot ──
 initOak('oak-canvas'); setOakMode('corner'); loadPapers(); loadAssignments(); loadProfQuizzes();
-restoreProfChat();   // repaint any saved professor conversation
+restoreProfChat();
 </script>
 <script>
   document.addEventListener('DOMContentLoaded',()=>{

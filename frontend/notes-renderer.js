@@ -19,8 +19,8 @@
 // NEW: content reveals on scroll. #notes-content is an internally-scrolling
 // box (student.html sets max-height:500px; overflow-y:auto), so the reveal
 // observer is rooted on that container, not the page viewport. Diagram cards
-// go further and stagger their nodes/edges in one at a time, so a concept map
-// draws itself rather than appearing fully formed.
+// go further and stagger their nodes/edges in one at a time, so a concept
+// map draws itself rather than appearing fully formed.
 
 // ─── Callout preprocessor ────────────────────────────────────────────────────
 const CALLOUT_TYPES = ['note', 'tip', 'important', 'warning', 'caution'];
@@ -62,6 +62,106 @@ function _extractCallouts(md) {
   return { cleaned: out.join('\n'), callouts };
 }
 
+// ─── Math extractor ───────────────────────────────────────────────────────
+// $$...$$ = display math, $...$ = inline math. Runs BEFORE callout/block
+// parsing (same reason callouts are extracted first — so bold/italic/code
+// regexes in _inlineFormat never get a chance to mangle LaTeX). Skips fenced
+// code blocks entirely so code containing literal $ (shell prompts, etc.)
+// is left untouched.
+function _extractMath(md) {
+  const mathBlocks = []; // { tex, display }
+
+  const parts = md.split(/(```[\s\S]*?```)/g);
+  const processed = parts.map((part) => {
+    if (part.startsWith('```')) return part; // leave code fences untouched
+
+    // Display math first — $$...$$ can span multiple lines.
+    part = part.replace(/\$\$([\s\S]+?)\$\$/g, (m, tex) => {
+      const id = mathBlocks.length;
+      mathBlocks.push({ tex: tex.replace(/^>\s?/gm, '').trim(), display: true });
+      return `\n%%MATHBLOCK_${id}%%\n`;
+    });
+
+    // Inline math — pandoc-style heuristic so "$5 and $10" doesn't get read
+    // as math: opening $ can't be followed by whitespace, closing $ can't be
+    // preceded by whitespace or immediately followed by a digit.
+    part = part.replace(/\$(?!\s)((?:\\\$|[^$\n])+?)(?<!\s)\$(?!\d)/g, (m, tex) => {
+      const id = mathBlocks.length;
+      mathBlocks.push({ tex: tex.trim(), display: false });
+      return `%%MATHINLINE_${id}%%`;
+    });
+
+    return part;
+  });
+
+  return { cleaned: processed.join(''), mathBlocks };
+}
+
+// ─── KaTeX loader (lazy, multi-CDN fallback — same shape as _loadMermaid) ──
+// If ALL CDNs fail, math falls back to readable raw LaTeX text (styled like
+// inline code / a bordered block) instead of showing broken markup.
+let _katex = null;
+let _katexFailed = false;
+
+const KATEX_CDNS = [
+  { js: 'https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.mjs', css: 'https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css' },
+  { js: 'https://unpkg.com/katex@0.16.11/dist/katex.mjs',            css: 'https://unpkg.com/katex@0.16.11/dist/katex.min.css' },
+];
+
+function _ensureKatexStyles(cssUrl) {
+  if (document.getElementById('katex-styles')) return;
+  const link = document.createElement('link');
+  link.id = 'katex-styles';
+  link.rel = 'stylesheet';
+  link.href = cssUrl;
+  document.head.appendChild(link);
+}
+
+async function _loadKatex() {
+  if (_katex) return _katex;
+  if (_katexFailed) return null;
+
+  for (const cdn of KATEX_CDNS) {
+    try {
+      const mod = await import(cdn.js);
+      _katex = mod.default || mod;
+      _ensureKatexStyles(cdn.css);
+      console.log('[notes-renderer] katex loaded from', cdn.js);
+      return _katex;
+    } catch (err) {
+      console.warn('[notes-renderer] katex failed from', cdn.js, err);
+    }
+  }
+  _katexFailed = true;
+  console.warn('[notes-renderer] all katex CDNs failed — math will show as raw text');
+  return null;
+}
+
+async function _renderMathBlocks(container, mathBlocks) {
+  const mathEls = container.querySelectorAll('[data-math-id]');
+  if (!mathEls.length) return;
+
+  const katex = await _loadKatex();
+
+  mathEls.forEach((el) => {
+    const entry = mathBlocks[parseInt(el.dataset.mathId, 10)];
+    if (!entry) return;
+
+    if (!katex) {
+      el.classList.add('math-fallback');
+      el.textContent = entry.display ? entry.tex : `$${entry.tex}$`;
+      return;
+    }
+    try {
+      katex.render(entry.tex, el, { throwOnError: false, displayMode: entry.display, output: 'html' });
+    } catch (err) {
+      console.warn('[notes-renderer] katex render failed for block', el.dataset.mathId, err);
+      el.classList.add('math-fallback');
+      el.textContent = entry.display ? entry.tex : `$${entry.tex}$`;
+    }
+  });
+}
+
 // ─── Inline formatting ──────────────────────────────────────────────────────
 function _esc(s) {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -73,6 +173,7 @@ function _inlineFormat(text) {
   s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
   s = s.replace(/\*([^*]+)\*/g, '<em>$1</em>');
   s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+  s = s.replace(/%%MATHINLINE_(\d+)%%/g, '<span class="math-inline" data-math-id="$1"></span>');
   s = s.replace(/\n/g, '<br>');
   return s;
 }
@@ -101,6 +202,14 @@ function _renderMarkdown(md, callouts) {
     if (calloutMatch) {
       closeList();
       html.push(callouts[parseInt(calloutMatch[1])]);
+      i++; continue;
+    }
+
+    // Display-math placeholder
+    const mathBlockMatch = trimmed.match(/^%%MATHBLOCK_(\d+)%%$/);
+    if (mathBlockMatch) {
+      closeList();
+      html.push(`<div class="math-display" data-math-id="${mathBlockMatch[1]}"></div>`);
       i++; continue;
     }
 
@@ -183,6 +292,7 @@ function _renderMarkdown(md, callouts) {
            !lines[i].trim().startsWith('```') &&
            !lines[i].trim().startsWith('>') &&
            !lines[i].trim().match(/^%%CALLOUT_\d+%%$/) &&
+           !lines[i].trim().match(/^%%MATHBLOCK_\d+%%$/) &&
            lines[i].trim() !== '%%CONCEPT_MAP%%' &&
            !lines[i].trim().match(/^[\-\*]\s+/) &&
            !lines[i].trim().match(/^\d+\.\s+/)) {
@@ -419,6 +529,129 @@ async function _renderMermaidBlocks(container) {
   }
 }
 
+// ─── Monaco code runner card (lazy Monaco load, Piston execution) ───────────
+// Lazy-loaded the same way mermaid is: only pulled in if a run-<lang> block
+// actually appears, so chat messages without runnable code pay zero cost.
+
+let _monacoLoadPromise = null;
+
+function _loadMonaco() {
+  if (window.monaco) return Promise.resolve(window.monaco);
+  if (_monacoLoadPromise) return _monacoLoadPromise;
+
+  _monacoLoadPromise = new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.js';
+    script.onload = () => {
+      window.require.config({
+        paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs' },
+      });
+      window.require(['vs/editor/editor.main'], () => resolve(window.monaco));
+    };
+    script.onerror = () => reject(new Error('Monaco failed to load from CDN'));
+    document.head.appendChild(script);
+  });
+  return _monacoLoadPromise;
+}
+
+const _MONACO_LANG_ALIASES = {
+  py: 'python', js: 'javascript', ts: 'typescript',
+  cpp: 'cpp', 'c++': 'cpp', cs: 'csharp',
+};
+
+function _monacoLangId(lang) {
+  return _MONACO_LANG_ALIASES[lang] || lang;
+}
+
+// API base — student.html defines `const BASE = 'http://localhost:8000'` at
+// module scope, but that's not visible here. Read window.MAROS_API_BASE first
+// so this stays swappable per-deploy; fall back to localhost for dev.
+function _apiBase() {
+  return window.MAROS_API_BASE || 'http://localhost:8000';
+}
+
+function _buildCodeRunnerCard(code, lang) {
+  const card = document.createElement('div');
+  card.className = 'code-runner-card';
+  card.innerHTML = `
+    <div class="code-runner-head">
+      <span class="code-runner-badge">${lang.toUpperCase()}</span>
+      <button class="cr-run-btn" type="button">&#9654; Run</button>
+    </div>
+    <div class="code-runner-editor"></div>
+    <div class="code-runner-output" style="display:none"></div>
+  `;
+  const editorEl = card.querySelector('.code-runner-editor');
+  const outputEl = card.querySelector('.code-runner-output');
+  const runBtn   = card.querySelector('.cr-run-btn');
+
+  let editor = null;
+  _loadMonaco().then((monaco) => {
+    const p = _palette();
+    monaco.editor.defineTheme('maros-dark', {
+      base: 'vs-dark', inherit: true, rules: [],
+      colors: { 'editor.background': p.surface },
+    });
+    editor = monaco.editor.create(editorEl, {
+      value: code,
+      language: _monacoLangId(lang),
+      theme: p.light ? 'vs' : 'maros-dark',
+      minimap: { enabled: false },
+      fontSize: 13,
+      fontFamily: 'var(--font-mono), monospace',
+      automaticLayout: true,
+      scrollBeyondLastLine: false,
+      padding: { top: 10, bottom: 10 },
+    });
+  }).catch((err) => {
+    console.warn('[notes-renderer] Monaco load failed, falling back to plain code:', err);
+    editorEl.innerHTML = `<pre style="margin:0;padding:12px"><code>${_esc(code)}</code></pre>`;
+  });
+
+  runBtn.addEventListener('click', async () => {
+    runBtn.disabled = true;
+    runBtn.innerHTML = 'Running&hellip;';
+    outputEl.style.display = 'block';
+    outputEl.innerHTML = '<div class="cr-output-label">OUTPUT</div><div class="cr-thinking">Running&hellip;</div>';
+    try {
+      const currentCode = editor ? editor.getValue() : code;
+      const res = await fetch(`${_apiBase()}/chat/execute-code`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ language: lang, code: currentCode }),
+      });
+      const data = await res.json();
+      const combined = [data.stdout, data.stderr].filter(Boolean).join('\n');
+      outputEl.innerHTML =
+        `<div class="cr-output-label">OUTPUT</div><pre>${_esc(combined || '(no output)')}</pre>`;
+    } catch (err) {
+      outputEl.innerHTML =
+        `<div class="cr-output-label" style="color:#E5534B">ERROR</div><pre>${_esc(err.message)}</pre>`;
+    } finally {
+      runBtn.disabled = false;
+      runBtn.innerHTML = '&#9654; Run';
+    }
+  });
+
+  return card;
+}
+
+async function _renderRunnableCodeBlocks(container) {
+  // matches <code class="language-run-python">, language-run-javascript, etc.
+  // (Oak's ```run-python fences produce this class via the markdown parser's
+  // `class="language-${lang}"` logic — no parser change needed)
+  const blocks = [...container.querySelectorAll('pre > code')]
+    .filter(el => [...el.classList].some(c => c.startsWith('language-run-')));
+
+  for (const codeEl of blocks) {
+    const pre = codeEl.parentElement;
+    const langClass = [...codeEl.classList].find(c => c.startsWith('language-run-'));
+    const lang = langClass.replace('language-run-', '');
+    const card = _buildCodeRunnerCard(codeEl.textContent, lang);
+    pre.replaceWith(card);
+  }
+}
+
 // ─── Scroll reveal ──────────────────────────────────────────────────────────
 // Respect the OS reduced-motion setting: skip all staggering and just show
 // everything. Cheap to honour, and animation here is decoration, not meaning.
@@ -461,7 +694,7 @@ function _animateDiagramNodes(card) {
 
 function _initScrollReveal(container) {
   const targets = container.querySelectorAll(
-    'h1, h2, h3, h4, p, blockquote, pre, ul, ol, .md-callout, .mermaid-card'
+    'h1, h2, h3, h4, p, blockquote, pre, ul, ol, .md-callout, .mermaid-card, .math-display'
   );
   if (!targets.length) return;
 
@@ -503,8 +736,10 @@ export async function renderNotes(markdownStr, targetEl) {
     return;
   }
 
-  // 1. Extract callouts from raw markdown (before any other parsing)
-  const { cleaned, callouts } = _extractCallouts(markdownStr);
+  // 1. Extract math, then callouts, from raw markdown (before any other
+  //    parsing — math first so callout bodies can contain LaTeX too)
+  const { cleaned: mathCleaned, mathBlocks } = _extractMath(markdownStr);
+  const { cleaned, callouts } = _extractCallouts(mathCleaned);
 
   // 2. Render markdown → HTML (self-contained, no CDN)
   const html = _renderMarkdown(cleaned, callouts);
@@ -513,9 +748,30 @@ export async function renderNotes(markdownStr, targetEl) {
   // 3. Render mermaid diagrams (lazy CDN load, graceful fallback)
   await _renderMermaidBlocks(targetEl);
 
+  // 3b. Render math (lazy KaTeX load, graceful fallback to raw LaTeX text)
+  await _renderMathBlocks(targetEl, mathBlocks);
+
   // 4. Reveal content as the student scrolls the notes panel. Runs LAST so the
   //    diagram cards already exist in the DOM and get observed alongside text.
   _initScrollReveal(targetEl);
+}
+
+// ─── Public: render one Oak chat message (markdown + mermaid + runnable code) ──
+// Same core pipeline as renderNotes, minus the scroll-reveal (chat bubbles are
+// short and appended live, not scrolled into a fixed-height panel). Reuses the
+// exact diagram-card + pan/zoom/theme infra, and adds Monaco run-cards for any
+// ```run-<lang> blocks Oak emits for coding-type answers.
+export async function renderChatContent(markdownStr, targetEl) {
+  if (!targetEl) return;
+  if (!markdownStr || !markdownStr.trim()) { targetEl.innerHTML = ''; return; }
+
+  const { cleaned: mathCleaned, mathBlocks } = _extractMath(markdownStr);
+  const { cleaned, callouts } = _extractCallouts(mathCleaned);
+  targetEl.innerHTML = _renderMarkdown(cleaned, callouts);
+
+  await _renderMermaidBlocks(targetEl);
+  await _renderMathBlocks(targetEl, mathBlocks);
+  await _renderRunnableCodeBlocks(targetEl);
 }
 
 // ─── CSS — injected once at import time (synchronous, no fetch) ─────────────
@@ -649,6 +905,82 @@ function _injectStyles() {
       padding: 10px 14px;
       border-radius: 4px;
     }
+
+    /* ── Math (KaTeX) ──────────────────────────────────────────────── */
+    .math-display {
+      overflow-x: auto;
+      margin: 14px 0;
+      padding: 4px 0;
+      text-align: center;
+      color: var(--fg);
+    }
+    .math-display .katex-display { margin: 0; }
+    .math-inline { color: var(--fg); }
+    .math-fallback {
+      font-family: var(--font-mono);
+      font-size: 0.95em;
+      background: var(--surface);
+      padding: 1px 5px;
+      border-radius: 3px;
+      color: var(--muted2);
+    }
+    .math-display.math-fallback {
+      display: block;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      text-align: left;
+      white-space: pre-wrap;
+    }
+
+    /* ── Oak chat message body (renderChatContent target) ─────────── */
+    .oak-msg-body { font-size: 13px; line-height: 1.65; color: var(--fg); }
+    .oak-msg-body p { margin: 6px 0; }
+    .oak-msg-body h1, .oak-msg-body h2, .oak-msg-body h3, .oak-msg-body h4 {
+      font-size: 13px; font-weight: 700; color: var(--fg); margin: 10px 0 4px;
+    }
+    .oak-msg-body ul, .oak-msg-body ol { padding-left: 18px; margin: 6px 0; }
+    .oak-msg-body pre {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 6px;
+      padding: 10px 12px; overflow-x: auto; margin: 8px 0; font-size: 12px;
+    }
+    .oak-msg-body code { font-family: var(--font-mono); font-size: 12px; color: var(--green); }
+    .oak-msg-body pre code { color: var(--fg); }
+
+    /* ── Monaco code runner card ──────────────────────────────────── */
+    .code-runner-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin: 10px 0;
+      background: var(--surface);
+    }
+    .code-runner-head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 6px 10px; border-bottom: 1px solid var(--border);
+      background: rgba(0,0,0,0.10);
+    }
+    body.light .code-runner-head { background: rgba(0,0,0,0.03); }
+    .code-runner-badge {
+      font-family: var(--font-mono); font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
+      color: var(--green); padding: 2px 8px; border: 1px solid var(--green); border-radius: 999px;
+      background: rgba(87,171,90,0.08);
+    }
+    .cr-run-btn {
+      font-family: var(--font-mono); font-size: 11px; color: var(--green);
+      background: rgba(87,171,90,0.08); border: 1px solid var(--green);
+      border-radius: 6px; padding: 4px 12px; cursor: pointer; transition: filter 0.15s;
+    }
+    .cr-run-btn:hover { filter: brightness(1.15); }
+    .cr-run-btn:disabled { opacity: 0.6; cursor: default; }
+    .code-runner-editor { height: 200px; }
+    .code-runner-output {
+      border-top: 1px solid var(--border); padding: 10px 12px;
+      font-family: var(--font-mono); font-size: 12px;
+    }
+    .cr-output-label { color: var(--green); font-size: 10px; letter-spacing: 0.08em; margin-bottom: 4px; }
+    .code-runner-output pre { margin: 0; white-space: pre-wrap; word-break: break-word; color: var(--fg); }
+    .cr-thinking { color: var(--muted2); }
 
     /* ── Notes typography (.notes-md parent) ──────────────────────── */
     .notes-md { font-size: 13px; line-height: 1.7; color: var(--muted2); }

@@ -75,6 +75,10 @@ class QuizSubmitResult(BaseModel):
 class YouTubeIngestRequest(BaseModel):
     url: str
 
+class CodeExecRequest(BaseModel):
+    language: str
+    code:     str
+
 
 # ─────────────────────────────────────────────
 # APP
@@ -106,6 +110,10 @@ app.include_router(prof_router)
 # ── PREP MODE (insert 1): kickoff/plan/resume routes ──
 from prep_routes import router as prep_router
 app.include_router(prep_router)
+
+# ── QUICK EXPLAIN: single-voice notes explainer (podcast alternative) ──
+from explain_routes import router as explain_router
+app.include_router(explain_router)
 
 
 # ─────────────────────────────────────────────
@@ -487,6 +495,95 @@ async def submit_quiz(
         score          = score,
         misconceptions = misconceptions,
     )
+
+
+# ─────────────────────────────────────────────
+# CODE EXECUTION — Monaco terminal in Oak chat, proxied to glot.io
+# History: started on the free Piston API (emkc.org) -> Piston locked its
+# public API behind manual Discord approval on Feb 15, 2026 (401s) ->
+# tried Judge0 CE on RapidAPI -> that tier turned out to be pay-per-use and
+# required a card on file. glot.io is open-source, free, and only needs an
+# email-signup token (glot.io/account/token) — no card, no per-call cost.
+# Set GLOT_API_TOKEN in the server environment before deploying.
+# TODO (post-beta, no rush): self-host Piston via Docker to drop the
+# external dependency entirely once there's time to test it properly on
+# the VNIT server rather than under Friday deadline pressure.
+# ─────────────────────────────────────────────
+
+GLOT_API_TOKEN = os.getenv("GLOT_API_TOKEN", "")
+GLOT_BASE_URL  = "https://run.glot.io/languages"
+
+# glot.io language slugs + the filename each needs (glot infers the runtime
+# from the file extension; for compiled languages the extension must be
+# correct or the run fails). NOTE: Java is a known edge case — javac requires
+# the filename to match the public class name, so this only works cleanly if
+# Oak's generated code uses `public class Main`. Fine for Python/C/C++, which
+# covers the vast majority of an OS course's run-<lang> blocks.
+GLOT_LANG_MAP = {
+    "python":     ("python", "main.py"),
+    "py":         ("python", "main.py"),
+    "javascript": ("javascript", "main.js"),
+    "js":         ("javascript", "main.js"),
+    "typescript": ("typescript", "main.ts"),
+    "ts":         ("typescript", "main.ts"),
+    "java":       ("java", "Main.java"),
+    "c":          ("c", "main.c"),
+    "cpp":        ("cpp", "main.cpp"),
+    "c++":        ("cpp", "main.cpp"),
+    "csharp":     ("csharp", "main.cs"),
+    "cs":         ("csharp", "main.cs"),
+    "go":         ("go", "main.go"),
+    "rust":       ("rust", "main.rs"),
+}
+
+@app.post("/chat/execute-code")
+async def execute_code(req: CodeExecRequest):
+    """Proxy a code snippet to glot.io and return stdout/stderr.
+    Server-side proxy so the frontend never talks to glot.io or holds the
+    token. glot.io runs synchronously (single request/response, no polling).
+    Surfaces the `error` field (glot's compile/runtime error channel)
+    alongside stderr so a compile failure is never silently blank."""
+    if not GLOT_API_TOKEN:
+        raise HTTPException(
+            status_code=503,
+            detail="Code execution isn't configured — GLOT_API_TOKEN is missing on the server.",
+        )
+
+    lang_key = req.language.lower().strip()
+    mapping  = GLOT_LANG_MAP.get(lang_key)
+    if mapping is None:
+        raise HTTPException(status_code=400, detail=f"Unsupported language: {req.language}")
+    glot_lang, filename = mapping
+
+    try:
+        res = requests.post(
+            f"{GLOT_BASE_URL}/{glot_lang}/latest",
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Token {GLOT_API_TOKEN}",
+            },
+            json={"files": [{"name": filename, "content": req.code}]},
+            timeout=30,
+        )
+        res.raise_for_status()
+        data = res.json()
+
+        stdout = data.get("stdout") or ""
+        stderr = data.get("stderr") or ""
+        error  = data.get("error") or ""   # compile errors / runtime crashes land here
+
+        if error and not stderr:
+            stderr = error
+        elif error:
+            stderr = f"{stderr}\n{error}".strip()
+
+        return {
+            "stdout":    stdout,
+            "stderr":    stderr,
+            "exit_code": 1 if (stderr or error) else 0,
+        }
+    except requests.exceptions.RequestException as e:
+        raise HTTPException(status_code=502, detail=f"Execution failed: {e}")
 
 
 # ─────────────────────────────────────────────
@@ -1129,6 +1226,7 @@ async def assign_paper(request: Request, file: UploadFile = File(...)):
         "domain"     : "general",
         "assigned_at": datetime.utcnow().isoformat(),
         "has_podcast": False,
+        "has_explain": False,
         "visible"    : True,
         "owner_id"   : owner_id,   # v4: None = professor/global, uuid = that student only
     }
@@ -1405,6 +1503,29 @@ def download_submission(aid: str, filename: str):
 # OAK PERSONALITY PROMPTS — never exposed to client
 # ─────────────────────────────────────────────
 
+# Shared visual rules appended to every teaching persona's system prompt:
+# auto-pair a Mermaid flowchart with any process/algorithm explanation, emit
+# runnable ```run-<lang> blocks only for coding-type answers, and format any
+# math as LaTeX so notes-renderer.js's KaTeX pipeline can render it.
+OAK_VISUAL_RULES = """
+
+VISUALS:
+- Whenever you explain a process, algorithm, workflow, or how something works step-by-step, ALWAYS pair your text explanation with a Mermaid flowchart of that process in a fenced ```mermaid block using `flowchart TD` syntax. Put the text explanation first, the diagram block right after it. Do this automatically — never wait to be asked, and never produce the diagram without the text explanation alongside it.
+- Whenever your answer's core content IS code the student should be able to run and experiment with (implementing something, solving a coding/DSA question, tracing through code execution), put that code in a fenced block tagged ```run-<language> (e.g. ```run-python, ```run-javascript) instead of a plain ```<language> block.
+- Use plain ```<language> (no "run-" prefix) for short illustrative snippets that are not themselves the point of the answer — e.g. a one-line syntax example inside a conceptual explanation.
+- ALWAYS wrap EVERY node label in double quotes so special characters can't break the parser: write A["reader_count = 0"], never A[reader_count = 0]. This is REQUIRED when a label contains parentheses ( ), plus/minus (+ - ++ --), equals =, slash, or colon — unquoted, ANY of those make the WHOLE diagram fail and show as raw text.
+- Keep the flowchart FLAT and small: at most ~8 nodes, top-to-bottom, and do NOT use `subgraph` blocks. A small correct diagram beats a big broken one.
+- Define each node id once with its quoted label, then refer to it by id alone afterwards. Never reuse a node id inside two different groups.
+- One flowchart per answer is enough. Keep Mermaid syntax valid — no fenced blocks inside the mermaid block, no trailing commentary inside it.
+- Labeled edge syntax is exactly: A -->|label| B — the label sits between two pipes, and NOTHING follows the closing pipe except the target node. Never write A -->|label|> B (a trailing > after the pipe is invalid and will fail to render). Example of a correct 3-step flowchart:
+```mermaid
+flowchart TD
+A["Parent process"] -->|fork| B["Child process"]
+B -->|exit| C["OS"]
+C -->|unblock| A
+```
+- Whenever your answer involves a mathematical expression, formula, or equation (throughput, turnaround time, page-replacement math, complexity notation, probability, etc.), write it as LaTeX: wrap inline math in single dollar signs like $T_{avg} = \\frac{\\sum T_i}{n}$, and standalone/display equations on their own line in double dollar signs like $$X = Y + Z$$. Use real LaTeX commands (\\frac, \\sum, \\sqrt, ^{}, _{}, \\leq, \\geq, \\times) — never plain ASCII approximations like ^ or -> or sqrt() for actual math. Don't wrap non-mathematical text in dollar signs."""
+
 OAK_PERSONAS = {
     "videos": {
         "system": """You are Prof Oak — a warm, sharp teaching assistant at VNIT Nagpur.
@@ -1426,11 +1547,13 @@ Use this structure, with a BLANK LINE between each section:
 
 **Example:** one concrete, relatable example
 
+**Compare it:** one comparison to a DIFFERENT relatable thing the student already knows — "it's like X, but for Y". The comparison must mirror HOW the concept works, not just share the topic. Never reuse the analogy from "How it works" — this is a second, different mapping.
+
 *Quick Check:* end with ONE specific question to verify they understood
 
 IMPORTANT: If the student ALSO asks something else (like exam importance, past questions, or a follow-up), answer that too — add a brief **Exam Relevance:** line before the Quick Check. Always address everything the student asked, not just the "teach me" part.
 
-When the student answers your Quick Check: evaluate it. If correct, say so briefly and offer the next related idea. If wrong, correct gently in 1-2 sentences and re-ask differently. Always drive the lesson forward.""",
+When the student answers your Quick Check: evaluate it. If correct, say so briefly and offer the next related idea. If wrong, correct gently in 1-2 sentences and re-ask differently. Always drive the lesson forward.""" + OAK_VISUAL_RULES,
 
         "refine": """You are Prof Oak — a warm teaching assistant at VNIT Nagpur.
 Another system retrieved accurate information. Rewrite it as a short,
@@ -1466,7 +1589,7 @@ Rules:
 - If they're stuck → break it into the smallest possible concrete step
 - If they haven't started implementing → call it out directly
 - When you write code: before returning it, mentally verify every variable is declared in the scope where it's used (especially variables declared inside loops or blocks) and that every function you call exists in the snippet. Only ship code that runs.
-- Keep responses under 4 sentences + 1 action item""",
+- Keep responses under 4 sentences + 1 action item""" + OAK_VISUAL_RULES,
 
         "refine": """You are Prof Oak in Research Execution Mode — direct, implementation-obsessed.
 Another system retrieved grounded context. Use it to push the student toward execution.
@@ -1494,7 +1617,7 @@ Your method:
 - If you ever include code (rare — only tiny illustrative snippets), it must be scope-correct and runnable as written.
 
 Tone: patient, warm, slightly challenging. Like a coach who believes in them.
-Max 2-3 sentences per response. Always end with a question.""",
+Max 2-3 sentences per response. Always end with a question.""" + OAK_VISUAL_RULES,
 
         "refine": """You are Prof Oak in Coaching Mode — Socratic, never giving answers directly.
 Use this retrieved context only to inform your guiding questions — never to answer for them.
@@ -1524,6 +1647,8 @@ Teach each concept with a BLANK LINE between sections:
 
 **Example:** one concrete example — prefer one shaped like how it shows up in the exam
 
+**Compare it:** one comparison to a DIFFERENT relatable thing — "it's like X, but for Y" — that mirrors HOW the concept works. Not the same analogy as "How it works".
+
 **Exam angle:** one line on how this is typically tested (use the past-paper grounding you were given)
 
 *Quick Check:* end with ONE specific question that verifies understanding, styled like a real exam question on this concept.
@@ -1535,7 +1660,7 @@ When the student answers the Quick Check:
 Rules:
 - Stay on the current concept. If the student asks about something else, answer briefly, then steer back to the Quick Check.
 - No passive filler ("let me know if...", "feel free to...").
-- Keep it tight — this is prep, not a lecture."""
+- Keep it tight — this is prep, not a lecture.""" + OAK_VISUAL_RULES
     }
 }
 
@@ -1608,13 +1733,37 @@ def _load_podcast_context(paper_id: str) -> str:
         print(f"[MAROS] Failed to load podcast context for {paper_id}: {e}")
         return ""
 
+
+def _load_explain_context(paper_id: str) -> str:
+    """Returns the Quick Explain script for chat context, if one exists.
+    Mirrors _load_podcast_context — so Oak can reference either format."""
+    explain_path = PAPERS_DIR / paper_id / "explain.json"
+    if not explain_path.exists():
+        return ""
+    try:
+        data     = json.loads(explain_path.read_text())
+        segments = data.get("segments", [])
+        lines    = [f"[{s.get('title','')}] {s.get('text','')}" for s in segments]
+        script   = "\n".join(lines)
+        if len(script) > 4000:
+            script = script[:4000] + "\n...[truncated]"
+        return f"""
+A Quick Explain audio (single-voice, concept-by-concept explanation with
+real-life comparisons) has been made from this material. Script:
+
+{script}
+"""
+    except Exception as e:
+        print(f"[MAROS] Failed to load explain context for {paper_id}: {e}")
+        return ""
+
 # ─────────────────────────────────────────────
 # CODE VERIFICATION (v3) — check code in Oak replies before students see it
 # ─────────────────────────────────────────────
 import re as _re2
 import io as _io
 
-CODE_BLOCK_RE = _re2.compile(r"```(\w+)?\n(.*?)```", _re2.DOTALL)
+CODE_BLOCK_RE = _re2.compile(r"```([\w-]+)?\n(.*?)```", _re2.DOTALL)
 
 def _check_python_code(code: str) -> list:
     """Deterministic checks for Python blocks: syntax + undefined names."""
@@ -1653,7 +1802,7 @@ def _verify_code_reply(reply: str) -> str:
     needs_llm_review = False
     for lang, code in blocks:
         lang = (lang or "").lower()
-        if lang in ("python", "py"):
+        if lang in ("python", "py", "run-python", "run-py"):
             issues += _check_python_code(code)
         else:  # js, jsx, ts, or unlabeled — no good pure-python linter, use LLM pass
             needs_llm_review = True
@@ -1717,7 +1866,7 @@ def _plain_oak_reply(req: ChatRequest, module_context: str) -> str:
     else:
         persona       = OAK_PERSONAS.get(req.mode, OAK_PERSONAS["videos"])
         system_prompt = persona["system"]
-        max_tok       = 800
+        max_tok       = 1500
 
     if module_context:
         system_prompt += f"\n\nCONTEXT:\n{module_context}"
@@ -1786,6 +1935,49 @@ async def chat(req: ChatRequest, request: Request):
         from prep_mode_service import build_prep_context
         prep_ctx, prep_concept = build_prep_context(user_id)
         module_context += prep_ctx
+
+        # ── "give me the most important questions" ad-hoc ask ──────────────
+        IMPORTANT_Q_CUES = (
+            "important question", "most important", "top question",
+            "give me question", "give me the question", "key question",
+            "likely question", "predicted question",
+        )
+        if any(cue in user_text_lower for cue in IMPORTANT_Q_CUES):
+            from prep_mode_service import get_important_questions, get_active_exam_type
+            try:
+                iq_exam_type = get_active_exam_type(user_id) if user_id else None
+                if iq_exam_type:
+                    important = get_important_questions(iq_exam_type, k=30)
+                    if important:
+                        lines = ["\n\nMOST IMPORTANT REAL PAST QUESTIONS "
+                                 "(ranked by how often/heavily they've been "
+                                 "examined — use these directly, do NOT invent "
+                                 "new questions):"]
+                        for i, iq in enumerate(important, 1):
+                            marks_str = ""
+                            try:
+                                if iq.get('marks'):
+                                    marks_str = f", {float(iq['marks']):.0f} marks"
+                            except (ValueError, TypeError):
+                                marks_str = ""
+                            lines.append(f"\n{i}. [{iq['concept']}] "
+                                        f"{iq['source_label']}{marks_str}")
+                            lines.append(f"   Question: {iq['text']}")
+                            if iq.get('answer'):
+                                lines.append(f"   Answer: {iq['answer']}")
+                        lines.append(
+                            "\n\nWhen presenting these to the student, ALWAYS "
+                            "show Question and Answer as two clearly separate "
+                            "lines/blocks — never merge them into one "
+                            "paragraph. If a question has no Answer line "
+                            "above, say plainly that no worked solution is "
+                            "available for it rather than inventing one."
+                        )
+                        module_context += "\n".join(lines)
+            except FileNotFoundError:
+                pass   # artifact not built yet — Oak just answers without it
+            except Exception as e:
+                print(f"[MAROS] important-questions context skipped: {e}")
 
     # ── Student uploaded files (v2) ─────────────────────────────────────────
     upload_key = user_id or "anonymous"
@@ -1883,6 +2075,7 @@ brainstorm architecture, and push them toward building it.
             print(f"[MAROS] Could not load paper meta for chat: {e}")
 
         module_context += _load_podcast_context(req.paper_id)
+        module_context += _load_explain_context(req.paper_id)
 
     # ── RAG for videos tab — direct ChromaDB, no separate server ─────────
     rag_concept = module_concept or paper_concept
