@@ -1,0 +1,144 @@
+[
+  {
+    "q_id": "2017-re-1",
+    "year": 2017,
+    "marks": 5,
+    "concepts": [
+      "persistence"
+    ],
+    "text": "floppy seek / block clustering read time",
+    "exam_type": "reexam"
+  },
+  {
+    "q_id": "2017-re-2",
+    "year": 2017,
+    "marks": 5,
+    "concepts": [
+      "file-systems"
+    ],
+    "text": "unix path resolution disk accesses",
+    "exam_type": "reexam"
+  },
+  {
+    "q_id": "2017-re-3",
+    "year": 2017,
+    "marks": 5,
+    "concepts": [
+      "concurrency"
+    ],
+    "text": "thread interleaving c=b\u00b1a possible values",
+    "exam_type": "reexam"
+  },
+  {
+    "q_id": "2017-re-4",
+    "year": 2017,
+    "marks": 5,
+    "concepts": [
+      "paging"
+    ],
+    "text": "22-bit VA VPN/offset, page table entries",
+    "exam_type": "reexam"
+  },
+  {
+    "q_id": "2017-re-5",
+    "year": 2017,
+    "marks": 5,
+    "concepts": [
+      "paging"
+    ],
+    "text": "TLB behavior p[1024] hits/misses",
+    "exam_type": "reexam"
+  },
+  {
+    "q_id": "2017-re-6",
+    "year": 2017,
+    "marks": 5,
+    "concepts": [
+      "paging"
+    ],
+    "text": "associative registers serial vs parallel lookup",
+    "exam_type": "reexam"
+  },
+  {
+    "q_id": "2017-re-7",
+    "year": 2017,
+    "marks": 5,
+    "concepts": [
+      "threads"
+    ],
+    "text": "counting semaphore from binary semaphores",
+    "exam_type": "reexam"
+  },
+  {
+    "q_id": "2017-re-8",
+    "year": 2017,
+    "marks": 5,
+    "concepts": [
+      "locks"
+    ],
+    "text": "test-and-set from swap instruction",
+    "exam_type": "reexam"
+  },
+  {
+    "q_id": "2017-re-9",
+    "year": 2017,
+    "marks": 5,
+    "concepts": [
+      "scheduling"
+    ],
+    "text": "FCFS/SJF/priority/RR gantt, turnaround/waiting",
+    "exam_type": "reexam"
+  },
+  {
+    "q_id": "2017-re-10",
+    "year": 2017,
+    "marks": 5,
+    "concepts": [
+      "persistence"
+    ],
+    "text": "RAID 10 advantages and stripe placement",
+    "exam_type": "reexam"
+  },
+  {
+    "q_id": "2022-re-1",
+    "year": 2022,
+    "marks": 6,
+    "concepts": [
+      "cpu-virtualization",
+      "processes"
+    ],
+    "text": "policy vs mechanism, process states, stack/heap",
+    "exam_type": "reexam"
+  },
+  {
+    "q_id": "2022-re-2",
+    "year": 2022,
+    "marks": 8,
+    "concepts": [
+      "memory-virtualization"
+    ],
+    "text": "dynamic relocation base/bounds registers",
+    "exam_type": "reexam"
+  },
+  {
+    "q_id": "2022-re-3",
+    "year": 2022,
+    "marks": 6,
+    "concepts": [
+      "concurrency",
+      "threads"
+    ],
+    "text": "many-threads C snippet race",
+    "exam_type": "reexam"
+  },
+  {
+    "q_id": "2022-re-8",
+    "year": 2022,
+    "marks": 8,
+    "concepts": [
+      "threads"
+    ],
+    "text": "one-lane bridge traffic synchronization",
+    "exam_type": "reexam"
+  }
+]

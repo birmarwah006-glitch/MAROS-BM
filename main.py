@@ -8,6 +8,7 @@ from pathlib import Path
 from datetime import datetime
 from typing import Optional, List
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException, BackgroundTasks, Query, Depends, Request
+from supabase_layer import require_professor, PROF_SECRET
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -74,6 +75,10 @@ class QuizSubmitResult(BaseModel):
 class YouTubeIngestRequest(BaseModel):
     url: str
 
+class CodeExecRequest(BaseModel):
+    language: str
+    code:     str
+
 
 # ─────────────────────────────────────────────
 # APP
@@ -101,6 +106,14 @@ ASSIGNMENTS_DIR.mkdir(parents=True, exist_ok=True)
 # ── v4: professor tools (PDF→quiz, quiz review, Oak question analytics) ──
 from professor_tools import router as prof_router
 app.include_router(prof_router)
+
+# ── PREP MODE (insert 1): kickoff/plan/resume routes ──
+from prep_routes import router as prep_router
+app.include_router(prep_router)
+
+# ── QUICK EXPLAIN: single-voice notes explainer (podcast alternative) ──
+from explain_routes import router as explain_router
+app.include_router(explain_router)
 
 
 # ─────────────────────────────────────────────
@@ -300,22 +313,14 @@ Return ONLY valid JSON, no markdown, no backticks:
 }}
 """
 
-    # FIX: request json_object mode + bigger token budget, with one retry
+    # Uses _call_llm() so a Cerebras 429 automatically falls back to Groq
+    # instead of failing outright (previously called Cerebras directly here).
     def _generate_once():
-        res = requests.post(
-            "https://api.cerebras.ai/v1/chat/completions",
-            headers={"Authorization": f"Bearer {CEREBRAS_API_KEY}", "Content-Type": "application/json"},
-            json={
-                "model": CEREBRAS_MODEL,
-                "messages": [{"role": "user", "content": prompt}],
-                "temperature": 0.3,
-                "max_tokens": 3000,                      # ← FIX: was 2048
-                "response_format": {"type": "json_object"},  # ← FIX: force valid JSON
-            },
-            timeout=60,
+        return _call_llm(
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.3,
+            max_tokens=3000,
         )
-        res.raise_for_status()
-        return res.json()["choices"][0]["message"]["content"]
 
     text = None
     for attempt in range(2):
@@ -490,6 +495,95 @@ async def submit_quiz(
         score          = score,
         misconceptions = misconceptions,
     )
+
+
+# ─────────────────────────────────────────────
+# CODE EXECUTION — Monaco terminal in Oak chat, proxied to glot.io
+# History: started on the free Piston API (emkc.org) -> Piston locked its
+# public API behind manual Discord approval on Feb 15, 2026 (401s) ->
+# tried Judge0 CE on RapidAPI -> that tier turned out to be pay-per-use and
+# required a card on file. glot.io is open-source, free, and only needs an
+# email-signup token (glot.io/account/token) — no card, no per-call cost.
+# Set GLOT_API_TOKEN in the server environment before deploying.
+# TODO (post-beta, no rush): self-host Piston via Docker to drop the
+# external dependency entirely once there's time to test it properly on
+# the VNIT server rather than under Friday deadline pressure.
+# ─────────────────────────────────────────────
+
+GLOT_API_TOKEN = os.getenv("GLOT_API_TOKEN", "")
+GLOT_BASE_URL  = "https://run.glot.io/languages"
+
+# glot.io language slugs + the filename each needs (glot infers the runtime
+# from the file extension; for compiled languages the extension must be
+# correct or the run fails). NOTE: Java is a known edge case — javac requires
+# the filename to match the public class name, so this only works cleanly if
+# Oak's generated code uses `public class Main`. Fine for Python/C/C++, which
+# covers the vast majority of an OS course's run-<lang> blocks.
+GLOT_LANG_MAP = {
+    "python":     ("python", "main.py"),
+    "py":         ("python", "main.py"),
+    "javascript": ("javascript", "main.js"),
+    "js":         ("javascript", "main.js"),
+    "typescript": ("typescript", "main.ts"),
+    "ts":         ("typescript", "main.ts"),
+    "java":       ("java", "Main.java"),
+    "c":          ("c", "main.c"),
+    "cpp":        ("cpp", "main.cpp"),
+    "c++":        ("cpp", "main.cpp"),
+    "csharp":     ("csharp", "main.cs"),
+    "cs":         ("csharp", "main.cs"),
+    "go":         ("go", "main.go"),
+    "rust":       ("rust", "main.rs"),
+}
+
+@app.post("/chat/execute-code")
+async def execute_code(req: CodeExecRequest):
+    """Proxy a code snippet to glot.io and return stdout/stderr.
+    Server-side proxy so the frontend never talks to glot.io or holds the
+    token. glot.io runs synchronously (single request/response, no polling).
+    Surfaces the `error` field (glot's compile/runtime error channel)
+    alongside stderr so a compile failure is never silently blank."""
+    if not GLOT_API_TOKEN:
+        raise HTTPException(
+            status_code=503,
+            detail="Code execution isn't configured — GLOT_API_TOKEN is missing on the server.",
+        )
+
+    lang_key = req.language.lower().strip()
+    mapping  = GLOT_LANG_MAP.get(lang_key)
+    if mapping is None:
+        raise HTTPException(status_code=400, detail=f"Unsupported language: {req.language}")
+    glot_lang, filename = mapping
+
+    try:
+        res = requests.post(
+            f"{GLOT_BASE_URL}/{glot_lang}/latest",
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Token {GLOT_API_TOKEN}",
+            },
+            json={"files": [{"name": filename, "content": req.code}]},
+            timeout=30,
+        )
+        res.raise_for_status()
+        data = res.json()
+
+        stdout = data.get("stdout") or ""
+        stderr = data.get("stderr") or ""
+        error  = data.get("error") or ""   # compile errors / runtime crashes land here
+
+        if error and not stderr:
+            stderr = error
+        elif error:
+            stderr = f"{stderr}\n{error}".strip()
+
+        return {
+            "stdout":    stdout,
+            "stderr":    stderr,
+            "exit_code": 1 if (stderr or error) else 0,
+        }
+    except requests.exceptions.RequestException as e:
+        raise HTTPException(status_code=502, detail=f"Execution failed: {e}")
 
 
 # ─────────────────────────────────────────────
@@ -731,6 +825,44 @@ async def get_chat_history(request: Request, scope: str = Query("student")):
         return {"threads": {}}
 
 
+@app.delete("/chat/history")
+async def delete_chat_history(
+    request: Request,
+    scope: str = Query("student"),
+    mode: str = Query(None),
+):
+    """Delete saved Oak threads. Students clear their own; the professor clears
+    the shared 'professor' thread (x-prof-token required). Optional mode scopes
+    the delete to one tab. Non-fatal — always returns a JSON status.
+    IMPORTANT: logout does NOT call this — only an explicit 'clear' does — so a
+    student's chats survive logout and reappear on next login (that's the point)."""
+    from supabase_layer import get_sb
+
+    if scope == "professor":
+        if request.headers.get("x-prof-token", "") != PROF_SECRET:
+            raise HTTPException(status_code=403, detail="Professor access required")
+        owner_key = "professor"
+    else:
+        owner_key = await get_current_user(request)
+
+    if not owner_key:
+        return {"deleted": 0, "reason": "no owner (not logged in)"}
+
+    sb = get_sb()
+    if not sb:
+        return {"deleted": 0, "reason": "supabase not configured"}
+
+    try:
+        q = sb.table("oak_chats").delete().eq("owner_key", owner_key)
+        if mode:
+            q = q.eq("mode", mode)
+        q.execute()
+        return {"deleted": "ok", "owner": owner_key, "mode": mode or "all"}
+    except Exception as e:
+        print(f"[MAROS] Chat clear failed (non-fatal): {e}")
+        return {"deleted": 0, "error": str(e)}
+
+
 # ─────────────────────────────────────────────
 # STUDENT MASTERY & ROADMAP — v2 endpoints
 # ─────────────────────────────────────────────
@@ -749,8 +881,7 @@ def _fetch_all(sb, table: str, order_col: str = None, desc: bool = False) -> lis
         page += 1
 
 
-@app.get("/professor/analytics")
-async def professor_analytics():
+async def _professor_analytics_data():
     """
     Class-wide analytics for the professor dashboard.
     Returns: student count, quiz stats, weak concepts, misconceptions,
@@ -867,10 +998,15 @@ async def professor_analytics():
         raise HTTPException(status_code=500, detail=f"Analytics failed: {e}")
 
 
+@app.get("/professor/analytics")
+async def professor_analytics(_: bool = Depends(require_professor)):
+    return await _professor_analytics_data()
+
+
 @app.post("/professor/report")
-async def generate_class_report():
+async def generate_class_report(_: bool = Depends(require_professor)):
     """LLM-written class report: who's weak on what, and what to do about it."""
-    analytics = await professor_analytics()
+    analytics = await _professor_analytics_data()
 
     if analytics["total_answers"] == 0:
         return {"report": "No quiz data yet. Reports become available once students start taking quizzes."}
@@ -1090,6 +1226,7 @@ async def assign_paper(request: Request, file: UploadFile = File(...)):
         "domain"     : "general",
         "assigned_at": datetime.utcnow().isoformat(),
         "has_podcast": False,
+        "has_explain": False,
         "visible"    : True,
         "owner_id"   : owner_id,   # v4: None = professor/global, uuid = that student only
     }
@@ -1126,7 +1263,8 @@ def get_paper(paper_id: str):
 
 
 @app.patch("/papers/{paper_id}/visibility")
-def toggle_paper_visibility(paper_id: str, visible: bool = Query(...)):
+def toggle_paper_visibility(paper_id: str, visible: bool = Query(...),
+                            _: bool = Depends(require_professor)):
     meta = _load_paper_meta(paper_id)
     meta["visible"] = visible
     _save_paper_meta(paper_id, meta)
@@ -1336,16 +1474,23 @@ async def submit_assignment(
 
 
 @app.get("/assignments/{aid}/submissions")
-def get_submissions(aid: str):
+def get_submissions(aid: str, _: bool = Depends(require_professor)):
     return _load_assignment_meta(aid).get("submissions", [])
+
+
+def _safe_join(base: Path, name: str) -> Path:
+    target = (base / Path(name).name).resolve()
+    if not str(target).startswith(str(base.resolve())):
+        raise HTTPException(status_code=400, detail="Invalid path")
+    return target
 
 
 @app.get("/assignments/{aid}/submissions/{filename}")
 def download_submission(aid: str, filename: str):
-    file_path = _assignment_dir(aid) / "submissions" / filename
+    file_path = _safe_join(_assignment_dir(aid) / "submissions", filename)
     if not file_path.exists():
         raise HTTPException(status_code=404, detail="Submission not found.")
-    return FileResponse(path=str(file_path), filename=filename)
+    return FileResponse(path=str(file_path), filename=Path(filename).name)
 
 
 # ─────────────────────────────────────────────
@@ -1357,6 +1502,29 @@ def download_submission(aid: str, filename: str):
 # ─────────────────────────────────────────────
 # OAK PERSONALITY PROMPTS — never exposed to client
 # ─────────────────────────────────────────────
+
+# Shared visual rules appended to every teaching persona's system prompt:
+# auto-pair a Mermaid flowchart with any process/algorithm explanation, emit
+# runnable ```run-<lang> blocks only for coding-type answers, and format any
+# math as LaTeX so notes-renderer.js's KaTeX pipeline can render it.
+OAK_VISUAL_RULES = """
+
+VISUALS:
+- Whenever you explain a process, algorithm, workflow, or how something works step-by-step, ALWAYS pair your text explanation with a Mermaid flowchart of that process in a fenced ```mermaid block using `flowchart TD` syntax. Put the text explanation first, the diagram block right after it. Do this automatically — never wait to be asked, and never produce the diagram without the text explanation alongside it.
+- Whenever your answer's core content IS code the student should be able to run and experiment with (implementing something, solving a coding/DSA question, tracing through code execution), put that code in a fenced block tagged ```run-<language> (e.g. ```run-python, ```run-javascript) instead of a plain ```<language> block.
+- Use plain ```<language> (no "run-" prefix) for short illustrative snippets that are not themselves the point of the answer — e.g. a one-line syntax example inside a conceptual explanation.
+- ALWAYS wrap EVERY node label in double quotes so special characters can't break the parser: write A["reader_count = 0"], never A[reader_count = 0]. This is REQUIRED when a label contains parentheses ( ), plus/minus (+ - ++ --), equals =, slash, or colon — unquoted, ANY of those make the WHOLE diagram fail and show as raw text.
+- Keep the flowchart FLAT and small: at most ~8 nodes, top-to-bottom, and do NOT use `subgraph` blocks. A small correct diagram beats a big broken one.
+- Define each node id once with its quoted label, then refer to it by id alone afterwards. Never reuse a node id inside two different groups.
+- One flowchart per answer is enough. Keep Mermaid syntax valid — no fenced blocks inside the mermaid block, no trailing commentary inside it.
+- Labeled edge syntax is exactly: A -->|label| B — the label sits between two pipes, and NOTHING follows the closing pipe except the target node. Never write A -->|label|> B (a trailing > after the pipe is invalid and will fail to render). Example of a correct 3-step flowchart:
+```mermaid
+flowchart TD
+A["Parent process"] -->|fork| B["Child process"]
+B -->|exit| C["OS"]
+C -->|unblock| A
+```
+- Whenever your answer involves a mathematical expression, formula, or equation (throughput, turnaround time, page-replacement math, complexity notation, probability, etc.), write it as LaTeX: wrap inline math in single dollar signs like $T_{avg} = \\frac{\\sum T_i}{n}$, and standalone/display equations on their own line in double dollar signs like $$X = Y + Z$$. Use real LaTeX commands (\\frac, \\sum, \\sqrt, ^{}, _{}, \\leq, \\geq, \\times) — never plain ASCII approximations like ^ or -> or sqrt() for actual math. Don't wrap non-mathematical text in dollar signs."""
 
 OAK_PERSONAS = {
     "videos": {
@@ -1379,11 +1547,13 @@ Use this structure, with a BLANK LINE between each section:
 
 **Example:** one concrete, relatable example
 
+**Compare it:** one comparison to a DIFFERENT relatable thing the student already knows — "it's like X, but for Y". The comparison must mirror HOW the concept works, not just share the topic. Never reuse the analogy from "How it works" — this is a second, different mapping.
+
 *Quick Check:* end with ONE specific question to verify they understood
 
 IMPORTANT: If the student ALSO asks something else (like exam importance, past questions, or a follow-up), answer that too — add a brief **Exam Relevance:** line before the Quick Check. Always address everything the student asked, not just the "teach me" part.
 
-When the student answers your Quick Check: evaluate it. If correct, say so briefly and offer the next related idea. If wrong, correct gently in 1-2 sentences and re-ask differently. Always drive the lesson forward.""",
+When the student answers your Quick Check: evaluate it. If correct, say so briefly and offer the next related idea. If wrong, correct gently in 1-2 sentences and re-ask differently. Always drive the lesson forward.""" + OAK_VISUAL_RULES,
 
         "refine": """You are Prof Oak — a warm teaching assistant at VNIT Nagpur.
 Another system retrieved accurate information. Rewrite it as a short,
@@ -1419,7 +1589,7 @@ Rules:
 - If they're stuck → break it into the smallest possible concrete step
 - If they haven't started implementing → call it out directly
 - When you write code: before returning it, mentally verify every variable is declared in the scope where it's used (especially variables declared inside loops or blocks) and that every function you call exists in the snippet. Only ship code that runs.
-- Keep responses under 4 sentences + 1 action item""",
+- Keep responses under 4 sentences + 1 action item""" + OAK_VISUAL_RULES,
 
         "refine": """You are Prof Oak in Research Execution Mode — direct, implementation-obsessed.
 Another system retrieved grounded context. Use it to push the student toward execution.
@@ -1447,7 +1617,7 @@ Your method:
 - If you ever include code (rare — only tiny illustrative snippets), it must be scope-correct and runnable as written.
 
 Tone: patient, warm, slightly challenging. Like a coach who believes in them.
-Max 2-3 sentences per response. Always end with a question.""",
+Max 2-3 sentences per response. Always end with a question.""" + OAK_VISUAL_RULES,
 
         "refine": """You are Prof Oak in Coaching Mode — Socratic, never giving answers directly.
 Use this retrieved context only to inform your guiding questions — never to answer for them.
@@ -1461,6 +1631,36 @@ Respond as a Socratic coach:
 - Do NOT mention the retrieval system
 - End with exactly one question back to the student
 - Max 2-3 sentences"""
+    },
+
+    # ── PREP MODE (insert 2): focused exam-prep persona ──
+    "prep": {
+        "system": """You are Prof Oak running PREP MODE — a focused, time-aware exam-prep tutor at VNIT Nagpur.
+
+Your context contains ONE target concept at a time, with why it matters for the exam and grounding material from past papers. Get the student to actually understand THAT concept, then verify it. Do not sprawl across the syllabus.
+
+Teach each concept with a BLANK LINE between sections:
+
+**What it is:** one clear sentence
+
+**How it works:** 2-3 sentences with a simple analogy
+
+**Example:** one concrete example — prefer one shaped like how it shows up in the exam
+
+**Compare it:** one comparison to a DIFFERENT relatable thing — "it's like X, but for Y" — that mirrors HOW the concept works. Not the same analogy as "How it works".
+
+**Exam angle:** one line on how this is typically tested (use the past-paper grounding you were given)
+
+*Quick Check:* end with ONE specific question that verifies understanding, styled like a real exam question on this concept.
+
+When the student answers the Quick Check:
+- Correct → say so clearly (use a word like "correct", "exactly", or "spot on"), give a one-line reinforcement, and STOP. Do not re-teach. The concept is marked done and the student picks the next one from their plan.
+- Wrong or partial → correct gently in 1-2 sentences, then re-ask a slightly different Quick Check on the SAME concept. Do not move on.
+
+Rules:
+- Stay on the current concept. If the student asks about something else, answer briefly, then steer back to the Quick Check.
+- No passive filler ("let me know if...", "feel free to...").
+- Keep it tight — this is prep, not a lecture.""" + OAK_VISUAL_RULES
     }
 }
 
@@ -1533,13 +1733,37 @@ def _load_podcast_context(paper_id: str) -> str:
         print(f"[MAROS] Failed to load podcast context for {paper_id}: {e}")
         return ""
 
+
+def _load_explain_context(paper_id: str) -> str:
+    """Returns the Quick Explain script for chat context, if one exists.
+    Mirrors _load_podcast_context — so Oak can reference either format."""
+    explain_path = PAPERS_DIR / paper_id / "explain.json"
+    if not explain_path.exists():
+        return ""
+    try:
+        data     = json.loads(explain_path.read_text())
+        segments = data.get("segments", [])
+        lines    = [f"[{s.get('title','')}] {s.get('text','')}" for s in segments]
+        script   = "\n".join(lines)
+        if len(script) > 4000:
+            script = script[:4000] + "\n...[truncated]"
+        return f"""
+A Quick Explain audio (single-voice, concept-by-concept explanation with
+real-life comparisons) has been made from this material. Script:
+
+{script}
+"""
+    except Exception as e:
+        print(f"[MAROS] Failed to load explain context for {paper_id}: {e}")
+        return ""
+
 # ─────────────────────────────────────────────
 # CODE VERIFICATION (v3) — check code in Oak replies before students see it
 # ─────────────────────────────────────────────
 import re as _re2
 import io as _io
 
-CODE_BLOCK_RE = _re2.compile(r"```(\w+)?\n(.*?)```", _re2.DOTALL)
+CODE_BLOCK_RE = _re2.compile(r"```([\w-]+)?\n(.*?)```", _re2.DOTALL)
 
 def _check_python_code(code: str) -> list:
     """Deterministic checks for Python blocks: syntax + undefined names."""
@@ -1578,7 +1802,7 @@ def _verify_code_reply(reply: str) -> str:
     needs_llm_review = False
     for lang, code in blocks:
         lang = (lang or "").lower()
-        if lang in ("python", "py"):
+        if lang in ("python", "py", "run-python", "run-py"):
             issues += _check_python_code(code)
         else:  # js, jsx, ts, or unlabeled — no good pure-python linter, use LLM pass
             needs_llm_review = True
@@ -1642,7 +1866,7 @@ def _plain_oak_reply(req: ChatRequest, module_context: str) -> str:
     else:
         persona       = OAK_PERSONAS.get(req.mode, OAK_PERSONAS["videos"])
         system_prompt = persona["system"]
-        max_tok       = 800
+        max_tok       = 1500
 
     if module_context:
         system_prompt += f"\n\nCONTEXT:\n{module_context}"
@@ -1662,6 +1886,7 @@ async def chat(req: ChatRequest, request: Request):
     - Videos tab  → RAG-grounded (OS exam papers)
     - Papers tab  → direct Oak with paper context (no RAG)
     - Assignments → direct Oak in Socratic mode (no RAG)
+    - Prep mode   → session-driven concept teaching (prep_mode_service)
     """
     start   = time.time()
     user_id = await get_current_user(request)
@@ -1704,6 +1929,56 @@ async def chat(req: ChatRequest, request: Request):
     if mastery_ctx:
         module_context += mastery_ctx
 
+    # ── PREP MODE (insert 3): inject current concept + past-paper grounding ─
+    prep_concept = None
+    if req.mode == "prep":
+        from prep_mode_service import build_prep_context
+        prep_ctx, prep_concept = build_prep_context(user_id)
+        module_context += prep_ctx
+
+        # ── "give me the most important questions" ad-hoc ask ──────────────
+        IMPORTANT_Q_CUES = (
+            "important question", "most important", "top question",
+            "give me question", "give me the question", "key question",
+            "likely question", "predicted question",
+        )
+        if any(cue in user_text_lower for cue in IMPORTANT_Q_CUES):
+            from prep_mode_service import get_important_questions, get_active_exam_type
+            try:
+                iq_exam_type = get_active_exam_type(user_id) if user_id else None
+                if iq_exam_type:
+                    important = get_important_questions(iq_exam_type, k=30)
+                    if important:
+                        lines = ["\n\nMOST IMPORTANT REAL PAST QUESTIONS "
+                                 "(ranked by how often/heavily they've been "
+                                 "examined — use these directly, do NOT invent "
+                                 "new questions):"]
+                        for i, iq in enumerate(important, 1):
+                            marks_str = ""
+                            try:
+                                if iq.get('marks'):
+                                    marks_str = f", {float(iq['marks']):.0f} marks"
+                            except (ValueError, TypeError):
+                                marks_str = ""
+                            lines.append(f"\n{i}. [{iq['concept']}] "
+                                        f"{iq['source_label']}{marks_str}")
+                            lines.append(f"   Question: {iq['text']}")
+                            if iq.get('answer'):
+                                lines.append(f"   Answer: {iq['answer']}")
+                        lines.append(
+                            "\n\nWhen presenting these to the student, ALWAYS "
+                            "show Question and Answer as two clearly separate "
+                            "lines/blocks — never merge them into one "
+                            "paragraph. If a question has no Answer line "
+                            "above, say plainly that no worked solution is "
+                            "available for it rather than inventing one."
+                        )
+                        module_context += "\n".join(lines)
+            except FileNotFoundError:
+                pass   # artifact not built yet — Oak just answers without it
+            except Exception as e:
+                print(f"[MAROS] important-questions context skipped: {e}")
+
     # ── Student uploaded files (v2) ─────────────────────────────────────────
     upload_key = user_id or "anonymous"
     if upload_key in STUDENT_UPLOADS and STUDENT_UPLOADS[upload_key]:
@@ -1725,8 +2000,10 @@ async def chat(req: ChatRequest, request: Request):
 
     # ── Professor analytics context (v2) ────────────────────────────────────
     if req.role == "professor":
+        if request.headers.get("x-prof-token", "") != PROF_SECRET:
+            raise HTTPException(status_code=403, detail="Professor access required")
         try:
-            analytics = await professor_analytics()
+            analytics = await _professor_analytics_data()
             if analytics["total_answers"] > 0:
                 weak_lines = "\n".join(
                     f"- {c['concept']}: {round(c['error_rate']*100)}% wrong ({c['total_attempts']} attempts)"
@@ -1798,6 +2075,7 @@ brainstorm architecture, and push them toward building it.
             print(f"[MAROS] Could not load paper meta for chat: {e}")
 
         module_context += _load_podcast_context(req.paper_id)
+        module_context += _load_explain_context(req.paper_id)
 
     # ── RAG for videos tab — direct ChromaDB, no separate server ─────────
     rag_concept = module_concept or paper_concept
@@ -1852,6 +2130,32 @@ brainstorm architecture, and push them toward building it.
                     print(f"[MAROS] Quick Check passed → mastery +0.1 on {module_concept}")
     except Exception as e:
         print(f"[MAROS] Quick Check loop skipped: {e}")
+
+    # ── PREP MODE (insert 4, v2 free-nav): mark concept done on Quick Check pass ─
+    try:
+        if req.mode == "prep" and prep_concept and req.history:
+            last_oak = next(
+                (m.content for m in reversed(req.history) if m.role == ChatRole.assistant),
+                "",
+            )
+            if "Quick Check" in last_oak:
+                from prep_mode_service import mark_prep_concept_done, mark_prep_struggle
+                passed = any(
+                    v in reply.lower()[:200]
+                    for v in ["correct", "exactly", "that's right", "spot on", "well done", "nailed it"]
+                )
+                if passed:
+                    if user_id:
+                        mark_prep_concept_done(user_id, prep_concept)
+                        update_mastery(user_id, prep_concept, 0.1)
+                    print(f"[MAROS] Prep Check passed → marked done, mastery +0.1 on {prep_concept}")
+                else:
+                    if user_id:
+                        mark_prep_struggle(user_id, prep_concept)
+                        update_mastery(user_id, prep_concept, -0.05)
+                    print(f"[MAROS] Prep Check missed → flagged {prep_concept} as weak")
+    except Exception as e:
+        print(f"[MAROS] Prep completion tracking skipped: {e}")
 
     # ── Persist this chat turn (v3) — threads survive logout ──────────────
     _owner = "professor" if req.role == "professor" else user_id

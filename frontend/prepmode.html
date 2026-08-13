@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MAROS — Prep Mode</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  html, body { overflow: auto; }
+
+  .prep-page-wrap {
+    position: fixed; inset: 0; padding-top: 65px;
+    display: flex; justify-content: center;
+    overflow-y: auto;
+  }
+  .prep-container {
+    width: 100%; max-width: 680px; padding: 32px 24px;
+    display: flex; flex-direction: column;
+    min-height: calc(100vh - 65px);
+  }
+  .prep-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 22px 24px; margin-bottom: 14px;
+    animation: fadeUp 0.4s ease;
+  }
+  .prep-heading {
+    font-size: 16px; font-weight: 700; margin-bottom: 4px;
+  }
+  .prep-subtext {
+    font-family: var(--font-mono); font-size: 11px; color: var(--muted2);
+    margin-bottom: 18px; line-height: 1.6;
+  }
+  .prep-row { display: flex; gap: 10px; margin-bottom: 16px; }
+  .prep-row select, .prep-row input[type=date] {
+    flex: 1; background: var(--bg); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--fg); padding: 10px 12px;
+    font-size: 13px; font-family: var(--font-display); outline: none;
+  }
+  .prep-row select:focus, .prep-row input[type=date]:focus { border-color: var(--green-line); }
+  .prep-candidate {
+    display: flex; align-items: flex-start; gap: 10px; padding: 10px 0;
+    border-bottom: 1px solid var(--border); cursor: pointer;
+  }
+  .prep-candidate:last-child { border-bottom: none; }
+  .prep-candidate input[type=checkbox] { margin-top: 3px; accent-color: var(--green); cursor: pointer; }
+  .prep-candidate-title { font-size: 13px; font-weight: 600; }
+  .prep-candidate-meta {
+    font-family: var(--font-mono); font-size: 10px; color: var(--muted2); margin-top: 2px;
+  }
+  .prep-error {
+    color: var(--red, #ff6b6b); font-family: var(--font-mono);
+    font-size: 11px; margin-top: 10px;
+  }
+  /* Chat screen reuses the exact oak-sidebar.expanded structure/CSS from
+     student.html (full-bleed, no card border) — this block only adds the
+     bits that structure doesn't already define in style.css. */
+  .oak-sidebar.expanded {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100vh !important;
+    z-index: 1000;
+    border-radius: 0;
+  }
+  .oak-sidebar.expanded .oak-messages { font-size: 15px; }
+  body.oak-fullscreen .prep-page-wrap-outer,
+  body.oak-fullscreen .header {
+    display: none !important;
+  }
+  .prep-back-link {
+    background: none; border: 1px solid var(--border); border-radius: 6px;
+    color: var(--muted2); cursor: pointer; padding: 4px 10px; font-size: 12px;
+    font-family: var(--font-mono);
+  }
+  .prep-back-link:hover { color: var(--fg); }
+
+  /* ── Progress bar ── */
+  .prep-progress-bar-track {
+    width: 100%; height: 6px; border-radius: 4px;
+    background: var(--border); overflow: hidden; margin-bottom: 18px;
+  }
+  .prep-progress-bar-fill {
+    height: 100%; background: var(--green); border-radius: 4px;
+    transition: width 0.4s ease;
+  }
+
+  /* ── Tree ── */
+  .prep-tree-trunk {
+    text-align: center; font-family: var(--font-mono); font-size: 10px;
+    color: var(--muted2); letter-spacing: 0.1em; margin-bottom: 8px;
+  }
+  .prep-tree-connectors { width: 100%; height: 28px; display: block; margin-bottom: 4px; }
+  .prep-tree-branches {
+    display: flex; gap: 14px; align-items: flex-start;
+  }
+  .prep-branch { flex: 1; min-width: 0; }
+  .prep-branch-header {
+    display: flex; align-items: center; gap: 6px;
+    font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em;
+    color: var(--muted2); margin-bottom: 10px; padding-bottom: 6px;
+    border-bottom: 2px solid var(--branch-color, var(--border));
+  }
+  .prep-branch-dot {
+    width: 8px; height: 8px; border-radius: 50%; background: var(--branch-color, var(--muted2));
+    flex-shrink: 0;
+  }
+  .prep-node {
+    display: block; width: 100%; text-align: left;
+    background: var(--surface); border: 1.5px solid var(--branch-color, var(--border));
+    border-radius: 8px; padding: 9px 10px; margin-bottom: 8px;
+    cursor: pointer; transition: all 0.15s; font-family: var(--font-display);
+  }
+  .prep-node:hover { transform: translateY(-1px); filter: brightness(1.08); }
+  .prep-node-title { font-size: 12px; font-weight: 600; color: var(--fg); line-height: 1.3; }
+  .prep-node-meta {
+    font-family: var(--font-mono); font-size: 9px; color: var(--muted2); margin-top: 3px;
+  }
+  .prep-node.done {
+    opacity: 0.55; background: var(--branch-color, var(--border)); background-blend-mode: overlay;
+  }
+  .prep-node.done .prep-node-title::before { content: "✓ "; }
+  .prep-node.current {
+    box-shadow: 0 0 0 2px var(--branch-color, var(--green));
+    background: var(--bg);
+  }
+  .prep-legend {
+    display: flex; gap: 16px; flex-wrap: wrap; margin-top: 18px;
+    padding-top: 14px; border-top: 1px solid var(--border);
+    font-family: var(--font-mono); font-size: 9px; color: var(--muted2);
+  }
+  .prep-legend-item { display: flex; align-items: center; gap: 5px; }
+  .prep-legend-dot { width: 7px; height: 7px; border-radius: 50%; }
+</style>
+</head>
+<body>
+
+<canvas id="oak-canvas"></canvas>
+<div class="theme-toggle" style="position:fixed;top:20px;right:120px;z-index:200;">
+  <button class="tt-btn on" id="tt-dark">● Dark</button>
+  <button class="tt-btn" id="tt-light">○ Light</button>
+</div>
+
+<div class="prep-page-wrap-outer">
+  <!-- HEADER -->
+  <div class="header">
+    <a href="student.html" class="back-btn">← Back</a>
+    <div class="logo">MA<span>ROS</span></div>
+    <div class="role-badge badge-student">PREP MODE</div>
+  </div>
+
+  <div class="prep-page-wrap">
+    <div class="prep-container">
+      <div id="prep-setup-area"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Chat screen — identical structure/classes to student.html's oak-sidebar
+     in its expanded (fullscreen) state, so it looks exactly like the normal
+     Oak chat, just occupying the whole page instead of half of it. -->
+<div id="prep-chat-wrap" class="oak-sidebar expanded" style="display:none">
+  <div class="oak-header">
+    <div class="oak-avatar">&#127807;</div>
+    <div style="flex:1">
+      <div class="oak-name">Prof Oak</div>
+      <div class="oak-status" id="prep-status-line">&#9679; Prep Mode</div>
+    </div>
+    <button class="prep-back-link" id="prep-back-to-tree" title="Back to your plan" style="margin-right:6px">← plan</button>
+  </div>
+
+  <div class="oak-messages" id="oak-messages"></div>
+
+  <div class="oak-input-row">
+    <input class="oak-input" id="oak-input" type="text" placeholder="Ask about the current concept...">
+    <button class="oak-send" id="oak-send-btn">↑</button>
+  </div>
+</div>
+
+<script type="module">
+import { chatWithOak } from './api.js';
+
+const BASE = 'http://localhost:8000';
+
+// ── Auth check ── same pattern as student.html
+const session = JSON.parse(localStorage.getItem('maros_session') || 'null');
+if (!session) {
+  window.location.href = 'index.html';
+}
+const AUTH_HEADERS = {
+  'Content-Type': 'application/json',
+  'Authorization': `Bearer ${session.access_token}`,
+};
+
+const TIER_COLORS = {
+  high:   '#e05555',
+  medium: '#e0a83f',
+  low:    '#5aa564',
+};
+const TIER_LABELS = { high: 'High priority', medium: 'Medium priority', low: 'Lower priority' };
+
+let chatHistory     = [];
+let currentExamType = null;
+let currentConceptLabel = '';
+
+function setupArea() { return document.getElementById('prep-setup-area'); }
+
+async function boot() {
+  let existing = null;
+  try {
+    const res = await fetch(`${BASE}/prep/session`, { headers: AUTH_HEADERS });
+    if (res.ok) existing = await res.json();
+  } catch (e) {
+    console.warn('[MAROS] prep session check failed:', e);
+  }
+
+  if (existing && existing.active && !existing.expired && existing.total > 0) {
+    currentExamType = existing.exam_type;
+    renderResumeCard(existing);
+    return;
+  }
+  if (existing && existing.expired) {
+    renderNotice("Your last plan's target date has passed. Let's set up a fresh one.");
+  }
+  renderKickoffForm();
+}
+
+function renderNotice(text) {
+  const div = document.createElement('div');
+  div.className = 'prep-card';
+  div.textContent = text;
+  setupArea().appendChild(div);
+}
+
+function renderKickoffForm() {
+  document.getElementById('prep-chat-wrap').style.display = 'none';
+  document.body.classList.remove('oak-fullscreen');
+  const area = setupArea();
+  area.style.display = 'block';
+  area.innerHTML = `
+    <div class="prep-card">
+      <div class="prep-heading">Let's build your prep plan</div>
+      <div class="prep-subtext">Which exam, and when is it?</div>
+      <div class="prep-row">
+        <select id="prep-exam-type">
+          <option value="midsem">Midterm</option>
+          <option value="endsem">Endsem</option>
+        </select>
+        <input type="date" id="prep-target-date">
+      </div>
+      <button class="btn btn-primary" id="prep-start-btn">Start</button>
+      <div class="prep-error" id="prep-start-error"></div>
+    </div>
+  `;
+
+  document.getElementById('prep-start-btn').addEventListener('click', async () => {
+    const examType   = document.getElementById('prep-exam-type').value;
+    const targetDate = document.getElementById('prep-target-date').value;
+    const errEl      = document.getElementById('prep-start-error');
+    if (!targetDate) { errEl.textContent = 'Pick a date first.'; return; }
+    errEl.textContent = '';
+
+    try {
+      const res = await fetch(`${BASE}/prep/start`, {
+        method: 'POST', headers: AUTH_HEADERS,
+        body: JSON.stringify({ exam_type: examType, target_date: targetDate }),
+      });
+      if (!res.ok) throw new Error(`${res.status}`);
+      const data = await res.json();
+      currentExamType = examType;
+      renderCandidates(examType, data);
+    } catch (e) {
+      errEl.textContent = `Couldn't start: ${e.message}`;
+    }
+  });
+}
+
+function renderCandidates(examType, data) {
+  const area = setupArea();
+  const rows = data.candidates.map(c => `
+    <label class="prep-candidate">
+      <input type="checkbox" class="prep-cand-check" data-concept="${c.concept}" checked>
+      <div>
+        <div class="prep-candidate-title">${c.label}</div>
+        <div class="prep-candidate-meta">rank #${c.rank} · appeared in ${c.papers_appeared} of ${c.total_papers} papers</div>
+      </div>
+    </label>
+  `).join('');
+
+  area.innerHTML = `
+    <div class="prep-card">
+      <div class="prep-heading">${data.coverage_note}</div>
+      <div class="prep-subtext">Here's what matters most for your exam. Untick anything you already know cold.</div>
+      ${rows}
+      <button class="btn btn-primary" id="prep-plan-btn" style="margin-top:18px">Begin prep</button>
+      <div class="prep-error" id="prep-plan-error"></div>
+    </div>
+  `;
+
+  document.getElementById('prep-plan-btn').addEventListener('click', async () => {
+    const deselected = Array.from(document.querySelectorAll('.prep-cand-check'))
+      .filter(cb => !cb.checked)
+      .map(cb => cb.dataset.concept);
+
+    try {
+      const res = await fetch(`${BASE}/prep/plan`, {
+        method: 'POST', headers: AUTH_HEADERS,
+        body: JSON.stringify({ exam_type: examType, deselected }),
+      });
+      if (!res.ok) throw new Error(`${res.status}`);
+      await res.json();
+      renderTree();
+    } catch (e) {
+      document.getElementById('prep-plan-error').textContent = `Couldn't lock the plan: ${e.message}`;
+    }
+  });
+}
+
+function renderResumeCard(sess) {
+  const area = setupArea();
+  const c = sess.current_concept;
+  area.innerHTML = `
+    <div class="prep-card">
+      <div class="prep-heading">Welcome back</div>
+      <div class="prep-subtext">
+        ${sess.completed_count} of ${sess.total} concepts done${c ? ` · currently on: ${c.label}` : ''}.
+        ${sess.days_left != null ? ` ${sess.days_left} days left.` : ''}
+      </div>
+      <button class="btn btn-primary" id="prep-resume-btn">View plan</button>
+      <button class="btn btn-outline" id="prep-restart-btn" style="margin-top:10px">Start over</button>
+    </div>
+  `;
+  document.getElementById('prep-resume-btn').addEventListener('click', renderTree);
+  document.getElementById('prep-restart-btn').addEventListener('click', renderKickoffForm);
+}
+
+// ── Tree screen: color-coded priority branches, click any node to study it ──
+async function renderTree() {
+  document.getElementById('prep-chat-wrap').style.display = 'none';
+  document.body.classList.remove('oak-fullscreen');
+  const area = setupArea();
+  area.style.display = 'block';
+  area.innerHTML = `<div class="prep-card"><div class="prep-subtext">Loading your plan...</div></div>`;
+
+  let tree;
+  try {
+    const res = await fetch(`${BASE}/prep/tree?exam_type=${currentExamType}`, { headers: AUTH_HEADERS });
+    if (!res.ok) throw new Error(`${res.status}`);
+    tree = await res.json();
+  } catch (e) {
+    area.innerHTML = `<div class="prep-card"><div class="prep-error">Couldn't load your plan: ${e.message}</div></div>`;
+    return;
+  }
+
+  if (!tree.nodes || tree.nodes.length === 0) {
+    area.innerHTML = `<div class="prep-card"><div class="prep-subtext">No plan found.</div>
+      <button class="btn btn-primary" id="prep-tree-restart">Start a new plan</button></div>`;
+    document.getElementById('prep-tree-restart').addEventListener('click', renderKickoffForm);
+    return;
+  }
+
+  const pct = tree.total ? Math.round((tree.completed_count / tree.total) * 100) : 0;
+  const tiers = { high: [], medium: [], low: [] };
+  tree.nodes.forEach(n => tiers[n.tier]?.push(n));
+
+  const branchHtml = (tierKey) => {
+    const nodes = tiers[tierKey];
+    if (!nodes.length) return '';
+    const color = TIER_COLORS[tierKey];
+    const nodeRows = nodes.map(n => `
+      <button class="prep-node ${n.status}" style="--branch-color:${color}" data-concept="${n.concept}">
+        <div class="prep-node-title">${n.label}</div>
+        <div class="prep-node-meta">rank #${n.rank} · ${n.papers_appeared}/${n.total_papers} papers${n.status === 'current' ? ' · in progress' : ''}</div>
+      </button>
+    `).join('');
+    return `
+      <div class="prep-branch">
+        <div class="prep-branch-header" style="--branch-color:${color}">
+          <span class="prep-branch-dot" style="--branch-color:${color}"></span> ${TIER_LABELS[tierKey]}
+        </div>
+        ${nodeRows}
+      </div>
+    `;
+  };
+
+  area.innerHTML = `
+    <div class="prep-card">
+      <div class="prep-heading">Your prep plan — ${currentExamType === 'midsem' ? 'Midterm' : 'Endsem'}</div>
+      <div class="prep-subtext">${tree.completed_count} of ${tree.total} concepts done. Click any concept to study it — any order.</div>
+      <div class="prep-progress-bar-track"><div class="prep-progress-bar-fill" style="width:${pct}%"></div></div>
+
+      <div class="prep-tree-trunk">YOUR PREP PLAN</div>
+      <svg class="prep-tree-connectors" viewBox="0 0 300 28" preserveAspectRatio="none">
+        <line x1="150" y1="0" x2="150" y2="10" stroke="var(--border)" stroke-width="2"/>
+        <line x1="50"  y1="10" x2="250" y2="10" stroke="var(--border)" stroke-width="2"/>
+        <line x1="50"  y1="10" x2="50"  y2="26" stroke="var(--border)" stroke-width="2"/>
+        <line x1="150" y1="10" x2="150" y2="26" stroke="var(--border)" stroke-width="2"/>
+        <line x1="250" y1="10" x2="250" y2="26" stroke="var(--border)" stroke-width="2"/>
+      </svg>
+      <div class="prep-tree-branches">
+        ${branchHtml('high')}${branchHtml('medium')}${branchHtml('low')}
+      </div>
+
+      <div class="prep-legend">
+        <div class="prep-legend-item"><span class="prep-legend-dot" style="background:${TIER_COLORS.high}"></span> High priority — appears most often / highest marks</div>
+        <div class="prep-legend-item"><span class="prep-legend-dot" style="background:${TIER_COLORS.medium}"></span> Medium priority</div>
+        <div class="prep-legend-item"><span class="prep-legend-dot" style="background:${TIER_COLORS.low}"></span> Lower priority</div>
+      </div>
+      ${tree.completed_count >= tree.total ? '<div class="prep-subtext" style="margin-top:14px;color:var(--green)">🎉 You\'ve covered every concept in this plan.</div>' : ''}
+    </div>
+  `;
+
+  area.querySelectorAll('.prep-node').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const conceptId = btn.dataset.concept;
+      const label = btn.querySelector('.prep-node-title').textContent.replace(/^✓\s*/, '');
+      try {
+        const res = await fetch(`${BASE}/prep/jump`, {
+          method: 'POST', headers: AUTH_HEADERS,
+          body: JSON.stringify({ exam_type: currentExamType, concept_id: conceptId }),
+        });
+        if (!res.ok) throw new Error(`${res.status}`);
+        currentConceptLabel = label;
+        enterChat();
+      } catch (e) {
+        alert(`Couldn't switch to that concept: ${e.message}`);
+      }
+    });
+  });
+}
+
+function enterChat() {
+  setupArea().style.display = 'none';
+  document.getElementById('prep-chat-wrap').style.display = 'flex';
+  document.body.classList.add('oak-fullscreen');
+  document.getElementById('prep-status-line').innerHTML =
+    `&#9679; ${currentExamType === 'midsem' ? 'Midterm' : 'Endsem'} Prep` +
+    (currentConceptLabel ? ` — ${currentConceptLabel}` : '');
+  document.getElementById('oak-messages').innerHTML = '';
+  chatHistory = [];
+  sendPrepTurn("Let's start.", /*showUserBubble=*/false);
+}
+
+document.getElementById('prep-back-to-tree').addEventListener('click', renderTree);
+
+function addMessage(role, text) {
+  const msgs = document.getElementById('oak-messages');
+  const div = document.createElement('div');
+  div.className = `oak-msg ${role === 'assistant' ? 'oak' : 'user'}`;
+  const rendered = String(text)
+    .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
+    .replace(/\*(.+?)\*/g, '<i>$1</i>')
+    .replace(/\n/g, '<br>');
+  div.innerHTML = role === 'assistant' ? `<div class="oak-label">PROF OAK</div>${rendered}` : rendered;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function showTyping() {
+  const msgs = document.getElementById('oak-messages');
+  const div = document.createElement('div');
+  div.className = 'oak-msg oak';
+  div.id = 'prep-typing';
+  div.innerHTML = '<div class="oak-label">PROF OAK</div><div class="typing"><span></span><span></span><span></span></div>';
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+function removeTyping() { document.getElementById('prep-typing')?.remove(); }
+
+async function sendPrepTurn(message, showUserBubble = true) {
+  if (showUserBubble) addMessage('user', message);
+  chatHistory.push({ role: 'user', content: message, timestamp: new Date().toISOString() });
+  showTyping();
+  try {
+    const reply = await chatWithOak({
+      message, jobId: null, moduleId: null, paperId: null,
+      history: chatHistory, role: 'student', mode: 'prep',
+    });
+    removeTyping();
+    addMessage('assistant', reply.content);
+    chatHistory.push({ role: 'assistant', content: reply.content, timestamp: new Date().toISOString() });
+  } catch (e) {
+    removeTyping();
+    addMessage('assistant', `Connection issue: ${e.message}`);
+  }
+}
+
+document.getElementById('oak-send-btn').addEventListener('click', () => {
+  const input = document.getElementById('oak-input');
+  const msg = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+  sendPrepTurn(msg);
+});
+document.getElementById('oak-input').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') document.getElementById('oak-send-btn').click();
+});
+
+// ── Theme toggle — same pattern as student.html ──
+document.addEventListener('DOMContentLoaded', () => {
+  const ttDark  = document.getElementById('tt-dark');
+  const ttLight = document.getElementById('tt-light');
+  function applyTheme(theme) {
+    if (theme === 'light') {
+      document.body.classList.add('light');
+      ttDark.classList.remove('on'); ttLight.classList.add('on');
+    } else {
+      document.body.classList.remove('light');
+      ttDark.classList.add('on'); ttLight.classList.remove('on');
+    }
+    localStorage.setItem('maros_theme', theme);
+  }
+  applyTheme(localStorage.getItem('maros_theme') || 'dark');
+  ttDark.addEventListener('click',  () => applyTheme('dark'));
+  ttLight.addEventListener('click', () => applyTheme('light'));
+});
+
+boot();
+</script>
+</body>
+</html>

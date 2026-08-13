@@ -1,0 +1,1090 @@
+[
+  {
+    "q_id": "2017-ct1-1",
+    "year": 2017,
+    "marks": 6,
+    "concepts": [
+      "cpu-virtualization"
+    ],
+    "text": "write() syscall, library vs syscall, flow of control",
+    "exam_type": "midsem"
+  },
+  {
+    "q_id": "2017-ct1-2",
+    "year": 2017,
+    "marks": 6,
+    "concepts": [
+      "file-systems"
+    ],
+    "text": "hard vs soft links properties",
+    "exam_type": "midsem"
+  },
+  {
+    "q_id": "2017-ct1-3",
+    "year": 2017,
+    "marks": 3,
+    "concepts": [
+      "file-systems",
+      "data-integrity"
+    ],
+    "text": "idempotent free-list op, backups, floppy corruption",
+    "exam_type": "midsem"
+  },
+  {
+    "q_id": "2017-ct2-1",
+    "year": 2017,
+    "marks": 3,
+    "concepts": [
+      "persistence"
+    ],
+    "text": "I/O software layers, buffering, packet transmit",
+    "exam_type": "midsem"
+  },
+  {
+    "q_id": "2017-ct2-2",
+    "year": 2017,
+    "marks": 3,
+    "concepts": [
+      "data-integrity",
+      "memory-virtualization",
+      "persistence"
+    ],
+    "text": "stable storage, segmented paging, disk arm scheduling T/F",
+    "exam_type": "midsem"
+  },
+  {
+    "q_id": "2017-ct2-3",
+    "year": 2017,
+    "marks": 9,
+    "concepts": [
+      "paging",
+      "memory-virtualization"
+    ],
+    "text": "page table size 20-bit VA, buddy allocation",
+    "exam_type": "midsem"
+  },
+  {
+    "q_id": "2017-end-1a",
+    "year": 2017,
+    "marks": 10,
+    "concepts": [
+      "memory-virtualization"
+    ],
+    "text": "swapping, base-limit MMU",
+    "exam_type": "endsem"
+  },
+  {
+    "q_id": "2017-end-1b",
+    "year": 2017,
+    "marks": 10,
+    "concepts": [
+      "memory-virtualization"
+    ],
+    "text": "internal vs external fragmentation",
+    "exam_type": "endsem"
+  },
+  {
+    "q_id": "2017-end-1c",
+    "year": 2017,
+    "marks": 10,
+    "concepts": [
+      "computer-architecture"
+    ],
+    "text": "cache hit ratio / effective access time",
+    "exam_type": "endsem"
+  },
+  {
+    "q_id": "2017-end-1d",
+    "year": 2017,
+    "marks": 10,
+    "concepts": [
+      "paging"
+    ],
+    "text": "multi-level page table 34-bit address",
+    "exam_type": "endsem"
+  },
+  {
+    "q_id": "2017-end-2a",
+    "year": 2017,
+    "marks": 10,
+    "concepts": [
+      "file-systems"
+    ],
+    "text": "inode reference count field",
+    "exam_type": "endsem"
+  },
+  {
+    "q_id": "2017-end-2b",
+    "year": 2017,
+    "marks": 10,
+    "concepts": [
+      "file-systems"
+    ],
+    "text": "direct blocks in inode",
+    "exam_type": "endsem"
+  },
+  {
+    "q_id": "2017-end-2c",
+    "year": 2017,
+    "marks": 10,
+    "concepts": [
+      "file-systems"
+    ],
+    "text": "max file size single/double/triple indirection",
+    "exam_type": "endsem"
+  },
+  {
+    "q_id": "2017-end-2d",
+    "year": 2017,
+    "marks": 10,
+    "concepts": [
+      "file-systems"
+    ],
+    "text": "why not only triple indirection",
+    "exam_type": "endsem"
+  },
+  {
+    "q_id": "2017-end-2e",
+    "year": 2017,
+    "marks": 10,
+    "concepts": [
+      "data-integrity"
+    ],
+    "text": "fsck consistency checks",
+    "exam_type": "endsem"
+  },
+  {
+    "q_id": "2017-end-3a",
+    "year": 2017,
+    "marks": 10,
+    "concepts": [
+      "paging"
+    ],
+    "text": "page replacement OPT/LRU/FIFO faults",
+    "exam_type": "endsem"
+  },
+  {
+    "q_id": "2017-end-3b",
+    "year": 2017,
+    "marks": 10,
+    "concepts": [
+      "locks"
+    ],
+    "text": "Banker's algorithm, deadlock, safe sequence",
+    "exam_type": "endsem"
+  },
+  {
+    "q_id": "2017-end-4a",
+    "year": 2017,
+    "marks": 20,
+    "concepts": [
+      "threads"
+    ],
+    "text": "user-level vs kernel-level threads",
+    "exam_type": "endsem"
+  },
+  {
+    "q_id": "2017-end-4b",
+    "year": 2017,
+    "marks": 20,
+    "concepts": [
+      "threads",
+      "concurrency"
+    ],
+    "text": "producer/consumer semaphores correctness",
+    "exam_type": "endsem"
+  },
+  {
+    "q_id": "2017-end-4c",
+    "year": 2017,
+    "marks": 20,
+    "concepts": [
+      "concurrency",
+      "locks"
+    ],
+    "text": "thread interleaving x/y with tset locks",
+    "exam_type": "endsem"
+  },
+  {
+    "q_id": "2017-re-1",
+    "year": 2017,
+    "marks": 5,
+    "concepts": [
+      "persistence"
+    ],
+    "text": "floppy seek / block clustering read time",
+    "exam_type": "reexam"
+  },
+  {
+    "q_id": "2017-re-2",
+    "year": 2017,
+    "marks": 5,
+    "concepts": [
+      "file-systems"
+    ],
+    "text": "unix path resolution disk accesses",
+    "exam_type": "reexam"
+  },
+  {
+    "q_id": "2017-re-3",
+    "year": 2017,
+    "marks": 5,
+    "concepts": [
+      "concurrency"
+    ],
+    "text": "thread interleaving c=b\u00b1a possible values",
+    "exam_type": "reexam"
+  },
+  {
+    "q_id": "2017-re-4",
+    "year": 2017,
+    "marks": 5,
+    "concepts": [
+      "paging"
+    ],
+    "text": "22-bit VA VPN/offset, page table entries",
+    "exam_type": "reexam"
+  },
+  {
+    "q_id": "2017-re-5",
+    "year": 2017,
+    "marks": 5,
+    "concepts": [
+      "paging"
+    ],
+    "text": "TLB behavior p[1024] hits/misses",
+    "exam_type": "reexam"
+  },
+  {
+    "q_id": "2017-re-6",
+    "year": 2017,
+    "marks": 5,
+    "concepts": [
+      "paging"
+    ],
+    "text": "associative registers serial vs parallel lookup",
+    "exam_type": "reexam"
+  },
+  {
+    "q_id": "2017-re-7",
+    "year": 2017,
+    "marks": 5,
+    "concepts": [
+      "threads"
+    ],
+    "text": "counting semaphore from binary semaphores",
+    "exam_type": "reexam"
+  },
+  {
+    "q_id": "2017-re-8",
+    "year": 2017,
+    "marks": 5,
+    "concepts": [
+      "locks"
+    ],
+    "text": "test-and-set from swap instruction",
+    "exam_type": "reexam"
+  },
+  {
+    "q_id": "2017-re-9",
+    "year": 2017,
+    "marks": 5,
+    "concepts": [
+      "scheduling"
+    ],
+    "text": "FCFS/SJF/priority/RR gantt, turnaround/waiting",
+    "exam_type": "reexam"
+  },
+  {
+    "q_id": "2017-re-10",
+    "year": 2017,
+    "marks": 5,
+    "concepts": [
+      "persistence"
+    ],
+    "text": "RAID 10 advantages and stripe placement",
+    "exam_type": "reexam"
+  },
+  {
+    "q_id": "2018-ct1-1",
+    "year": 2018,
+    "marks": 6,
+    "concepts": [
+      "cpu-virtualization"
+    ],
+    "text": "write() count return, syscall naming, flow of control",
+    "exam_type": "midsem"
+  },
+  {
+    "q_id": "2018-ct1-2",
+    "year": 2018,
+    "marks": 6,
+    "concepts": [
+      "file-systems"
+    ],
+    "text": "hard/soft links H/S/B/N classification",
+    "exam_type": "midsem"
+  },
+  {
+    "q_id": "2018-ct1-3",
+    "year": 2018,
+    "marks": 3,
+    "concepts": [
+      "file-systems",
+      "data-integrity"
+    ],
+    "text": "idempotent free-list, backups, floppy corruption",
+    "exam_type": "midsem"
+  },
+  {
+    "q_id": "2018-ct2-1",
+    "year": 2018,
+    "marks": 6,
+    "concepts": [
+      "persistence"
+    ],
+    "text": "disk arm scheduling FIFO/SSTF/SCAN/LOOK/C-SCAN/C-LOOK",
+    "exam_type": "midsem"
+  },
+  {
+    "q_id": "2018-ct2-2",
+    "year": 2018,
+    "marks": 6,
+    "concepts": [
+      "paging"
+    ],
+    "text": "logical address space, frames, page tables, fragmentation",
+    "exam_type": "midsem"
+  },
+  {
+    "q_id": "2018-ct2-3",
+    "year": 2018,
+    "marks": 3,
+    "concepts": [
+      "paging",
+      "memory-virtualization"
+    ],
+    "text": "swap fast, sparse address space, min frames indirection",
+    "exam_type": "midsem"
+  },
+  {
+    "q_id": "2018-end-1a",
+    "year": 2018,
+    "marks": 15,
+    "concepts": [
+      "paging"
+    ],
+    "text": "TLB/page-table access time, hit rates",
+    "exam_type": "endsem"
+  },
+  {
+    "q_id": "2018-end-1b",
+    "year": 2018,
+    "marks": 15,
+    "concepts": [
+      "memory-virtualization"
+    ],
+    "text": "Buddy allocator pseudocode + trace",
+    "exam_type": "endsem"
+  },
+  {
+    "q_id": "2018-end-1c",
+    "year": 2018,
+    "marks": 15,
+    "concepts": [
+      "paging"
+    ],
+    "text": "page replacement LRU/FIFO/OPT across frame counts",
+    "exam_type": "endsem"
+  },
+  {
+    "q_id": "2018-end-2a",
+    "year": 2018,
+    "marks": 10,
+    "concepts": [
+      "file-systems"
+    ],
+    "text": "directory implementations",
+    "exam_type": "endsem"
+  },
+  {
+    "q_id": "2018-end-2b",
+    "year": 2018,
+    "marks": 10,
+    "concepts": [
+      "file-systems"
+    ],
+    "text": "partition blocks, inode blocks count",
+    "exam_type": "endsem"
+  },
+  {
+    "q_id": "2018-end-2c",
+    "year": 2018,
+    "marks": 10,
+    "concepts": [
+      "data-integrity"
+    ],
+    "text": "fsck checks, in-use vs free block lists",
+    "exam_type": "endsem"
+  },
+  {
+    "q_id": "2018-end-3a",
+    "year": 2018,
+    "marks": 10,
+    "concepts": [
+      "locks"
+    ],
+    "text": "Banker's algorithm safe state",
+    "exam_type": "endsem"
+  },
+  {
+    "q_id": "2018-end-3b",
+    "year": 2018,
+    "marks": 10,
+    "concepts": [
+      "locks"
+    ],
+    "text": "deadlock prevention, circular wait",
+    "exam_type": "endsem"
+  },
+  {
+    "q_id": "2018-end-4a",
+    "year": 2018,
+    "marks": 15,
+    "concepts": [
+      "processes"
+    ],
+    "text": "fork/wait valid outputs interleaving",
+    "exam_type": "endsem"
+  },
+  {
+    "q_id": "2018-end-4b",
+    "year": 2018,
+    "marks": 15,
+    "concepts": [
+      "scheduling"
+    ],
+    "text": "priority scheduling Gantt, turnaround/response",
+    "exam_type": "endsem"
+  },
+  {
+    "q_id": "2018-end-4c",
+    "year": 2018,
+    "marks": 15,
+    "concepts": [
+      "threads"
+    ],
+    "text": "3-process iteration barrier with semaphores",
+    "exam_type": "endsem"
+  },
+  {
+    "q_id": "2018-end-4d",
+    "year": 2018,
+    "marks": 15,
+    "concepts": [
+      "threads"
+    ],
+    "text": "three typical uses of semaphores",
+    "exam_type": "endsem"
+  },
+  {
+    "q_id": "2019-fs-1a",
+    "year": 2019,
+    "marks": 1.5,
+    "concepts": [
+      "cpu-virtualization"
+    ],
+    "text": "user->kernel transition steps",
+    "exam_type": "midsem"
+  },
+  {
+    "q_id": "2019-fs-1b",
+    "year": 2019,
+    "marks": 1.0,
+    "concepts": [
+      "processes"
+    ],
+    "text": "fork count new processes",
+    "exam_type": "midsem"
+  },
+  {
+    "q_id": "2019-fs-1c",
+    "year": 2019,
+    "marks": 1.0,
+    "concepts": [
+      "processes",
+      "file-systems"
+    ],
+    "text": "fork+open outfile contents (shared offset)",
+    "exam_type": "midsem"
+  },
+  {
+    "q_id": "2019-fs-1d",
+    "year": 2019,
+    "marks": 1.0,
+    "concepts": [
+      "processes",
+      "file-systems"
+    ],
+    "text": "fork before open, separate offsets",
+    "exam_type": "midsem"
+  },
+  {
+    "q_id": "2019-fs-2",
+    "year": 2019,
+    "marks": 3,
+    "concepts": [
+      "scheduling"
+    ],
+    "text": "Round Robin strengths/weaknesses, quanta",
+    "exam_type": "midsem"
+  },
+  {
+    "q_id": "2019-fs-3",
+    "year": 2019,
+    "marks": 3.5,
+    "concepts": [
+      "scheduling"
+    ],
+    "text": "MLFQ queues, time slices, priority boost",
+    "exam_type": "midsem"
+  },
+  {
+    "q_id": "2019-fs-4",
+    "year": 2019,
+    "marks": 4,
+    "concepts": [
+      "memory-virtualization"
+    ],
+    "text": "segmentation VA trace valid/violation",
+    "exam_type": "midsem"
+  },
+  {
+    "q_id": "2019-end-1a",
+    "year": 2019,
+    "marks": 1.5,
+    "concepts": [
+      "computer-architecture"
+    ],
+    "text": "hardware aids for OS functionality",
+    "exam_type": "endsem"
+  },
+  {
+    "q_id": "2019-end-1b",
+    "year": 2019,
+    "marks": 1.5,
+    "concepts": [
+      "cpu-virtualization"
+    ],
+    "text": "limited direct execution benefit",
+    "exam_type": "endsem"
+  },
+  {
+    "q_id": "2019-end-1c",
+    "year": 2019,
+    "marks": 1.5,
+    "concepts": [
+      "threads"
+    ],
+    "text": "benefits of multi-threaded programs",
+    "exam_type": "endsem"
+  },
+  {
+    "q_id": "2019-end-1d",
+    "year": 2019,
+    "marks": 1.5,
+    "concepts": [
+      "file-systems"
+    ],
+    "text": "disk accesses to create nested file",
+    "exam_type": "endsem"
+  },
+  {
+    "q_id": "2019-end-1e",
+    "year": 2019,
+    "marks": 1.5,
+    "concepts": [
+      "locks"
+    ],
+    "text": "CPU utilization if all threads deadlocked",
+    "exam_type": "endsem"
+  },
+  {
+    "q_id": "2019-end-1f",
+    "year": 2019,
+    "marks": 2.5,
+    "concepts": [
+      "paging",
+      "persistence",
+      "threads"
+    ],
+    "text": "MCQ: multilevel PT, seek latency, TLB pipeline, IPC, semaphore order",
+    "exam_type": "endsem"
+  },
+  {
+    "q_id": "2019-end-2a",
+    "year": 2019,
+    "marks": 4,
+    "concepts": [
+      "scheduling"
+    ],
+    "text": "two-queue scheduler priority/starvation/fairness",
+    "exam_type": "endsem"
+  },
+  {
+    "q_id": "2019-end-2b",
+    "year": 2019,
+    "marks": 5,
+    "concepts": [
+      "memory-virtualization",
+      "paging"
+    ],
+    "text": "segmentation logical address, multi-level split",
+    "exam_type": "endsem"
+  },
+  {
+    "q_id": "2019-end-2c",
+    "year": 2019,
+    "marks": 4,
+    "concepts": [
+      "paging"
+    ],
+    "text": "TLB misses STRIDE/MAX tuning",
+    "exam_type": "endsem"
+  },
+  {
+    "q_id": "2019-end-3a",
+    "year": 2019,
+    "marks": 4,
+    "concepts": [
+      "file-systems"
+    ],
+    "text": "inode direct/indirect max disk & file size",
+    "exam_type": "endsem"
+  },
+  {
+    "q_id": "2019-end-3b",
+    "year": 2019,
+    "marks": 4,
+    "concepts": [
+      "file-systems"
+    ],
+    "text": "per-process vs system open file table",
+    "exam_type": "endsem"
+  },
+  {
+    "q_id": "2019-end-3c",
+    "year": 2019,
+    "marks": 4,
+    "concepts": [
+      "persistence"
+    ],
+    "text": "disk service time RPM/seek, SSTF/SPTF order",
+    "exam_type": "endsem"
+  },
+  {
+    "q_id": "2019-end-4a",
+    "year": 2019,
+    "marks": 3,
+    "concepts": [
+      "locks"
+    ],
+    "text": "CompareAndSwap lock-free linked list insert",
+    "exam_type": "endsem"
+  },
+  {
+    "q_id": "2019-end-4b",
+    "year": 2019,
+    "marks": 3,
+    "concepts": [
+      "threads"
+    ],
+    "text": "condition variable from semaphore bug",
+    "exam_type": "endsem"
+  },
+  {
+    "q_id": "2019-end-4c",
+    "year": 2019,
+    "marks": 3,
+    "concepts": [
+      "locks"
+    ],
+    "text": "deadlock possible across P1/P2/P3 requests",
+    "exam_type": "endsem"
+  },
+  {
+    "q_id": "2019-end-4d",
+    "year": 2019,
+    "marks": 6,
+    "concepts": [
+      "threads"
+    ],
+    "text": "bridge crossing sync with semaphores",
+    "exam_type": "endsem"
+  },
+  {
+    "q_id": "2020-end-1",
+    "year": 2020,
+    "marks": 4.5,
+    "concepts": [
+      "processes",
+      "file-systems"
+    ],
+    "text": "fork/dup2/execvp grep, fd tables",
+    "exam_type": "endsem"
+  },
+  {
+    "q_id": "2020-end-2",
+    "year": 2020,
+    "marks": 3,
+    "concepts": [
+      "persistence"
+    ],
+    "text": "disk seek/clustering 50-block read time",
+    "exam_type": "endsem"
+  },
+  {
+    "q_id": "2020-end-3",
+    "year": 2020,
+    "marks": 5,
+    "concepts": [
+      "threads"
+    ],
+    "text": "three-process P/Q/R synchronization",
+    "exam_type": "endsem"
+  },
+  {
+    "q_id": "2020-end-4",
+    "year": 2020,
+    "marks": 5,
+    "concepts": [
+      "concurrency"
+    ],
+    "text": "pseudo-code interleaving / atomicity",
+    "exam_type": "endsem"
+  },
+  {
+    "q_id": "2020-end-5",
+    "year": 2020,
+    "marks": 5,
+    "concepts": [
+      "locks"
+    ],
+    "text": "deadlock occurrence example scenario",
+    "exam_type": "endsem"
+  },
+  {
+    "q_id": "2020-end-6",
+    "year": 2020,
+    "marks": 5,
+    "concepts": [
+      "file-systems"
+    ],
+    "text": "Unix file system API design advantages",
+    "exam_type": "endsem"
+  },
+  {
+    "q_id": "2021-end-1",
+    "year": 2021,
+    "marks": 4,
+    "concepts": [
+      "threads"
+    ],
+    "text": "semaphore ordering A;B;C;D repeating",
+    "exam_type": "endsem"
+  },
+  {
+    "q_id": "2021-end-2",
+    "year": 2021,
+    "marks": 5,
+    "concepts": [
+      "threads"
+    ],
+    "text": "counting semaphore from binary + counter",
+    "exam_type": "endsem"
+  },
+  {
+    "q_id": "2021-end-3",
+    "year": 2021,
+    "marks": 8,
+    "concepts": [
+      "locks"
+    ],
+    "text": "Banker's algorithm safe state + request grant",
+    "exam_type": "endsem"
+  },
+  {
+    "q_id": "2021-end-4",
+    "year": 2021,
+    "marks": 4,
+    "concepts": [
+      "file-systems"
+    ],
+    "text": "inode ref count, IO completion, triple indirection",
+    "exam_type": "endsem"
+  },
+  {
+    "q_id": "2021-end-5",
+    "year": 2021,
+    "marks": 8,
+    "concepts": [
+      "file-systems"
+    ],
+    "text": "open/write/dup file structure changes",
+    "exam_type": "endsem"
+  },
+  {
+    "q_id": "2021-end-6",
+    "year": 2021,
+    "marks": 6,
+    "concepts": [
+      "persistence"
+    ],
+    "text": "disk SATF/FIFO rotational worst-case",
+    "exam_type": "endsem"
+  },
+  {
+    "q_id": "2022-ss-1",
+    "year": 2022,
+    "marks": 2,
+    "concepts": [
+      "memory-virtualization"
+    ],
+    "text": "two-segment translation valid/fault",
+    "exam_type": "midsem"
+  },
+  {
+    "q_id": "2022-ss-2",
+    "year": 2022,
+    "marks": 2,
+    "concepts": [
+      "paging"
+    ],
+    "text": "TLB misses STRIDE/MAX",
+    "exam_type": "midsem"
+  },
+  {
+    "q_id": "2022-ss-3",
+    "year": 2022,
+    "marks": 2,
+    "concepts": [
+      "paging"
+    ],
+    "text": "software-managed TLB miss problem",
+    "exam_type": "midsem"
+  },
+  {
+    "q_id": "2022-ss-4",
+    "year": 2022,
+    "marks": 2,
+    "concepts": [
+      "threads"
+    ],
+    "text": "thread vs process creation interface",
+    "exam_type": "midsem"
+  },
+  {
+    "q_id": "2022-ss-5",
+    "year": 2022,
+    "marks": 3,
+    "concepts": [
+      "locks"
+    ],
+    "text": "spin lock xchg alternative correctness",
+    "exam_type": "midsem"
+  },
+  {
+    "q_id": "2022-ss-6",
+    "year": 2022,
+    "marks": 4,
+    "concepts": [
+      "paging"
+    ],
+    "text": "two-level page table PDE/PTE translation",
+    "exam_type": "midsem"
+  },
+  {
+    "q_id": "2022-re-1",
+    "year": 2022,
+    "marks": 6,
+    "concepts": [
+      "cpu-virtualization",
+      "processes"
+    ],
+    "text": "policy vs mechanism, process states, stack/heap",
+    "exam_type": "reexam"
+  },
+  {
+    "q_id": "2022-re-2",
+    "year": 2022,
+    "marks": 8,
+    "concepts": [
+      "memory-virtualization"
+    ],
+    "text": "dynamic relocation base/bounds registers",
+    "exam_type": "reexam"
+  },
+  {
+    "q_id": "2022-re-3",
+    "year": 2022,
+    "marks": 6,
+    "concepts": [
+      "concurrency",
+      "threads"
+    ],
+    "text": "many-threads C snippet race",
+    "exam_type": "reexam"
+  },
+  {
+    "q_id": "2022-re-8",
+    "year": 2022,
+    "marks": 8,
+    "concepts": [
+      "threads"
+    ],
+    "text": "one-lane bridge traffic synchronization",
+    "exam_type": "reexam"
+  },
+  {
+    "q_id": "2024-mid-1",
+    "year": 2024,
+    "marks": 2,
+    "concepts": [
+      "cpu-virtualization"
+    ],
+    "text": "syscall kernel address, userspace context save",
+    "exam_type": "midsem"
+  },
+  {
+    "q_id": "2024-mid-2",
+    "year": 2024,
+    "marks": 2.5,
+    "concepts": [
+      "processes"
+    ],
+    "text": "fork loop output justification",
+    "exam_type": "midsem"
+  },
+  {
+    "q_id": "2024-mid-3",
+    "year": 2024,
+    "marks": 2.5,
+    "concepts": [
+      "scheduling"
+    ],
+    "text": "which policies allow given A/B/C schedule (MLFQ/lottery)",
+    "exam_type": "midsem"
+  },
+  {
+    "q_id": "2024-mid-4",
+    "year": 2024,
+    "marks": 4,
+    "concepts": [
+      "scheduling"
+    ],
+    "text": "Response-Ratio scheduling Gantt, avg response/turnaround",
+    "exam_type": "midsem"
+  },
+  {
+    "q_id": "2024-mid-5",
+    "year": 2024,
+    "marks": 4,
+    "concepts": [
+      "threads",
+      "concurrency"
+    ],
+    "text": "concurrent linked list insert/lookup with mutex",
+    "exam_type": "midsem"
+  },
+  {
+    "q_id": "2024-mid-6",
+    "year": 2024,
+    "marks": 3,
+    "concepts": [
+      "concurrency"
+    ],
+    "text": "thread interleaving c=b\u00b1a other values",
+    "exam_type": "midsem"
+  },
+  {
+    "q_id": "2024-mid-7",
+    "year": 2024,
+    "marks": 3,
+    "concepts": [
+      "threads"
+    ],
+    "text": "condition variable wait() mutex + while predicate",
+    "exam_type": "midsem"
+  },
+  {
+    "q_id": "2024-mid-8",
+    "year": 2024,
+    "marks": 4,
+    "concepts": [
+      "threads"
+    ],
+    "text": "K+1 threads N*T1 then T2 cyclic CV sync",
+    "exam_type": "midsem"
+  },
+  {
+    "q_id": "2024-ee-1",
+    "year": 2024,
+    "marks": null,
+    "concepts": [
+      "cpu-virtualization"
+    ],
+    "text": "two CPU modes, importance in virtualization",
+    "exam_type": "endsem"
+  },
+  {
+    "q_id": "2024-ee-2",
+    "year": 2024,
+    "marks": null,
+    "concepts": [
+      "scheduling"
+    ],
+    "text": "FCFS vs SRTF avg turnaround difference",
+    "exam_type": "endsem"
+  },
+  {
+    "q_id": "2024-ee-3",
+    "year": 2024,
+    "marks": null,
+    "concepts": [
+      "paging"
+    ],
+    "text": "TLB valid bit vs page-table valid bit",
+    "exam_type": "endsem"
+  },
+  {
+    "q_id": "2024-ee-4",
+    "year": 2024,
+    "marks": null,
+    "concepts": [
+      "paging"
+    ],
+    "text": "multi-level page table hypothetical calcs",
+    "exam_type": "endsem"
+  },
+  {
+    "q_id": "2024-ee-5",
+    "year": 2024,
+    "marks": null,
+    "concepts": [
+      "paging"
+    ],
+    "text": "page fault service time avg memory access",
+    "exam_type": "endsem"
+  },
+  {
+    "q_id": "2024-ee-6",
+    "year": 2024,
+    "marks": null,
+    "concepts": [
+      "memory-virtualization",
+      "paging"
+    ],
+    "text": "segmented paging min page size; LRU replacement",
+    "exam_type": "endsem"
+  }
+]

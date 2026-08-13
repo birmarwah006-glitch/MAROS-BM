@@ -366,7 +366,11 @@
   <div class="oak-sidebar">
     <div class="oak-header">
       <div class="oak-avatar">&#127807;</div>
-      <div><div class="oak-name">Prof Oak</div><div class="oak-status">&#9679; Teaching Assistant Mode</div></div>
+      <div style="flex:1"><div class="oak-name">Prof Oak</div><div class="oak-status">&#9679; Teaching Assistant Mode</div></div>
+      <button id="oak-clear-btn" title="Clear conversation" style="
+        background:none; border:1px solid var(--border); border-radius:6px;
+        color:var(--muted2); cursor:pointer; padding:4px 10px; font-size:12px;
+      ">🗑</button>
     </div>
     <div class="oak-messages" id="oak-messages">
       <div class="oak-msg oak"><div class="oak-label">PROF OAK</div>Hello Professor! Upload your lecture and I'll help you analyze the modules, review quiz questions, and understand how students are engaging.</div>
@@ -381,11 +385,15 @@
 <script type="module">
 import { submitJob, pollJob, getManifest, generateQuiz, chatWithOak, STATE, assignPaper,
          parseQuizPdf, publishProfQuiz, listProfQuizzes, reviewModuleQuiz, publishModuleQuiz,
-         getOakQuestionAnalytics, BASE } from './api.js';
+         getOakQuestionAnalytics, getChatHistory, authHeaders, BASE } from './api.js';
+import { renderChatContent } from './notes-renderer.js';
 
 function initOak() {}
 function setOakMode() {}
 function setOakTalking() {}
+
+// The professor greeting (kept so restore can re-show it above saved turns).
+const PROF_GREETING = "Hello Professor! Upload your lecture and I'll help you analyze the modules, review quiz questions, and understand how students are engaging.";
 
 // ── Tab switching ──
 document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -395,7 +403,6 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.classList.add('active');
     document.getElementById(`tab-${btn.dataset.tab}`).classList.add('active');
     if (btn.dataset.tab === 'analytics') loadAnalytics();
-    // quizzes tab removed — quiz creation now lives on the lecture tab (loaded via initial loadProfQuizzes())
   });
 });
 
@@ -405,14 +412,14 @@ let analyticsData = null, studentSortKey = 'accuracy', studentSortAsc = true;
 document.getElementById('report-btn').addEventListener('click', async () => {
   const btn=document.getElementById('report-btn'), reportEl=document.getElementById('class-report'), textEl=document.getElementById('report-text'), tsEl=document.getElementById('report-ts');
   btn.disabled=true; btn.textContent='Analyzing...'; reportEl.style.display='block'; textEl.textContent='Analyzing all student quiz data...'; tsEl.textContent='';
-  try { const res=await fetch(`${BASE}/professor/report`,{method:'POST'}); if(!res.ok) throw new Error(`${res.status}`); const data=await res.json(); textEl.textContent=data.report; if(data.generated_at) tsEl.textContent='Generated '+new Date(data.generated_at).toLocaleString(); } catch(e) { textEl.textContent=`Report failed: ${e.message}`; } finally { btn.disabled=false; btn.textContent='Generate Report'; }
+  try { const res=await fetch(`${BASE}/professor/report`,{method:'POST',headers:authHeaders()}); if(!res.ok) throw new Error(`${res.status}`); const data=await res.json(); textEl.textContent=data.report; if(data.generated_at) tsEl.textContent='Generated '+new Date(data.generated_at).toLocaleString(); } catch(e) { textEl.textContent=`Report failed: ${e.message}`; } finally { btn.disabled=false; btn.textContent='Generate Report'; }
 });
 
 async function loadAnalytics() {
   const loadingEl=document.getElementById('analytics-loading'), emptyEl=document.getElementById('analytics-empty'), contentEl=document.getElementById('analytics-content');
   loadingEl.style.display='block'; emptyEl.style.display='none'; contentEl.style.display='none';
   try {
-    const res=await fetch(`${BASE}/professor/analytics`); const data=await res.json(); analyticsData=data;
+    const res=await fetch(`${BASE}/professor/analytics`,{headers:authHeaders()}); const data=await res.json(); analyticsData=data;
     loadingEl.style.display='none';
     if(!data.total_answers){ emptyEl.style.display='block'; return; }
     contentEl.style.display='block';
@@ -501,7 +508,6 @@ function renderModules(modules) {
     card.addEventListener('click',()=>generateModuleQuiz(m)); grid.appendChild(card);
   }); document.getElementById('modules-section').style.display='block';
 }
-// v4: module click opens the review flow instead of autogen
 async function generateModuleQuiz(module) { openModuleReview(module); }
 
 // ═══ v4: MODULE QUIZ REVIEW ═══
@@ -594,7 +600,7 @@ async function loadPapers() {
       const card=document.createElement('div'); card.className='assigned-card'; const tid=`ptoggle-${p.paper_id}`, vis=p.visible!==false;
       card.innerHTML=`<div style="font-size:18px;flex-shrink:0">&#128196;</div><div class="assigned-card-body"><div class="assigned-card-title">${p.title}</div><div class="assigned-card-meta">${p.has_podcast?'Podcast ready':'No podcast yet'} &nbsp;·&nbsp; Assigned ${new Date(p.assigned_at).toLocaleDateString()}</div></div><div style="display:flex;align-items:center;gap:8px;flex-shrink:0"><label class="toggle"><input type="checkbox" id="${tid}" ${vis?'checked':''}><div class="toggle-track"></div><div class="toggle-thumb"></div></label><span class="vis-label" id="vislabel-p-${p.paper_id}">${vis?'Visible':'Hidden'}</span></div>`;
       list.appendChild(card);
-      document.getElementById(tid).addEventListener('change', async(e)=>{ await fetch(`${BASE}/papers/${p.paper_id}/visibility?visible=${e.target.checked}`,{method:'PATCH'}); document.getElementById(`vislabel-p-${p.paper_id}`).textContent=e.target.checked?'Visible':'Hidden'; });
+      document.getElementById(tid).addEventListener('change', async(e)=>{ await fetch(`${BASE}/papers/${p.paper_id}/visibility?visible=${e.target.checked}`,{method:'PATCH',headers:authHeaders()}); document.getElementById(`vislabel-p-${p.paper_id}`).textContent=e.target.checked?'Visible':'Hidden'; });
     });
   } catch(e){ document.getElementById('papers-list').innerHTML='<div style="font-family:var(--font-mono);font-size:12px;color:var(--muted2)">Failed to load papers.</div>'; }
 }
@@ -624,20 +630,88 @@ async function loadAssignments() {
 }
 window.toggleDrawer=function(id){ document.getElementById(`drawer-${id}`)?.classList.toggle('open'); };
 
-// ═══ OAK CHAT ═══
+// ═══ OAK CHAT — FIXED: renders mermaid diagrams + code blocks via renderChatContent ═══
+async function addOakMessage(role, text) {
+  const msgs = document.getElementById('oak-messages');
+  const div = document.createElement('div');
+  div.className = `oak-msg ${role}`;
+  if (role === 'oak') {
+    div.innerHTML = '<div class="oak-label">PROF OAK</div><div class="oak-msg-body"></div>';
+    msgs.appendChild(div);
+    await renderChatContent(text, div.querySelector('.oak-msg-body'));
+  } else {
+    div.textContent = text;
+    msgs.appendChild(div);
+  }
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
 async function sendMessage() {
   const input=document.getElementById('oak-input'), msg=input.value.trim(); if(!msg) return; input.value='';
-  addOakMessage('user',msg); chatHistory.push({role:'user',content:msg,timestamp:new Date().toISOString()}); showTyping();
-  try { const reply=await chatWithOak({message:msg,jobId:currentJobId,moduleId:null,history:chatHistory,role:'professor'}); removeTyping(); addOakMessage('oak',reply.content); chatHistory.push({role:'assistant',content:reply.content,timestamp:new Date().toISOString()}); } catch(e){ removeTyping(); addOakMessage('oak',`Connection issue: ${e.message}`); }
+  await addOakMessage('user',msg); chatHistory.push({role:'user',content:msg,timestamp:new Date().toISOString()}); showTyping();
+  try { const reply=await chatWithOak({message:msg,jobId:currentJobId,moduleId:null,history:chatHistory,role:'professor'}); removeTyping(); await addOakMessage('oak',reply.content); chatHistory.push({role:'assistant',content:reply.content,timestamp:new Date().toISOString()}); } catch(e){ removeTyping(); await addOakMessage('oak',`Connection issue: ${e.message}`); }
 }
 document.getElementById('oak-send-btn').addEventListener('click', sendMessage);
 document.getElementById('oak-input').addEventListener('keydown',(e)=>{ if(e.key==='Enter') sendMessage(); });
-function addOakMessage(role,text) { const msgs=document.getElementById('oak-messages'), div=document.createElement('div'); div.className=`oak-msg ${role}`; div.innerHTML=role==='oak'?`<div class="oak-label">PROF OAK</div>${text}`:text; msgs.appendChild(div); msgs.scrollTop=msgs.scrollHeight; }
 function showTyping() { const msgs=document.getElementById('oak-messages'), div=document.createElement('div'); div.className='oak-msg oak'; div.id='typing'; div.innerHTML='<div class="oak-label">PROF OAK</div><div class="typing"><span></span><span></span><span></span></div>'; msgs.appendChild(div); msgs.scrollTop=msgs.scrollHeight; }
 function removeTyping() { document.getElementById('typing')?.remove(); }
 
+// ═══ OAK CHAT PERSISTENCE — FIXED: renders restored messages through renderChatContent ═══
+async function restoreProfChat() {
+  let threads = null;
+  try {
+    const data = await getChatHistory('professor');
+    threads = (data && data.threads) ? data.threads : null;
+  } catch (e) {
+    console.warn('[MAROS] Prof chat history unavailable:', e);
+    return;
+  }
+  if (!threads) return;
+
+  const messages = [];
+  for (const mode of Object.keys(threads)) {
+    if (Array.isArray(threads[mode])) messages.push(...threads[mode]);
+  }
+  if (!messages.length) return;
+
+  const msgs = document.getElementById('oak-messages');
+  // Keep the greeting, then replay saved turns beneath it.
+  msgs.innerHTML = `<div class="oak-msg oak"><div class="oak-label">PROF OAK</div>${PROF_GREETING}</div>`;
+
+  for (const m of messages) {
+    const isOak = m.role === 'assistant' || m.role === 'oak';
+    const div = document.createElement('div');
+    div.className = isOak ? 'oak-msg oak' : 'oak-msg user';
+    if (isOak) {
+      div.innerHTML = '<div class="oak-label">PROF OAK</div><div class="oak-msg-body"></div>';
+      msgs.appendChild(div);
+      await renderChatContent(m.content, div.querySelector('.oak-msg-body'));
+    } else {
+      div.textContent = m.content;
+      msgs.appendChild(div);
+    }
+  }
+  msgs.scrollTop = msgs.scrollHeight;
+
+  chatHistory = messages.map(m => ({ role: m.role, content: m.content }));
+}
+
+// Clear button
+document.getElementById('oak-clear-btn').addEventListener('click', async () => {
+  if (!confirm('Clear the professor conversation? This can\'t be undone.')) return;
+  try {
+    await fetch(`${BASE}/chat/history?scope=professor`, { method: 'DELETE', headers: authHeaders() });
+  } catch (e) {
+    console.warn('[MAROS] Prof clear failed:', e);
+  }
+  chatHistory = [];
+  document.getElementById('oak-messages').innerHTML =
+    `<div class="oak-msg oak"><div class="oak-label">PROF OAK</div>${PROF_GREETING}</div>`;
+});
+
 // ── Boot ──
 initOak('oak-canvas'); setOakMode('corner'); loadPapers(); loadAssignments(); loadProfQuizzes();
+restoreProfChat();
 </script>
 <script>
   document.addEventListener('DOMContentLoaded',()=>{

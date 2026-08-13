@@ -35,6 +35,22 @@
   .tab-panel { display: none; }
   .tab-panel.active { display: block; }
 
+  /* ── Prep Mode nav button (header) ── */
+  .prep-nav-btn {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--green);
+    background: var(--green-soft);
+    border: 1px solid var(--green-line);
+    border-radius: 100px;
+    padding: 7px 16px;
+    cursor: pointer;
+    transition: filter 0.2s;
+    white-space: nowrap;
+  }
+  .prep-nav-btn:hover { filter: brightness(1.15); }
+
   /* ── Assignment Card ── */
   .assignment-card {
     background: var(--surface);
@@ -47,8 +63,10 @@
     gap: 16px;
   }
   .assignment-icon {
-    font-size: 20px;
-    margin-top: 2px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--muted2);
+    margin-top: 3px;
     flex-shrink: 0;
   }
   .assignment-body { flex: 1; min-width: 0; }
@@ -196,6 +214,84 @@
     transition: opacity 0.15s;
   }
   .paper-delete-btn:hover { opacity: 1; color: var(--red, #ff6b6b); }
+
+  /* ── Format choice buttons (Podcast vs Quick Explain) ── */
+  .format-choice-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 10px;
+    cursor: pointer;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--fg);
+    line-height: 1.6;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .format-choice-btn:hover { border-color: var(--green); background: rgba(200,240,96,0.04); }
+  .format-choice-btn span {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 400;
+    color: var(--muted2);
+    margin-top: 4px;
+  }
+  .format-choice-btn.is-ready span { color: var(--green); }
+
+  /* ── Quick Explain chat (audio answers) ── */
+  .ex-chat-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .ex-messages {
+    max-height: 340px;
+    overflow-y: auto;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .ex-msg { font-size: 13px; line-height: 1.55; max-width: 92%; }
+  .ex-msg.user {
+    align-self: flex-end;
+    background: var(--green-soft);
+    border: 1px solid var(--green-line);
+    color: var(--fg);
+    padding: 9px 12px;
+    border-radius: 10px;
+  }
+  .ex-msg.bot { align-self: flex-start; width: 100%; }
+  .ex-label {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    color: var(--green);
+    margin-bottom: 6px;
+  }
+  .ex-msg.bot audio { width: 100%; height: 40px; margin-bottom: 7px; display: block; }
+  .ex-transcript { font-size: 12px; color: var(--muted2); line-height: 1.5; }
+  .ex-input-row { display: flex; gap: 8px; padding: 0 14px 14px; }
+  .ex-input {
+    flex: 1;
+    background: rgba(128,128,128,0.06);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--fg);
+    padding: 9px 12px;
+    font-size: 13px;
+    font-family: inherit;
+    outline: none;
+  }
+  .ex-input:focus { border-color: var(--green); }
+  .ex-thinking {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted2);
+  }
 </style>
 </head>
 <body>
@@ -211,7 +307,9 @@
 <div class="header">
   <a href="index.html" class="back-btn">← Back</a>
   <div class="logo">MA<span>ROS</span></div>
-  <div class="role-badge badge-student">STUDENT</div>
+  <div style="display:flex; align-items:center; gap:10px">
+    <div class="role-badge badge-student">STUDENT</div>
+  </div>
 </div>
 
 <!-- PORTAL -->
@@ -235,7 +333,6 @@
 
       <!-- WAITING -->
       <div class="waiting" id="waiting-state">
-        <div class="waiting-icon">⏳</div>
         <div class="waiting-title">Waiting for lecture</div>
         <p class="waiting-sub">Your professor hasn't uploaded a lecture yet.<br>Check back soon.</p>
         <div class="waiting-pill" id="waiting-pill">Checking for content...</div>
@@ -354,9 +451,9 @@
           </div>
         </div>
 
-        <!-- RIGHT: Podcast Converter -->
+        <!-- RIGHT: Audio Converter (Podcast + Quick Explain) -->
         <div>
-          <div class="section-label">Podcast Converter</div>
+          <div class="section-label">Audio Converter</div>
 
           <div id="podcast-dropzone" style="
             border: 1.5px dashed var(--border2);
@@ -375,29 +472,64 @@
             <input type="file" id="podcast-pdf-input" accept="application/pdf" style="
               position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%;
             ">
-            <div style="font-size:28px">&#127897;</div>
-            <div style="font-size:13px; font-weight:600">Drop a paper here</div>
+            <div style="font-size:13px; font-weight:600">Drop a paper or your notes here</div>
             <div style="font-family:var(--font-mono); font-size:11px; color:var(--muted2)">
               Drag from assigned list or upload any PDF
             </div>
           </div>
 
+          <!-- FORMAT CHOICE — appears after upload/drag -->
+          <div id="converter-choice" style="display:none; margin-top:16px">
+            <div id="choice-title" style="font-family:var(--font-mono); font-size:10px; color:var(--green); letter-spacing:0.1em; margin-bottom:10px"></div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
+              <button class="format-choice-btn" id="choice-podcast-btn">
+                Podcast<span>Bir &amp; Mia &middot; deep dive &middot; ~20 min</span>
+              </button>
+              <button class="format-choice-btn" id="choice-explain-btn">
+                Quick Explain<span>ask what you didn't get &middot; audio answers</span>
+              </button>
+            </div>
+            <button class="btn btn-outline" id="choice-cancel-btn" style="margin-top:10px; width:100%; font-size:11px; padding:7px">Cancel</button>
+          </div>
+
+          <!-- PODCAST: generating -->
           <div id="converter-generating" style="display:none; margin-top:16px; text-align:center; padding:20px 0">
-            <div style="font-size:13px; font-weight:600; margin-bottom:4px" id="converter-title">Generating podcast...</div>
-            <div style="font-family:var(--font-mono); font-size:11px; color:var(--muted2)">Bir and Mia are recording — takes ~2 min</div>
+            <div style="font-size:13px; font-weight:600; margin-bottom:4px" id="converter-title">Generating...</div>
+            <div style="font-family:var(--font-mono); font-size:11px; color:var(--muted2)" id="converter-sub"></div>
             <div class="progress-wrap" style="margin-top:12px">
               <div class="progress-bar"><div class="progress-fill" id="converter-progress" style="width:5%; transition: width 3s ease"></div></div>
             </div>
           </div>
 
+          <!-- PODCAST: ready -->
           <div id="converter-ready" style="display:none; margin-top:16px">
             <div style="font-family:var(--font-mono); font-size:10px; color:var(--green); letter-spacing:0.1em; margin-bottom:10px" id="converter-ready-title"></div>
             <div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px; margin-bottom:10px">
               <audio id="converter-audio" controls style="width:100%"></audio>
             </div>
-            <button class="btn btn-outline" id="converter-ask-oak-btn" style="font-size:12px; padding:8px 16px">
-              Ask Prof Oak about this
-            </button>
+            <div style="display:flex; gap:8px">
+              <button class="btn btn-outline" id="converter-ask-oak-btn" style="font-size:12px; padding:8px 16px">
+                Ask Prof Oak about this
+              </button>
+              <button class="btn btn-outline" id="converter-other-format-btn" style="font-size:12px; padding:8px 16px">
+                Other format
+              </button>
+            </div>
+          </div>
+
+          <!-- QUICK EXPLAIN: audio chat window -->
+          <div id="explain-chat" style="display:none; margin-top:16px">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px">
+              <div id="explain-chat-title" style="font-family:var(--font-mono); font-size:10px; color:var(--green); letter-spacing:0.1em"></div>
+              <button class="btn btn-outline btn-sm" id="explain-chat-back">Other format</button>
+            </div>
+            <div class="ex-chat-box">
+              <div class="ex-messages" id="explain-chat-messages"></div>
+              <div class="ex-input-row">
+                <input class="ex-input" id="explain-chat-input" type="text" placeholder="What didn't you understand?">
+                <button class="btn btn-primary btn-sm" id="explain-chat-send">Ask</button>
+              </div>
+            </div>
           </div>
 
           <div id="converter-error" style="display:none; margin-top:12px; color:var(--red, #ff6b6b); font-family:var(--font-mono); font-size:11px; line-height:1.5"></div>
@@ -431,15 +563,19 @@
   <!-- OAK SIDEBAR -->
   <div class="oak-sidebar" id="oak-sidebar">
     <div class="oak-header">
-      <div class="oak-avatar">&#127807;</div>
+      <div class="oak-avatar">🍀</div>
       <div style="flex:1">
         <div class="oak-name">Prof Oak</div>
-        <div class="oak-status">&#9679; Student Tutor Mode</div>
+        <div class="oak-status">● Student Tutor Mode</div>
       </div>
+      <button id="oak-clear-btn" title="Clear this tab's conversation" style="
+        background:none; border:1px solid var(--border); border-radius:6px;
+        color:var(--muted2); cursor:pointer; padding:4px 10px; font-family:var(--font-mono); font-size:10px; margin-right:6px;
+      ">CLEAR</button>
       <button id="oak-expand-btn" title="Expand" style="
         background:none; border:1px solid var(--border); border-radius:6px;
-        color:var(--muted2); cursor:pointer; padding:4px 10px; font-size:13px;
-      ">⛶</button>
+        color:var(--muted2); cursor:pointer; padding:4px 10px; font-family:var(--font-mono); font-size:10px;
+      ">FULL</button>
     </div>
 
     <div class="oak-messages" id="oak-messages">
@@ -450,12 +586,18 @@
       </div>
     </div>
 
+    <button id="prep-mode-nav-btn" class="prep-nav-btn" style="
+      margin: 0 16px 10px 16px;
+      width: calc(100% - 32px);
+      text-align: center;
+    ">PREP MODE</button>
+
     <div class="oak-input-row">
       <input type="file" id="oak-file-input" accept=".pdf,.png,.jpg,.jpeg,.txt,.md" style="display:none">
       <button id="oak-attach-btn" title="Attach PDF or photo" style="
         background:none; border:1px solid var(--border); border-radius:8px;
-        color:var(--muted2); cursor:pointer; padding:0 12px; font-size:15px; flex-shrink:0;
-      ">📎</button>
+        color:var(--muted2); cursor:pointer; padding:0 12px; font-size:18px; flex-shrink:0;
+      ">+</button>
       <input
         class="oak-input"
         id="oak-input"
@@ -493,10 +635,11 @@ function setOakTalking() {}
 
 import {
   getModules, getVideoUrl, getModuleNotes, generateQuiz, chatWithOak, STATE,
-  listPapers, assignPaper, generatePodcast, getPodcastStatus, getPodcastAudioUrl
+  listPapers, assignPaper, generatePodcast, getPodcastStatus, getPodcastAudioUrl,
+  getChatHistory
 } from './api.js';
 
-import { renderNotes } from './notes-renderer.js';
+import { renderNotes, renderChatContent } from './notes-renderer.js';
 
 
 // ── Title truncation helper (fixes giant paper titles everywhere) ──
@@ -542,7 +685,161 @@ const OAK_THREADS = {
   classwork:   { history: [], dom: null, greeted: false },
 };
 
-function switchOakMode(tab) {
+// ═══════════════════════════════════════════
+// OAK CONVERSATION PERSISTENCE
+// Saves every tab's thread to localStorage, scoped to the logged-in student.
+// Survives reloads, lecture switches, and navigation. Cleared on logout.
+// NOTE: this is a device-local cache. The research-grade copy belongs in
+// Supabase (see supabase_layer.save_chat_message) — wire that from main.py's
+// chat endpoint so conversations enter the IRB dataset, not just this browser.
+// ═══════════════════════════════════════════
+
+function oakStoreKey() {
+  // Prefer a stable per-account id; fall back gracefully so a missing field
+  // never collapses two students onto the same key.
+  const sid = session?.id || session?.user_id || session?.email || 'anon';
+  return `maros_oak_threads_${sid}`;
+}
+
+function persistThreads() {
+  if (!session) return;
+  try {
+    // Snapshot the currently visible tab before writing — its DOM is live
+    // and may be ahead of OAK_THREADS[currentMode].dom.
+    OAK_THREADS[currentMode].dom =
+      document.getElementById('oak-messages').innerHTML;
+
+    const dump = {};
+    for (const [tab, t] of Object.entries(OAK_THREADS)) {
+      dump[tab] = { history: t.history, dom: t.dom, greeted: t.greeted };
+    }
+    localStorage.setItem(oakStoreKey(), JSON.stringify(dump));
+  } catch (e) {
+    // Non-fatal: a full or disabled localStorage must never break chat.
+    console.warn('[MAROS] Oak persist failed (non-fatal):', e);
+  }
+}
+
+// Render one message array (from the server, {role, content}) into the same
+// bubble HTML addOakMessage produces. Server role 'assistant' maps to 'oak'.
+ async function renderServerMessages(container, greeting, messages) {
+    container.innerHTML = `<div class="oak-msg oak"><div class="oak-label">PROF OAK</div>${greeting}</div>`;
+    for (const m of messages) {
+      const isOak = m.role === 'assistant' || m.role === 'oak';
+      const div = document.createElement('div');
+      div.className = isOak ? 'oak-msg oak' : 'oak-msg user';
+      if (isOak) {
+        div.innerHTML = '<div class="oak-label">PROF OAK</div><div class="oak-msg-body"></div>';
+        container.appendChild(div);
+        await renderChatContent(m.content, div.querySelector('.oak-msg-body'));
+      } else {
+        div.textContent = m.content;
+        container.appendChild(div);
+      }
+    }
+    container.scrollTop = container.scrollHeight;
+  }
+
+// Restore saved conversations. SERVER is the source of truth (cross-device),
+// so a student sees their chats after logging in on any browser. localStorage
+// is only an offline fallback when the server can't be reached.
+async function restoreThreads() {
+  if (!session) return;
+
+  // 1) Try the server first — GET /chat/history → { threads: { mode: [msgs] } }
+  let serverThreads = null;
+  try {
+    const data = await getChatHistory('student');
+    serverThreads = (data && data.threads) ? data.threads : null;
+  } catch (e) {
+    console.warn('[MAROS] Server chat history unavailable, using local cache:', e);
+  }
+
+  if (serverThreads && Object.keys(serverThreads).length) {
+    for (const tab of Object.keys(OAK_THREADS)) {
+      const msgs = serverThreads[tab];
+      if (Array.isArray(msgs) && msgs.length) {
+        OAK_THREADS[tab].history = msgs.map(m => ({ role: m.role, content: m.content }));
+        // Store raw messages for lazy rendering through renderChatContent.
+        // The active tab is rendered immediately; inactive tabs render when switched to.
+        OAK_THREADS[tab]._pendingMessages = msgs;
+        OAK_THREADS[tab].greeted = true;
+      }
+    }
+    }
+    // Render the active tab now (async — mermaid/math load lazily)
+    await repaintActiveThread();
+    persistThreads();
+    return;
+     
+
+  // 2) Fallback: local cache (offline / server empty)
+  let dump = null;
+  try { dump = JSON.parse(localStorage.getItem(oakStoreKey()) || 'null'); }
+  catch { dump = null; }
+  if (!dump) return;
+
+  for (const tab of Object.keys(OAK_THREADS)) {
+    if (dump[tab]) {
+      OAK_THREADS[tab].history = Array.isArray(dump[tab].history) ? dump[tab].history : [];
+      OAK_THREADS[tab].dom     = dump[tab].dom ?? null;
+      OAK_THREADS[tab].greeted = dump[tab].greeted || false;
+    }
+  }
+  repaintActiveThread();
+}
+
+// Point the live history ref at the active tab and repaint its saved DOM.
+async function repaintActiveThread() {
+    const thread = OAK_THREADS[currentMode];
+    chatHistory = thread.history;
+ 
+    const msgs = document.getElementById('oak-messages');
+ 
+    // If this tab has unrendered server messages, render them properly
+    // through renderChatContent (mermaid diagrams, math, code blocks).
+    if (thread._pendingMessages) {
+      const pending = thread._pendingMessages;
+      delete thread._pendingMessages;
+      await renderServerMessages(msgs, OAK_MODES[currentMode].greeting, pending);
+      thread.dom = msgs.innerHTML;   // cache the rendered result
+      return;
+    }
+ 
+    // Otherwise restore from cached DOM snapshot
+    if (thread.dom) {
+      msgs.innerHTML = thread.dom;
+      msgs.scrollTop = msgs.scrollHeight;
+    }
+  }
+
+
+async function clearCurrentThread() {
+  const persona = OAK_MODES[currentMode];
+  const thread  = OAK_THREADS[currentMode];
+  thread.history.length = 0;
+  thread.dom = null;
+  thread.greeted = false;
+
+  const msgs = document.getElementById('oak-messages');
+  msgs.innerHTML = '';
+  addOakMessage('oak', persona.greeting);   // addOakMessage persists locally for us
+  thread.greeted = true;
+  chatHistory = thread.history;
+
+  // Also clear the SERVER copy for just this tab, so it doesn't reload next login.
+  try {
+    const h = { ...AUTH_HEADERS };
+    await fetch(`${BASE}/chat/history?scope=student&mode=${encodeURIComponent(currentMode)}`, {
+      method: 'DELETE',
+      headers: h,
+    });
+  } catch (e) {
+    console.warn('[MAROS] Server clear failed (local cleared anyway):', e);
+  }
+}
+
+ async function switchOakMode(tab) {
   const prevMode = currentMode;
   if (tab === prevMode) return;
 
@@ -560,9 +857,14 @@ function switchOakMode(tab) {
   document.getElementById('oak-input').placeholder = persona.placeholder;
 
   // Restore this tab's conversation, or start fresh with one greeting
-  if (thread.dom !== null) {
-    msgs.innerHTML = thread.dom;
-  } else {
+  if (thread._pendingMessages) {
+      const pending = thread._pendingMessages;
+      delete thread._pendingMessages;
+      await renderServerMessages(msgs, persona.greeting, pending);
+      thread.dom = msgs.innerHTML;
+    } else if (thread.dom !== null) {
+      msgs.innerHTML = thread.dom;
+    } else {
     msgs.innerHTML = '';
     addOakMessage('oak', persona.greeting);
     thread.greeted = true;
@@ -571,6 +873,8 @@ function switchOakMode(tab) {
 
   // Point chatHistory at this tab's thread
   chatHistory = thread.history;
+
+  persistThreads();   // remember which tab's DOM is current + any greeting added
 }
 
 // ── Tab switching ──
@@ -620,7 +924,7 @@ async function loadClasswork() {
               <div style="font-family:var(--font-mono); font-size:11px; color:${ques.is_correct ? 'var(--green)' : '#ff6b6b'}">
                 Your answer: ${ques.chosen} ${ques.is_correct ? '✓' : `✗ (correct: ${ques.correct_answer})`}
               </div>
-              ${ques.misconception ? `<div style="font-family:var(--font-mono); font-size:10px; color:var(--muted2); margin-top:4px">💡 ${ques.misconception}</div>` : ''}
+              ${ques.misconception ? `<div style="font-family:var(--font-mono); font-size:10px; color:var(--muted2); margin-top:4px">Note: ${ques.misconception}</div>` : ''}
             </div>
           `).join('')}
         </div>
@@ -695,10 +999,9 @@ function renderLectureLibrary(lectures) {
       border-bottom:1px solid var(--border); cursor:pointer; transition:background 0.15s;
     `;
     row.innerHTML = `
-      <div style="font-size:13px">📁</div>
       <div style="font-family:var(--font-mono); font-size:10px; color:var(--muted2); min-width:80px">${date}</div>
       <div style="flex:1; font-size:13px; color:var(--fg); white-space:nowrap; overflow:hidden; text-overflow:ellipsis">
-        ${lec.source === 'youtube' ? '▶ ' : ''}${lec.title}
+        ${lec.title}
       </div>
       <div style="font-family:var(--font-mono); font-size:10px; color:var(--muted2)">${lec.total_modules} modules</div>
       <div id="folder-arrow-${idx}" style="color:var(--muted2); font-size:11px">▸</div>
@@ -762,7 +1065,7 @@ async function openLecture(jobId) {
     const date = lec.generated_at
       ? new Date(lec.generated_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
       : '';
-    document.getElementById('current-lecture-title').textContent = `${lec.source === 'youtube' ? '▶ ' : ''}${lec.title}`;
+    document.getElementById('current-lecture-title').textContent = lec.title;
     document.getElementById('current-lecture-meta').textContent  = `${date} · ${lec.total_modules} modules`;
   }
 
@@ -980,6 +1283,13 @@ window.answerQuestion = function(qi, key) {
 };
 
 // ── v2: Submit quiz answers to backend ──────────────────────────
+// v3 FIX: quiz feedback used to be built by hand-concatenating the raw
+// diagnosis JSON (`m.reasoning`, an undocumented field the diagnosis LLM
+// call sometimes happened to produce) straight into the chat bubble. That
+// bypassed Prof Oak entirely, so students got a raw dump instead of the
+// normal What it is / How it works / Example / Compare teaching format.
+// Now we hand the wrong-answer summary to the real /chat endpoint so Oak's
+// persona and teaching structure actually run over it.
 async function submitQuizAnswers(score, total) {
   if (!activeQuiz || !STATE.jobId) return;
 
@@ -1006,10 +1316,36 @@ async function submitQuizAnswers(score, total) {
     const result = await res.json();
 
     if (result.misconceptions && result.misconceptions.length > 0) {
-      const lines = result.misconceptions
-        .map(m => `<b>Q${m.question_num}:</b> ${m.reasoning}`)
-        .join('<br><br>');
-      addOakMessage('oak', `You scored ${score}/${total}. Here's what to know:<br><br>${lines}`);
+      const wrongList = result.misconceptions
+        .map(m => `Q${m.question_num} — concept "${m.root_concept || activeModule.concept}": ${m.misconception}`)
+        .join('\n');
+
+      addOakMessage('oak', `You scored ${score}/${total}. Let me go over what to review...`);
+      const thinkingBubble = document.getElementById('oak-messages').lastElementChild;
+
+      try {
+        const reply = await chatWithOak({
+          message: `I just scored ${score}/${total} on the quiz for "${activeModule.concept}". Here is what I got wrong, one line per question:\n${wrongList}\n\nGive me a short, specific paragraph of feedback for EACH question, labeled "Q1:", "Q2:", etc. — one paragraph per wrong question, explaining what I misunderstood and what to review. Do NOT use the "What it is / How it works / Example / Compare it" teaching template for this — that structure is only for when I directly ask you to teach me a concept. This is quiz review, not a lesson.`,
+          jobId    : STATE.jobId,
+          moduleId : activeModule.module_id,
+          paperId  : null,
+          history  : chatHistory,
+          role     : 'student',
+          mode     : 'videos',
+        });
+        thinkingBubble?.remove();
+        addOakMessage('oak', reply.content);
+        chatHistory.push({ role: 'assistant', content: reply.content, timestamp: new Date().toISOString() });
+        persistThreads();
+      } catch (chatErr) {
+        // Fallback: still show something useful if the /chat call itself fails
+        thinkingBubble?.remove();
+        const fallbackLines = result.misconceptions
+          .map(m => `<b>Q${m.question_num}:</b> ${m.misconception}`)
+          .join('<br><br>');
+        addOakMessage('oak', `Here's what to review:<br><br>${fallbackLines}`);
+        console.error('[MAROS] Oak teaching follow-up failed (fallback used):', chatErr);
+      }
     } else {
       addOakMessage('oak', `${score}/${total} — solid work!`);
     }
@@ -1050,11 +1386,14 @@ function renderPapers(papers) {
     const card = document.createElement('div');
     card.className = 'paper-card';
     card.draggable = true;
+    // Meta line: show whether a podcast already exists for this paper.
+    // (Quick Explain is now an interactive audio chat, not a one-shot file.)
+    const metaText  = p.has_podcast ? 'Podcast ready' : 'Drag to converter';
+    const metaReady = p.has_podcast ? 'ready' : '';
     card.innerHTML = `
-      <div style="font-size:20px; flex-shrink:0">&#128196;</div>
       <div class="paper-card-body">
         <div class="paper-card-title" title="${(p.title || '').replace(/"/g, '&quot;')}">${shortTitle(p.title)}</div>
-        <div class="paper-card-meta ${p.has_podcast ? 'ready' : ''}">${p.has_podcast ? 'Podcast ready' : 'Drag to converter'}</div>
+        <div class="paper-card-meta ${metaReady}">${metaText}</div>
       </div>
       <div class="paper-card-arrow">&#8594;</div>
       <button class="paper-delete-btn" title="Remove paper">✕</button>
@@ -1066,22 +1405,14 @@ function renderPapers(papers) {
     });
     card.addEventListener('dragend', () => { card.style.opacity = '1'; });
 
-
-
-    // If this paper already has a saved podcast, clicking the card
-// (not just dragging it) reopens it directly — no regeneration.
-if (p.has_podcast) {
-  card.style.cursor = 'pointer';
-  card.addEventListener('click', (e) => {
-    if (e.target.closest('.paper-delete-btn')) return;  // don't hijack delete clicks
-    resetConverter();
-    activePaper = { paper_id: p.paper_id, title: p.title };
-    showConverterReady(p.paper_id, p.title);
-    document.getElementById('converter-ready').scrollIntoView({ behavior: 'smooth' });
-  });
-}
-
-
+    // Clicking a paper card opens the format chooser for it (Podcast or
+    // Quick Explain) — no regeneration; ready formats play instantly.
+    card.style.cursor = 'pointer';
+    card.addEventListener('click', (e) => {
+      if (e.target.closest('.paper-delete-btn')) return;  // don't hijack delete clicks
+      startConverterFromPaperId(p.paper_id, p.title);
+      document.getElementById('podcast-dropzone').scrollIntoView({ behavior: 'smooth' });
+    });
 
     // Delete button — removes paper via backend, then reloads the list
     card.querySelector('.paper-delete-btn').addEventListener('click', async (e) => {
@@ -1103,7 +1434,17 @@ if (p.has_podcast) {
   });
 }
 
-// Podcast dropzone
+// ═══════════════════════════════════════════════════════════════
+// AUDIO CONVERTER — Podcast (two-host, one-shot) + Quick Explain (audio chat)
+// Podcast path is unchanged: generatePodcast/getPodcastStatus/getPodcastAudioUrl.
+// Quick Explain now opens an interactive chat: the student types what they
+// didn't understand, and each answer comes back as AUDIO from /explain/chat.
+// Upload/drag first, THEN pick the format.
+// ═══════════════════════════════════════════════════════════════
+
+let convertMode = null;   // 'podcast' | 'explain'
+
+// ── Dropzone wiring ──
 const dropzone = document.getElementById('podcast-dropzone');
 dropzone.addEventListener('dragover', (e) => {
   e.preventDefault();
@@ -1133,46 +1474,108 @@ document.getElementById('podcast-pdf-input').addEventListener('change', (e) => {
   if (file) startConverterFromFile(file);
 });
 
+// ── Entry points: get a paper, then offer the format choice ──
 async function startConverterFromPaperId(paperId, title) {
   resetConverter();
-  showConverterGenerating(title);
   activePaper = { paper_id: paperId, title };
+  await showFormatChoice(paperId, title);
+}
+
+async function startConverterFromFile(file) {
+  resetConverter();
+  dropzone.style.display = 'none';
+  document.getElementById('converter-title').textContent = 'Uploading...';
+  document.getElementById('converter-sub').textContent   = shortTitle(file.name, 50);
+  document.getElementById('converter-generating').style.display = 'block';
   try {
-    const status = await getPodcastStatus(paperId);
-    if (status.audio_path || status.turns) { showConverterReady(paperId, title); return; }
-    await generatePodcast(paperId);
-    pollConverter(paperId, title);
+    const paper = await assignPaper(file);
+    activePaper = paper;
+    document.getElementById('converter-generating').style.display = 'none';
+    await showFormatChoice(paper.paper_id, paper.title);
+    await loadPapers();
+  } catch (e) {
+    showConverterError(`Upload failed: ${e.message}`);
+  }
+}
+
+// ── Format choice panel ──
+async function showFormatChoice(paperId, title) {
+  dropzone.style.display = 'none';
+  document.getElementById('converter-generating').style.display = 'none';
+  document.getElementById('converter-ready').style.display      = 'none';
+  document.getElementById('explain-chat').style.display         = 'none';
+  document.getElementById('converter-error').style.display      = 'none';
+  document.getElementById('choice-title').textContent = shortTitle(title, 46).toUpperCase();
+
+  // Only the podcast is a one-shot file that can be "ready". Check it so
+  // switching to it is instant instead of a regenerate. Quick Explain is a
+  // live chat — it always just opens.
+  let podReady = false;
+  try { const s = await getPodcastStatus(paperId); podReady = !!(s.audio_path || s.turns); } catch {}
+
+  const podBtn = document.getElementById('choice-podcast-btn');
+  podBtn.dataset.ready = podReady;
+  podBtn.classList.toggle('is-ready', podReady);
+  podBtn.querySelector('span').textContent = podReady ? 'ready — tap to play' : 'Bir & Mia · deep dive · ~20 min';
+
+  document.getElementById('converter-choice').style.display = 'block';
+}
+
+async function chooseFormat(mode) {
+  if (!activePaper) return;
+  convertMode = mode;
+  const { paper_id, title } = activePaper;
+  document.getElementById('converter-choice').style.display = 'none';
+
+  if (mode === 'explain') {
+    // Quick Explain → open the audio chat window directly.
+    openExplainChat(paper_id, title);
+    return;
+  }
+
+  // ── Podcast path (unchanged) ──
+  const btn = document.getElementById('choice-podcast-btn');
+  if (btn.dataset.ready === 'true') {           // cached → play instantly
+    showConverterReady(paper_id, title, 'podcast');
+    return;
+  }
+  showConverterGenerating(title, 'podcast');
+  try {
+    await generatePodcast(paper_id);
+    pollConverter(paper_id, title, 'podcast');
   } catch (e) {
     showConverterError(`Failed to start: ${e.message}`);
   }
 }
 
-async function startConverterFromFile(file) {
-  resetConverter();
-  showConverterGenerating(file.name.replace('.pdf',''));
-  try {
-    const paper = await assignPaper(file);
-    activePaper = paper;
-    document.getElementById('converter-title').textContent = `Generating: ${shortTitle(paper.title)}`;
-    await generatePodcast(paper.paper_id);
-    pollConverter(paper.paper_id, paper.title);
-    await loadPapers();
-  } catch (e) {
-    showConverterError(`Failed: ${e.message}`);
-  }
-}
+document.getElementById('choice-podcast-btn').addEventListener('click', () => chooseFormat('podcast'));
+document.getElementById('choice-explain-btn').addEventListener('click', () => chooseFormat('explain'));
+document.getElementById('choice-cancel-btn').addEventListener('click', () => resetConverter());
 
-function pollConverter(paperId, title) {
+// "Other format" on the podcast ready panel → back to the choice for the SAME paper
+document.getElementById('converter-other-format-btn').addEventListener('click', async () => {
+  if (!activePaper) return;
+  const audio = document.getElementById('converter-audio');
+  if (audio) audio.pause();
+  document.getElementById('converter-ready').style.display = 'none';
+  await showFormatChoice(activePaper.paper_id, activePaper.title);
+});
+
+// ── Polling (podcast only) ──
+function pollConverter(paperId, title, mode) {
   let progress = 10;
   if (podcastPollInterval) clearInterval(podcastPollInterval);
   podcastPollInterval = setInterval(async () => {
     try {
       const status = await getPodcastStatus(paperId);
-      if (status.audio_path || status.turns) {
+      const done   = !!(status.audio_path || status.turns);
+      const failed = status.podcast_status === 'failed';
+
+      if (done) {
         clearInterval(podcastPollInterval);
-        showConverterReady(paperId, title);
+        showConverterReady(paperId, title, 'podcast');
         loadPapers();
-      } else if (status.podcast_status === 'failed') {
+      } else if (failed) {
         clearInterval(podcastPollInterval);
         showConverterError(`Generation failed: ${status.podcast_error || 'unknown error'}`);
       } else {
@@ -1190,8 +1593,7 @@ function resetConverter() {
     podcastPollInterval = null;
   }
 
-  // Reset the audio element hard — pause, clear src, unload — so the browser
-  // doesn't reuse the previous podcast's buffer for the next one.
+  // Reset the podcast audio element hard — pause, clear src, unload.
   const audio = document.getElementById('converter-audio');
   if (audio) {
     audio.pause();
@@ -1200,39 +1602,51 @@ function resetConverter() {
   }
 
   // Reset visible state.
+  document.getElementById('converter-choice').style.display     = 'none';
   document.getElementById('converter-generating').style.display = 'none';
   document.getElementById('converter-ready').style.display      = 'none';
+  document.getElementById('explain-chat').style.display         = 'none';
+  document.getElementById('explain-chat-messages').innerHTML    = '';
   document.getElementById('converter-error').style.display      = 'none';
   document.getElementById('converter-error').textContent        = '';
   document.getElementById('converter-progress').style.width     = '5%';
-  document.getElementById('converter-title').textContent        = 'Generating podcast...';
+  document.getElementById('converter-title').textContent        = 'Generating...';
+  document.getElementById('converter-sub').textContent          = '';
   document.getElementById('converter-ready-title').textContent  = '';
 
   // Reset the file <input> so picking the SAME file twice fires 'change' again.
   const pdfInput = document.getElementById('podcast-pdf-input');
   if (pdfInput) pdfInput.value = '';
 
-  // Clear the tracked paper so the next drop/upload starts clean.
+  // Clear the tracked paper + mode so the next drop/upload starts clean.
   activePaper = null;
+  convertMode = null;
 
   dropzone.style.display = 'flex';
 }
 
-function showConverterGenerating(title) {
+function showConverterGenerating(title, mode) {
   dropzone.style.display = 'none';
-  document.getElementById('converter-title').textContent = `Generating: ${shortTitle(title)}`;
+  document.getElementById('converter-title').textContent = `Podcast: ${shortTitle(title)}`;
+  document.getElementById('converter-sub').textContent = 'Bir and Mia are recording — takes ~2 min';
   document.getElementById('converter-generating').style.display = 'block';
   setTimeout(() => { document.getElementById('converter-progress').style.width = '15%'; }, 100);
 }
-function showConverterReady(paperId, title) {
+
+function showConverterReady(paperId, title, mode) {
   document.getElementById('converter-generating').style.display = 'none';
+  document.getElementById('converter-choice').style.display     = 'none';
   document.getElementById('converter-ready').style.display      = 'block';
-  document.getElementById('converter-ready-title').textContent  = shortTitle(title).toUpperCase();
+  document.getElementById('converter-ready-title').textContent  =
+    `PODCAST — ${shortTitle(title, 40).toUpperCase()}`;
   document.getElementById('converter-audio').src = getPodcastAudioUrl(paperId);
   addOakMessage('oak', `Podcast for "${shortTitle(title, 40)}" is ready! Give it a listen, then ask me anything.`);
 }
+
 function showConverterError(msg) {
   document.getElementById('converter-generating').style.display = 'none';
+  document.getElementById('converter-choice').style.display     = 'none';
+  document.getElementById('explain-chat').style.display         = 'none';
   dropzone.style.display = 'flex';
   document.getElementById('converter-error').style.display = 'block';
   document.getElementById('converter-error').textContent   = msg;
@@ -1241,6 +1655,141 @@ function showConverterError(msg) {
 document.getElementById('converter-ask-oak-btn').addEventListener('click', () => {
   document.getElementById('oak-input').focus();
   addOakMessage('oak', `I have the full podcast script — what would you like to know about it?`);
+});
+
+// ═══════════════════════════════════════════════════════════════
+// QUICK EXPLAIN — audio chat
+// Student types what they didn't get → POST /papers/{id}/explain/chat
+// → answer comes back as an mp3 (single voice), grounded in the uploaded notes.
+// No RAG retrieval: the material is small enough to sit in context each turn.
+// ═══════════════════════════════════════════════════════════════
+
+async function explainChatAsk(paperId, question) {
+  const res = await fetch(`${BASE}/papers/${paperId}/explain/chat`, {
+    method: 'POST', headers: AUTH_HEADERS, body: JSON.stringify({ question }),
+  });
+  if (!res.ok) throw new Error(`${res.status}`);
+  return res.json();   // { answer, audio_url, seq }
+}
+
+async function explainChatHistory(paperId) {
+  const res = await fetch(`${BASE}/papers/${paperId}/explain/chat`, { headers: AUTH_HEADERS });
+  if (!res.ok) return { history: [] };
+  return res.json();   // { history: [{role, content, seq?, has_audio?}] }
+}
+
+function exRenderUser(text) {
+  const box = document.getElementById('explain-chat-messages');
+  const div = document.createElement('div');
+  div.className = 'ex-msg user';
+  div.textContent = text;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+}
+
+// Bot answer bubble: an audio player (primary) plus a small text transcript,
+// so it still degrades gracefully if TTS failed for that turn.
+function exRenderBot(audioUrl, transcript) {
+  const box = document.getElementById('explain-chat-messages');
+  const div = document.createElement('div');
+  div.className = 'ex-msg bot';
+  const audioHtml = audioUrl
+    ? `<audio controls src="${audioUrl}"></audio>`
+    : `<div class="ex-thinking" style="margin-bottom:6px">(audio unavailable — reading below)</div>`;
+  const text = String(transcript || '')
+    .replace(/</g, '&lt;')
+    .replace(/\n/g, '<br>');
+  div.innerHTML = `<div class="ex-label">PROF OAK</div>${audioHtml}<div class="ex-transcript">${text}</div>`;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+}
+
+function exThinking(on) {
+  const box = document.getElementById('explain-chat-messages');
+  let el = document.getElementById('ex-thinking-row');
+  if (on) {
+    if (el) return;
+    el = document.createElement('div');
+    el.id = 'ex-thinking-row';
+    el.className = 'ex-msg bot';
+    el.innerHTML = `<div class="ex-label">PROF OAK</div><div class="ex-thinking">Recording your answer...</div>`;
+    box.appendChild(el);
+    box.scrollTop = box.scrollHeight;
+  } else if (el) {
+    el.remove();
+  }
+}
+
+async function exLoadHistory(paperId) {
+  const box = document.getElementById('explain-chat-messages');
+  box.innerHTML = '';
+  let history = [];
+  try {
+    const data = await explainChatHistory(paperId);
+    history = data.history || [];
+  } catch {}
+
+  if (!history.length) {
+    exRenderBot(null, "Tell me what you didn't understand — a step, a term, or why an approach works — and I'll explain it out loud.");
+    return;
+  }
+
+  history.forEach(m => {
+    if (m.role === 'user') {
+      exRenderUser(m.content);
+    } else {
+      const url = m.has_audio && m.seq !== undefined
+        ? `${BASE}/papers/${paperId}/explain/chat/audio/${m.seq}`
+        : null;
+      exRenderBot(url, m.content);
+    }
+  });
+}
+
+async function exSend() {
+  const input = document.getElementById('explain-chat-input');
+  const q = input.value.trim();
+  if (!q || !activePaper) return;
+  input.value = '';
+  exRenderUser(q);
+  exThinking(true);
+
+  const sendBtn = document.getElementById('explain-chat-send');
+  sendBtn.disabled = true;
+
+  try {
+    const data = await explainChatAsk(activePaper.paper_id, q);
+    exThinking(false);
+    const url = data.audio_url ? `${BASE}${data.audio_url}` : null;
+    exRenderBot(url, data.answer);
+  } catch (e) {
+    exThinking(false);
+    exRenderBot(null, `Couldn't answer that: ${e.message}`);
+  } finally {
+    sendBtn.disabled = false;
+    input.focus();
+  }
+}
+
+function openExplainChat(paperId, title) {
+  document.getElementById('converter-generating').style.display = 'none';
+  document.getElementById('converter-ready').style.display      = 'none';
+  document.getElementById('converter-error').style.display      = 'none';
+  document.getElementById('explain-chat-title').textContent     =
+    `QUICK EXPLAIN — ${shortTitle(title, 40).toUpperCase()}`;
+  document.getElementById('explain-chat').style.display = 'block';
+  exLoadHistory(paperId);
+  document.getElementById('explain-chat-input').focus();
+}
+
+document.getElementById('explain-chat-send').addEventListener('click', exSend);
+document.getElementById('explain-chat-input').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') exSend();
+});
+document.getElementById('explain-chat-back').addEventListener('click', async () => {
+  if (!activePaper) { resetConverter(); return; }
+  document.getElementById('explain-chat').style.display = 'none';
+  await showFormatChoice(activePaper.paper_id, activePaper.title);
 });
 
 // ═══════════════════════════════════════════
@@ -1263,6 +1812,11 @@ const AUTH_HEADERS = session ? {
 
 // Show student name in header
 document.querySelector('.role-badge').textContent = session?.name || 'STUDENT';
+
+// ── Prep Mode nav button ── redirects to the standalone prep mode page
+document.getElementById('prep-mode-nav-btn').addEventListener('click', () => {
+  window.location.href = 'prepmode.html';
+});
 
 async function loadAssignments() {
   try {
@@ -1298,7 +1852,7 @@ function renderAssignments(assignments) {
     const alreadySubmitted = a.submissions?.some(s => s.student_name === 'Student');
 
     card.innerHTML = `
-      <div class="assignment-icon">&#128196;</div>
+      <div class="assignment-icon">DOC</div>
       <div class="assignment-body">
         <div class="assignment-title">${a.title}</div>
         ${a.description ? `<div class="assignment-desc">${a.description}</div>` : ''}
@@ -1412,6 +1966,7 @@ window.sendMessage = async function() {
 
   addOakMessage('user', msg);
   chatHistory.push({ role: 'user', content: msg, timestamp: new Date().toISOString() });
+  persistThreads();   // save the student's turn immediately, before the network call
   showTyping();
   setOakTalking(true);
 
@@ -1423,11 +1978,12 @@ window.sendMessage = async function() {
       paperId  : activePaper?.paper_id || null,
       history  : chatHistory,
       role     : 'student',
-      mode     :  currentMode 
+      mode     :  currentMode
     });
     removeTyping();
     addOakMessage('oak', reply.content);
     chatHistory.push({ role: 'assistant', content: reply.content, timestamp: new Date().toISOString() });
+    persistThreads();   // save Oak's reply
   } catch(e) {
     removeTyping();
     addOakMessage('oak', `Connection issue: ${e.message}`);
@@ -1440,19 +1996,31 @@ document.getElementById('oak-input').addEventListener('keydown', (e) => {
   if (e.key === 'Enter') window.sendMessage();
 });
 
-function addOakMessage(role, text) {
+async function addOakMessage(role, text) {
   const msgs = document.getElementById('oak-messages');
   const div  = document.createElement('div');
   div.className = `oak-msg ${role}`;
-  // Light markdown rendering: **bold**, *italic*, line breaks
-  let rendered = text
-    .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
-    .replace(/\*(.+?)\*/g, '<i>$1</i>')
-    .replace(/\n/g, '<br>');
-  div.innerHTML = role === 'oak' ? `<div class="oak-label">PROF OAK</div>${rendered}` : rendered;
-  msgs.appendChild(div);
+
+  if (role === 'oak') {
+    // Oak's replies can carry mermaid flowcharts + runnable code blocks now —
+    // route through the shared renderer instead of the old regex-only path.
+    div.innerHTML = `<div class="oak-label">PROF OAK</div><div class="oak-msg-body"></div>`;
+    msgs.appendChild(div);
+    msgs.scrollTop = msgs.scrollHeight;
+    await renderChatContent(text, div.querySelector('.oak-msg-body'));
+  } else {
+    // Student messages stay plain text — no need to run them through the
+    // markdown/mermaid/code pipeline.
+    div.textContent = text;
+    msgs.appendChild(div);
+  }
+
   msgs.scrollTop = msgs.scrollHeight;
+  persistThreads();   // every rendered message (greeting, system note, chat) is saved
 }
+
+
+
 function showTyping() {
   const msgs = document.getElementById('oak-messages');
   const div  = document.createElement('div');
@@ -1464,13 +2032,21 @@ function showTyping() {
 }
 function removeTyping() { document.getElementById('typing')?.remove(); }
 
+// ── Oak clear-thread button ──
+document.getElementById('oak-clear-btn').addEventListener('click', () => {
+  if (confirm('Clear this tab\'s conversation? This can\'t be undone.')) {
+    clearCurrentThread();
+    persistThreads();
+  }
+});
+
 // ── Oak expand toggle ──
 document.getElementById('oak-expand-btn').addEventListener('click', () => {
   const sidebar = document.getElementById('oak-sidebar');
   sidebar.classList.toggle('expanded');
   document.body.classList.toggle('oak-fullscreen');
   document.getElementById('oak-expand-btn').textContent =
-    sidebar.classList.contains('expanded') ? '✕' : '⛶';
+    sidebar.classList.contains('expanded') ? 'CLOSE' : 'FULL';
 });
 
 // ── Oak file upload ──
@@ -1482,7 +2058,7 @@ document.getElementById('oak-file-input').addEventListener('change', async (e) =
   const file = e.target.files[0];
   if (!file) return;
 
-  addOakMessage('user', `📎 ${file.name}`);
+  addOakMessage('user', `Attached: ${file.name}`);
   showTyping();
 
   try {
@@ -1514,18 +2090,27 @@ document.getElementById('oak-file-input').addEventListener('change', async (e) =
 });
 
 // ── Logout (click name badge) ──
+// IMPORTANT: logout clears only the LOCAL cache, never the server copy — so the
+// student sees their conversations again after logging back in (that's the point).
 document.querySelector('.role-badge').style.cursor = 'pointer';
 document.querySelector('.role-badge').addEventListener('click', () => {
   if (confirm('Log out?')) {
+    const threadKey = oakStoreKey();
     localStorage.removeItem('maros_session');
+    localStorage.removeItem(threadKey);   // local cache only; oak_chats stays on the server
     window.location.href = 'index.html';
   }
 });
 
 // ── Boot ──
-init();
-loadPapers();
-loadAssignments();
+// restoreThreads() is async (it hits the server first). Await it so any saved
+// conversation is repainted before the tabs start adding greetings/messages.
+(async () => {
+  await restoreThreads();
+  init();
+  loadPapers();
+  loadAssignments();
+})();
 </script>
 
 

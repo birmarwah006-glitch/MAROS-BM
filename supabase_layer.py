@@ -2,6 +2,12 @@
 supabase_layer.py — MAROS v2 Supabase integration
 Auth, mastery tracking, misconception diagnosis, interaction logging.
 Drop this next to main.py.
+
+NOTE ON CHAT PERSISTENCE:
+Oak conversation persistence lives in main.py (the `_save_chat_turn` helper and
+the `/chat/history` GET/DELETE routes), backed by the `oak_chats` table. This
+file intentionally does NOT duplicate that — there is exactly one chat-storage
+path, keyed on owner_key ("professor" or the student's Supabase user id).
 """
 
 import os
@@ -68,6 +74,14 @@ async def require_user(request: Request) -> str:
     if not user_id:
         raise HTTPException(status_code=401, detail="Login required")
     return user_id
+import os
+PROF_SECRET = os.getenv("PROF_SECRET", "")
+
+async def require_professor(request: Request) -> bool:
+    token = request.headers.get("x-prof-token", "")
+    if not PROF_SECRET or token != PROF_SECRET:
+        raise HTTPException(status_code=403, detail="Professor access required")
+    return True
 
 
 # ─────────────────────────────────────────────

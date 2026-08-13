@@ -10,3 +10,10 @@ outputs/
 chroma_db/
 questions/
 .env*
+.env
+maros.env
+*.log
+*.mp3
+*.zip
+exam_papers/
+.DS_Store
