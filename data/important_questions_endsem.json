@@ -1,0 +1,215 @@
+{
+  "exam_type": "endsem",
+  "questions": [
+    {
+      "text": "Can this solution lead to deadlock? Briefly explain",
+      "answer": "No, not all of the deadlock conditions are met (e.g., no circular wait). In specific terms, for example, there is no way for cars going in both directions to wait at the same time.",
+      "marks": 8.0,
+      "concept": "locks",
+      "source_label": "the 2022 paper"
+    },
+    {
+      "text": "Can this solution lead to starvation? Briefly explain.",
+      "answer": "Yes. Once cars start moving in one direction, they will starve out cars waiting to go in the other direction indefinitely (as long as more cars continue to arrive in the first direction).",
+      "marks": 8.0,
+      "concept": "processes",
+      "source_label": "the 2022 paper"
+    },
+    {
+      "text": "Consider the classical “Sleeping-Barber” synchronization problem using two thread types, barber and customer, and a waiting room to hold customers: - When the barber finishes with a current customer, he checks the waiting room. If a customer is waiting, he removes the customer from the waiting room and indicates he’s available to cut hair. Otherwise, the barber sleeps until a new customer arrives. - When a customer arrives, he checks the barber’s status. If the barber is sleeping, the customer wakes the barber up. Otherwise, the customer enters the waiting room. If a seat is available, the customer takes it; otherwise, he leaves (without waiting) There may be multiple barbers and customers, with up to N customers waiting in the waiting room. The solution requires three semaphores and a shared variable to track free seats in the waiting room, initialized as shown below. Write the pseudo code of barber and customer thread with appropriate comments and/or explanation of its working",
+      "answer": "void barber() { while (true) { down(customers); down(mutex); freeSeats++; up(barbers); up(mutex); cut_hair(); } }",
+      "marks": 6.0,
+      "concept": "threads",
+      "source_label": "the 2023 paper"
+    },
+    {
+      "text": "Given the disk to the right (which rotates counter clockwise), and assuming the requests are: 13, 4, 35, 34, 5, what request would be serviced last in the following disk scheduler algorithm. Assume a VERY FAST (essentially infinitely fast) seek wherever needed. 1 FIFO - 5 2. SATF (shortest access first) scheduler - 5 3. SSTF (shortest seek first) - 35 How would you order the disk schedulers for those five requests, from fastest to slowest?",
+      "answer": "SATF, SSTF, FIFO",
+      "marks": 5.0,
+      "concept": "scheduling",
+      "source_label": "the 2022 paper"
+    },
+    {
+      "text": "Name and briefly explain one example (apart from timer interrupt and TLB) each of where we saw the OS needed support from the hardware in order to implement CPU and memory virtualization functionality respectively.",
+      "answer": "CPU virtualization requires HW support such as ability to save/restore the user/process context to and from kernel stack during context switch or system call trap. Memory virtualization requires registers like Base/Bound or Page table address for storing the addresses of segments, page table etc. so as to allow dynamic relocation of address space, Circuitry in MMU for address translation and validity check",
+      "marks": 2.0,
+      "concept": "paging",
+      "source_label": "the 2022 paper"
+    },
+    {
+      "text": "What are the problems with shortest seek time first (SSTF) method of disk scheduling and how they are addressed in an alternative strategy. Does any of the Disk scheduling strategies discussed in the course, guarantees to be always optimal (Justify your answer)?",
+      "answer": "Problems with shortest seek time first (SSTF) method of disk scheduling are:  1. Ignores/does not accounts for rotational delay/time : Shortest access/positioning time first (SATF or SPTF) is the alternative strategy which takes into account both the seek and rotation time.",
+      "marks": 4.0,
+      "concept": "persistence",
+      "source_label": "the 2020 paper"
+    },
+    {
+      "text": "Imagine a new synchronization primitive (a close cousin of our favorite Semaphore) called the Zemaphore. A Zemaphore has an initial value (which is initialized by the user), and two related routines, One ( ) and Done ( ), that work as follows. One ( ) waits for the value of the Zemaphore to be less than zero, and then increments the value by one. Done ( ) decrements the Zemaphore by one, and then wakes one waiting thread (if there is one). Both One ( ) and Done ( ) execute atomically. Show how to use a Zemaphore (specifically, One ( ) and Done ( )) to build a simple lock around a critical section. Make sure to specify the initial value of the Zemaphore.",
+      "answer": "A Zemaphore is kind of like an inverted semaphore; it just counts the other direction. Hence, to provide mutex, just init to -1 instead of 1 (as we would with a binary semaphore.) \nZemaphore w; \nZemaphore _Init(&w, -1); // init to -1\n\nZemaphore _One(&w); \n….//CS\nZemaphore _Done(&w);",
+      "marks": 4.0,
+      "concept": "concurrency",
+      "source_label": "the 2022 paper"
+    },
+    {
+      "text": "Study the following program segment and a) explain the output of the program (assume inclusion of necessary header files so that the code compiles and executes successfully) and mention a use-case of this type of code segment  b) Draw figures that shows the status of file descriptor array of the processes involved, the global open file table, in-memory inode and the pointers linking these data structures just after the execution of fork()statement. Mention the content of any relevant information of these data structures in the figures. c) What changes should be reflected in the figures after execution of the close(in) statement by the processes involved.",
+      "answer": "a) It is basically a segment of a shell process which is creating a child process and executing the given command: grep xyz file by redirecting the standard in to a file for the grep command to take input and search the occurrences of xyz in the file and output on standard out (here the default monitor screen). The parent process (like a shell usually does) waits for the child process to complete and then prints the message before exiting (as here) or becoming ready for the next command. b) after fork() b) after close() the changes will be – In both the parent and child file descriptor table/array the pointer in Fd[3] will become null (0.5 marks) and in child table, the Fd[0] (STDIN) pointer will now point to that file entry in the system wide file table (0.5 marks).",
+      "marks": 4.5,
+      "concept": "file-systems",
+      "source_label": "the 2020 paper"
+    },
+    {
+      "text": "Briefly state why and how the OS uses a timer interrupt",
+      "answer": "Timer interrupt is mainly used to help OS regain the CPU after specified period. Its value is set by kernel via privileged instruction and a timer interrupt happens when the timer counts down to 0.  The timer interrupt handler in kernel invokes the process scheduler to decide which process is executed next. It is also helpful in implementation of certain scheduling strategies like round robin.",
+      "marks": 1.0,
+      "concept": "computer-architecture",
+      "source_label": "the 2022 paper"
+    },
+    {
+      "text": "Briefly state changes to all the in-memory and disk-based file system structures (e.g., file tables, inodes, and directories) that occur as part of this system call implementation. Write clearly, listing the structure that is changed, and the change made to it.",
+      "answer": "With the above stated assumption there is no change in the disk based file system structures for open call. (If the last accessed time is stored then only there will be write operations/changes to the foo, bar and root inode)\nChanges in the in-memory structures: in-memory inode allocated. - System-wide open file table points to in-memory inode. - Per-process file descriptor table points to open file table entry",
+      "marks": 1.5,
+      "concept": "cpu-virtualization",
+      "source_label": "the 2024 paper"
+    },
+    {
+      "text": "Q2 (iii) Name and describe two advantages that segmentation has over simple dynamic relocation",
+      "answer": "-Permits sharing (say of code pages). -Supports sparse address spaces (all of those pages in-between the stack and the heap no longer need be allocated).",
+      "marks": null,
+      "concept": "memory-virtualization",
+      "source_label": "the 2022 paper"
+    },
+    {
+      "text": "Q5 Reader/writer locks were implemented in class as follows, with the semaphores writeLock and mutex initialized to 1, and the counter readers initialized to 0. This one gives preference to the readers, if there is a continuous stream of readers that grab the read lock? Write an implementation for giving preference to Writers instead of readers.",
+      "answer": "None",
+      "marks": 5.0,
+      "concept": "locks",
+      "source_label": "the 2022 paper"
+    },
+    {
+      "text": "Consider the following synchronization problem: There are three process P, Q, and R. All of them are executing a loop from 1 to N. You wish to enforce the condition that no process may start the execution of (I+1)th iteration until the other two processes have completed the Ith iteration. Using a pseudo code, show how this condition can be correctly enforced (of course without causing deadlock) using three semaphores (Don’t use any lock or condition variable).",
+      "answer": "Note: up() is basically sem_post operation and down() is sem_wait() operation",
+      "marks": 4.0,
+      "concept": "processes",
+      "source_label": "the 2020 paper"
+    },
+    {
+      "text": "For each of the following pseudo code segments, where the variables are initialized as shown and thread A and B can run concurrently, what are the possible ending values of x when both threads A and B try to run to completion. Support your answers with brief explanation/reason.",
+      "answer": "a) Possible ending values of x : 1, 24, 25 Possible ending values of x : 24, 25 Possible ending values of x : 25, but also the possibility of thread A sleeping forever and in that case if x value is printed out it will come to be 24",
+      "marks": 4.0,
+      "concept": "threads",
+      "source_label": "the 2020 paper"
+    },
+    {
+      "text": "State 2 main benefits of multithreading? What are the possible sources of overhead associated with multithreading?",
+      "answer": "There are two main benefits of multithreading, namely parallelization and concurrency (on single CPU) i.e is the hiding of I/O latency.\nAdding threads make sense if you have fewer threads than you have cores or if you are performing many I/O requests. Adding threads can lead to pure overhead otherwise.\nWhile new threads require less memory than new processes, they still do require memory. This means that threads cannot be made for free, and in fact thread creation is often quite expensive. In addition, thread synchronization can add more overhead to the system, in terms of the CPU cycles and memory that must be consumed to represent and operate synchronously.",
+      "marks": 3.0,
+      "concept": "threads",
+      "source_label": "the 2024 paper"
+    },
+    {
+      "text": "In a boss‑worker’s multithreading pattern, you have one boss (producer) thread and n worker/consumer threads. For each task that enters the system, the boss dispatches the tasks that the workers consumes. This is often done through a shared request queue/buffer. In this case, the boss will add items to the queue, and the workers will consume items from the queue. What could you do to improve a performance metric like throughput or response time, and what are the limiting factors in improving performance in this type of multithreading pattern?",
+      "answer": "in boss‑worker model, there are mainly two things you could do. First, increase the number of threads. The more you leverage concurrency, the more potential you have to increase the efficiency of your processing. That being said, dynamic thread creation is expensive, so it makes sense to just have a pool of workers up front instead of creating new threads on the fly. Increasing the size of the pool may help performance.\nSecond, decrease the amount of work the boss has to do. Since the boss has t",
+      "marks": 3.0,
+      "concept": "scheduling",
+      "source_label": "the 2024 paper"
+    },
+    {
+      "text": "Your system is currently running 3 processes: A, B, and C. Each process requests two types of resources: files and network connections. Assume the system can handle up to 5 open files and 5 network connections (abbreviated “conn.”) in total, across all processes. Each process makes the resource requests shown in the table below, which lists total requested resources, initial state (resources the process is already using at this point), and a list of individual requests. Each individual request consists of a unique ID (A1 or B2, for example) and the resources requested (files, connections, or both). Each process only frees resources when it ends, which occurs after all its requests are complete. Use the Banker’s Algorithm to find an order in which all resource requests can be satisfied and list that order in the space provided. You must show the total amount of each resource type used at each step of your solution. Requests from the same process must be in order (for example, A1 must be satisfied before A2), but requests from different processes may be in any order (A1 may be satisfied before or after B1).",
+      "answer": "This problem doesn’t require you to interleave requests from different threads—in fact, if you try to do so, you’ll get stuck—but it does impose a specific order between the three threads, because 2 files and 2 connections are in use when you start. Looking at the remaining resource requests for each thread: Thread A needs 3 more files and 3 more connections to finish. Thread B needs 5 more files and 3 more connections to finish. Thread C needs 4 more files and 3 more connections to finish The threads must therefore run in the order A, C, B. Step-by-step solution to problem : Initial state: 2 files, 2 connections used 1) A1 (total: 4 files, 3 connections) 2) A2 (total: 4 files, 5 connections) 3) A3 (total: 5 files, 5 connections) - A completes (total used 1 file, 2 connections) 4) C1 (total: 1 file, 5 connections) 5) C2 (total: 3 files, 5 connections) 6) C3 (total: 5 files, 5 connections) - C completes (no files, 2 connections used) 7) B1",
+      "marks": 3.0,
+      "concept": "processes",
+      "source_label": "the 2023 paper"
+    },
+    {
+      "text": "Consider a primitive disk that has 50 tracks. A seek takes 5 ms (on average) to move the arm head per track. On an average, without optimization (to try to put sequential file data in blocks with close proximity) two logically consecutive blocks in a file will be about 10 tracks apart. however, with an optimization attempt to cluster related blocks, the mean inter-block distance can be reduced to 2 tracks. If the rotational latency is 50 ms and the transfer time is 15 ms per block, how long does it take to read a 50-block file in both cases.",
+      "answer": "It takes 15 msec to transfer one block, thus transferring 50 blocks takes 750 msec. If the average number of tracks to move is 10, then at 5 msec per track this will take 2500 (5x10x50) msec for a 50 block file. Lastly, the rotational latency is 50 msec and is added for every block, thus total is 2500 msec rotational delay. Thus the non-optimized solution for this problem is 750 + 2,500 +  2500 = 5750 msec to transfer a 50 block file. Optimization only alters the mean interblock distance to 2 tracks and thus reduces seek time from 2500 to 500 (5x2x50) msec. Thus the total time for an optimized disk is (750 + 500 +2,500  =) 3750 msec.",
+      "marks": 3.0,
+      "concept": "locks",
+      "source_label": "the 2020 paper"
+    },
+    {
+      "text": "Explain any 3 distinct advantages in the design of the Unix file system API where the file needs to be first opened and then accessed (for subsequent read/write operations) using the file descriptor (instead of accessing it using file path or file’s inode number)",
+      "answer": "Expensive tree traversal for the file path is done only once during open operation (avoiding for subsequent access) A valid FD is returned only after all permissions checks related to the file is satisfied. This gets done during open. If  multiple process open the file, then it is easier to track different offsets using the FD",
+      "marks": 3.0,
+      "concept": "file-systems",
+      "source_label": "the 2020 paper"
+    },
+    {
+      "text": "What is the maximum file size supported by a file system with 16 direct blocks and a single, double, and triple indirection? The block size is 512 bytes. Disk block pointers/numbers can be stored in 4 bytes.",
+      "answer": "block size = 512 number of block pointers in an indirection block = block size / 4 = 128 number of blocks for file data in that file object = 16 + 128 + 128^2 + 128^3 Maximum file size: (direct + single indirect + double indirect + triple indirect) * (blocksize) = (16 + 512/4 + (512/4)^2 + (512/4)^3) * (512) = 1,082,204,160 bytes ~ 1GB",
+      "marks": 2.5,
+      "concept": "locks",
+      "source_label": "the 2020 paper"
+    },
+    {
+      "text": "Assume a system where all resources are singletons (i.e. there is a finite set of resource types and there is only a single instance of each resource type) and for each process, the hardware can record its timestamp - the time of day at the instant that the process first starts executing. Assume the system clock has sufficiently high resolution so that no two processes are given the same timestamp and system has the ability to deallocate/preempt/abort/restart any process. Propose a method for preventing deadlock (clearly explaining which of the necessary deadlock causing condition it prevents) between processes (while avoiding starvation situation for any process) in the system using this information only.",
+      "answer": "We can use the following rules: 1) If a process Pi having timestamp ti requests a resource currently held by some other process Pj having timestamp tj then: Pj is forced to release it’s resource and Pj is aborted if and only if tj > ti holds (i.e the younger process is aborted) 2) The process which has been aborted is immediately restarted from its beginning, but having the same timestamp as it previously had been assigned",
+      "marks": 2.5,
+      "concept": "processes",
+      "source_label": "the 2020 paper"
+    },
+    {
+      "text": "With the current head position of disk as shown in the figure and for an I/O request stream of reading blocks 13, 4, 35, 34, 5 what will be the order for the following scheduling policy assuming VERY FAST seek: i) SSTF (shortest seek first) ii) SATF (shortest access first).",
+      "answer": "i) SSTF (shortest seek first) – 4, 5, 13, 34, 35\nii) SATF (shortest access first). – 34, 35, 13, 4, 5\n* if someone has assumed (but clearly stated) the spin direction to be opposite i.e clockwise then the ans in that case would be. Without clearly stating the assumption no marks.\ni) SSTF (shortest seek first) – 5, 4, 13, 35, 34\nii) SATF (shortest access first). – 5, 4, 13, 35, 34 (in this case the ans does not change)",
+      "marks": 2.0,
+      "concept": "scheduling",
+      "source_label": "the 2024 paper"
+    },
+    {
+      "text": "Can this plan lead to a deadlock? Explain your answer.",
+      "answer": "No. Deadlock cannot occur because there are enough chopsticks to guarantee that at least one of the 3 diners will be able to get the 2 chopsticks that he/she needs. Once that diner finishes, he/she will release their chopsticks for someone else. So, everyone will finish",
+      "marks": 2.0,
+      "concept": "locks",
+      "source_label": "the 2024 paper"
+    },
+    {
+      "text": "Suppose, now instead of 3 diners, we have 'D' number of diners. Furthermore, each diner may require a different number of chopsticks. Let’s say 'C' number of total chopsticks will satisfy the needs of all diners. What is the smallest number of chopsticks (in terms of C and D), needed to ensure that deadlock cannot occur? Explain your answer.",
+      "answer": "C-D+1.\nThis guarantees that every dinner cat get all but one of chopstick it needs (C-D), with one additional chopstick to guarantee that at least one dinner gets all of the chopstick it needs.\nExample, Suppose D=2 and diner_1 require 1 chopstick and diner_2 require 11 chopsticks. Therefore C = 12\nSo, C-D+1= 12-2+1=11. So maximum chopstick requirement is satisfied.",
+      "marks": 2.0,
+      "concept": "locks",
+      "source_label": "the 2024 paper"
+    },
+    {
+      "text": "You are running a program with three concurrent threads, each of which start execution by operating on two semaphores, S1 and S2, as shown below. Assume both semaphores are initialized to 0: Thread 1 Thread 2 Thread 3 wait(&S1); wait(&S1); wait(&S2); post(&S2); post(&S2); wait(&S2); ... ... post(&S1); post (&S1); ... Explain what is the bug here and show how you could rewrite the threads to remove the bug.",
+      "answer": "Since every thread starts by calling down on a semaphore that’s initialized to 0, the threads are guaranteed to deadlock. They’ll all be stuck waiting for each other to increment one of the semaphores. Resolving this deadlock means changing the order of at least one of the threads. Either: Thread 1 & 2 must both call up(&S2) before calling down(&S1), or Thread 3 must complete both up(&S1) calls before calling down(&S2)",
+      "marks": 2.0,
+      "concept": "processes",
+      "source_label": "the 2023 paper"
+    },
+    {
+      "text": "What is shortest-time-to-completion first, or STCF scheduling policy and for which metric it is optimal. Why do we rarely see it implemented?",
+      "answer": "STCF picks the job with the least time left to run for scheduling on CPU. It is the preemptive generalization of SJF. It provides optimal turnaround time. It is rarely used because in general (most cases) it is not possible to know the job run time in advance.",
+      "marks": 2.0,
+      "concept": "scheduling",
+      "source_label": "the 2022 paper"
+    },
+    {
+      "text": "IFFS doesn’t support hard links. Why do you think so (explain)?",
+      "answer": "In the standard file system, a hard link is represented by having different directory entries (i.e., different path names) point to the same inode; in this way, a user can refer to any of those path name to access the same inode and thus the same data. Thus, inodes serve as a useful single point of indirection mapping file names to data. In IFFS, there is no way for different pathnames to point to the same exact file. Although different directory entries could contain the same pointers to the same data blocks, there is no mechanism to keep the directory entries consistent with each other; if the user appends, truncates, or deletes the file through one name, the other versions will not be updated. Thus, hard links cannot be supported.",
+      "marks": 2.0,
+      "concept": "file-systems",
+      "source_label": "the 2022 paper"
+    },
+    {
+      "text": "Explain the “shortest seek time first” (SSTF) disk scheduling algorithm and its primary problem.",
+      "answer": "Shortest seek time first (SSTF) algorithm selects the disk I/O request which requires the least disk seek movement (track change) from its current position thus reducing the total seek time. But it does not take into account rotation time. Its primary problem is that it can cause starvation - If there a steady stream of requests to the tracks near to the current head position then requests to any other tracks will starve.",
+      "marks": 2.0,
+      "concept": "scheduling",
+      "source_label": "the 2022 paper"
+    },
+    {
+      "text": "For deadlock to occur, four conditions must hold: mutual exclusion, hold and wait, no preemption, and circular wait. If any one condition does not hold, no deadlock can occur. Assume we want to allow “preemption”, and thus get out of deadlocks; in other words, if a deadlock is detected, we will forcibly take a lock away from a thread; by repeatedly doing this, we will eventually undo the deadlock. State any two distinct problems that can get introduced by this preemptive approach?",
+      "answer": "Various problems may be introduced:\n1) livelock situation where there is repeated taking away and re-allocation of resources but no actual progress\n2) can cause atomicity violation if the resources preempted are locks for imposing mutual exclusion; incorrect execution, if the resources taken away are used for ordering tasks; incorrect execution if the resource cannot be preempted in between (e.g., a printer)",
+      "marks": 2.0,
+      "concept": "threads",
+      "source_label": "the 2022 paper"
+    },
+    {
+      "text": "A system is having 3 user processes P1, P2 and P3 where P1 requires 21 units of resource R, P2 requires 31 units of resource R, P3 requires 41 units of resource R. Calculate the minimum number of units of R that ensures no deadlock?",
+      "answer": "In worst case, the number of units that each process holds = One less than its maximum  demand\nSo,\nProcess P1 holds 20 units of resource R\nProcess P2 holds 30 units of resource R\nProcess P3 holds 40 units of resource R \nThus, Minimum number of units of resource R that ensures no deadlock = 20 + 30 + 40 +1 = 91",
+      "marks": 2.0,
+      "concept": "locks",
+      "source_label": "the 2022 paper"
+    }
+  ]
+}

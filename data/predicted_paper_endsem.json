@@ -2,204 +2,329 @@
   "exam_type": "endsem",
   "blueprint": {
     "exam_type": "endsem",
-    "n_papers": 4,
-    "target_n_questions": 10,
-    "typical_total_marks": 48.6,
+    "n_papers": 6,
+    "target_n_questions": 15,
+    "typical_total_marks": 28.0,
     "band_mix": {
-      "small": 0.17391304347826086,
-      "medium": 0.782608695652174,
-      "large": 0.043478260869565216
+      "small": 0.6475409836065574,
+      "medium": 0.3524590163934426,
+      "large": 0.0
     }
   },
-  "decay": 1.0,
-  "n_questions": 10,
-  "total_marks": 25.0,
+  "used_fallback": false,
+  "n_questions": 15,
+  "n_with_answer": 11,
+  "total_marks": 39.5,
   "questions": [
     {
       "q_no": 1,
       "concept": "locks",
       "qtype": "define_explain",
-      "marks": null,
-      "source_year": 2017,
-      "source_q_id": "dd2e4130dc-1",
-      "text": "a.\nThe refernce count is the number of hard links (names in directories) presently pointing at a particular inode. When this reaches zero, it is an indication that that inode can be deleted, since nothing points at it anymore (it has no name).\n\nb.\nQuick access to the start of the file stored in the inode itself. For small files, no direct blocks required, entire file can be in the inode. This improves the performance for small files.\n\nc.\nblock size = 512\n\nnumber of block numbers in an indirection block\n= block size / 4\n= 128\n\nnumber of blocks for file data in that file object\n\n= 16 + 128 + 128^2 + 128^3 \nMaximum file size: \n(direct + single indirect + double indirect + triple indirect) * (blocksize) \n= (16 + 512/4 + (512/4)^2 + (512/4)^3) * (512) \n= 68853964800 bytes, ~64 gigs\n\nd.\nTriple indirection is slower, as it may result in multiple seeks to get to the desired block. Seeks take a long time. Tiny files that only use a few KB will perform much better if they do not have to do seeks to find each level of indirection\n\n\n\ne.\nblock level, file level etc.",
-      "slot_score": 62.0
+      "marks": 2.0,
+      "text": "With the current head position of disk as shown in the figure and for an I/O request stream of reading blocks 13, 4, 35, 34, 5 what will be the order for the following scheduling policy assuming VERY FAST seek: i) SSTF (shortest seek first) ii) SATF (shortest access first).",
+      "answer": "i) SSTF (shortest seek first) – 4, 5, 13, 34, 35\nii) SATF (shortest access first). – 34, 35, 13, 4, 5\n* if someone has assumed (but clearly stated) the spin direction to be opposite i.e clockwise then the ans in that case would be. Without clearly stating the assumption no marks.\ni) SSTF (shortest seek first) – 5, 4, 13, 35, 34\nii) SATF (shortest access first). – 5, 4, 13, 35, 34 (in this case the ans does not change)",
+      "source_year": 2024,
+      "source_label": "the 2024 paper",
+      "source_q_id": "463b32a933-8",
+      "slot_score": 97.5
     },
     {
       "q_no": 2,
-      "concept": "file-systems",
+      "concept": "threads",
       "qtype": "define_explain",
-      "marks": 4.0,
-      "source_year": 2023,
-      "source_q_id": "d45f8a074c-7",
-      "text": "Consider a file system with 512-byte blocks. Assume an inode of a file holds pointers to N direct data blocks, and a pointer to a single indirect block. Further, assume that the single indirect block can hold pointers to M other data blocks. What is the maximum file size that can be supported by such an inode design? Explain. \t\t\t                                   \t\t\t(4M)",
-      "slot_score": 43.0
+      "marks": 3.0,
+      "text": "State 2 main benefits of multithreading? What are the possible sources of overhead associated with multithreading?",
+      "answer": "There are two main benefits of multithreading, namely parallelization and concurrency (on single CPU) i.e is the hiding of I/O latency.\nAdding threads make sense if you have fewer threads than you have cores or if you are performing many I/O requests. Adding threads can lead to pure overhead otherwise.\nWhile new threads require less memory than new processes, they still do require memory. This means that threads cannot be made for free, and in fact thread creation is often quite expensive. In addition, thread synchronization can add more overhead to the system, in terms of the CPU cycles and memory that must be consumed to represent and operate synchronously.",
+      "source_year": 2024,
+      "source_label": "the 2024 paper",
+      "source_q_id": "463b32a933-14",
+      "slot_score": 61.0
     },
     {
       "q_no": 3,
-      "concept": "scheduling",
+      "concept": "processes",
       "qtype": "define_explain",
       "marks": null,
-      "source_year": 2017,
-      "source_q_id": "dd2e4130dc-2",
-      "text": "a.\n\n\nb.\nShared Data:\nitem buffer[N]; semaphore mutex=1, holes=N, items=0;\n\nProblem is deadlock, mutex should only protect the buffer.\n\nc.\n\n\n(a + 1, a + 2) X (b + a + 1, b + a + 2, b + 2a + 1, b + 2a + 2, b + 2a + 3, b + 2a + 4)\n\n\n\nBackup\n\n\n\n\n\n\n\nsynch\tmem\tprocess\t\tio\tfile\n\nHow does an OS detect Thrashing?. How does it deal with it?\n\nIs it possible for the CPU utilization of your system to be 100% if all the threads in the\nsystem are involved in a deadlock? Explain.\n\n\n\nThrashing can be detected by measuring the page fault frequency. A high page fault frequency\n(due to swapping) implies thrashing. It can be avoided through better scheduling. For example, a\nset of processes whose working set is likely to fit in the available RAM is run together for an\nextended time (say 1­5 seconds), and then swapped out together to allow another group of\nprocesses to get swapped in. This reduces the rate of page faults, and ensures faster overall progress.\nYes\n​\n, It is possible for system to have a 100% CPU utilization even in the case of\ndeadlock. Consider the case when the threads involved in the system use \n​\nspin locks, \n​\nnow\nif the threads are even in a deadlock scenario they will constantly check for reacquiring the\nlock whenever they get a chance to run hence consuming the cpu constantly which can result\nin 100% CPU utilization.\n\nDerivation for interleaving of instructions: n-processes, m-instructions in each thread",
-      "slot_score": 37.0
+      "text": "What are the two CPU modes of execution ? Why are these modes important in CPU Virtualization ?",
+      "answer": "User mode - restricted, kernel mode- privileged. User applications use system calls to trap into kernel for OS services and return-from-trap instruction is used to return to the user mode. These modes are important for efficient CPU virtualization without loss of OS control (basically to achieve Limited Direct Execution)",
+      "source_year": 2024,
+      "source_label": "the 2024 paper",
+      "source_q_id": "23c4218f58-0",
+      "slot_score": 54.5
     },
     {
       "q_no": 4,
       "concept": "persistence",
       "qtype": "define_explain",
-      "marks": null,
-      "source_year": 2017,
-      "source_q_id": "dd2e4130dc-0",
-      "text": "a.\nSwapping is the act of running each whole process in main memory for a time then placing back onto disk and vice versa. It is used when the system does not have enough main memory to hold all the currently active processes.\n\nAssuming that an application is one program and hence a single process, swapping will not permit an application(process) requiring 16M of memory to run on a machine with 8M RAM (main memory) as the whole process is too large to fit into main memory.\n\nb.\n- Internal fragmentation: the space wasted internal to the allocated region.Allocated memory might be slightly larger than requested memory.\n- External fragmentation: the space wasted external to the allocated region.memory exists to satisfy a reqest but it's unsuable as it's not contiguous.\n\nStattic partitioning is more likely to suffer from internal fragmentation.\nDynamic partitioning is more likely to suffer from external fragmentation.\n\nc.\n\n\nd.",
-      "slot_score": 31.0
+      "marks": 1.5,
+      "text": "State the sequence of operations done on all the disk-based file system structures.",
+      "answer": "Here the file exist on disk but has not yet been opened in the system\n\nThe Assumption here is that the information about last accessed is not stored in the inodes else there will be also write operations to the inodes",
+      "source_year": 2024,
+      "source_label": "the 2024 paper",
+      "source_q_id": "463b32a933-10",
+      "slot_score": 40.5
     },
     {
       "q_no": 5,
-      "concept": "computer-architecture",
+      "concept": "file-systems",
       "qtype": "define_explain",
-      "marks": null,
-      "source_year": 2023,
-      "source_q_id": "d45f8a074c-5",
-      "text": "a) In the semantics of the condition variable, wait takes a lock as its second input along with the condition variable, but the signal call only takes a condition. Explain why.\n b) Disabling interrupts was one of the earlier methods proposed for the implementation of locks. Discuss a few problems with this approach.\t\t\t\t\t\t\t\t\t\t\t\t\t(2+3 M)",
-      "slot_score": 25.0
+      "marks": 1.5,
+      "text": "Briefly state changes to all the in-memory and disk-based file system structures (e.g., file tables, inodes, and directories) that occur as part of this system call implementation. Write clearly, listing the structure that is changed, and the change made to it.",
+      "answer": "With the above stated assumption there is no change in the disk based file system structures for open call. (If the last accessed time is stored then only there will be write operations/changes to the foo, bar and root inode)\nChanges in the in-memory structures: in-memory inode allocated. - System-wide open file table points to in-memory inode. - Per-process file descriptor table points to open file table entry",
+      "source_year": 2024,
+      "source_label": "the 2024 paper",
+      "source_q_id": "463b32a933-11",
+      "slot_score": 38.5
     },
     {
       "q_no": 6,
-      "concept": "processes",
+      "concept": "scheduling",
       "qtype": "define_explain",
-      "marks": 5.0,
-      "source_year": 2023,
-      "source_q_id": "d45f8a074c-4",
-      "text": "A single processor system has three resource types X, Y and Z, which are shared by three processes. There are 5 units of each resource type. Consider the following scenario, where the column alloc denotes the number of units of each resource type allocated to each process, and the column request denotes the number of units of each resource type requested by a process in order to complete execution. Which of these processes will finish LAST?\t\t\t(5M)",
-      "slot_score": 25.0
+      "marks": 3.0,
+      "text": "In a boss‑worker’s multithreading pattern, you have one boss (producer) thread and n worker/consumer threads. For each task that enters the system, the boss dispatches the tasks that the workers consumes. This is often done through a shared request queue/buffer. In this case, the boss will add items to the queue, and the workers will consume items from the queue. What could you do to improve a performance metric like throughput or response time, and what are the limiting factors in improving performance in this type of multithreading pattern?",
+      "answer": "in boss‑worker model, there are mainly two things you could do. First, increase the number of threads. The more you leverage concurrency, the more potential you have to increase the efficiency of your processing. That being said, dynamic thread creation is expensive, so it makes sense to just have a pool of workers up front instead of creating new threads on the fly. Increasing the size of the pool may help performance.\nSecond, decrease the amount of work the boss has to do. Since the boss has t",
+      "source_year": 2024,
+      "source_label": "the 2024 paper",
+      "source_q_id": "463b32a933-15",
+      "slot_score": 33.0
     },
     {
       "q_no": 7,
       "concept": "paging",
       "qtype": "define_explain",
-      "marks": 4.0,
-      "source_year": 2023,
-      "source_q_id": "d45f8a074c-3",
-      "text": "onsider a reference string: 4, 7, 6, 1, 7, 6, 1, 2, 7, 2. the number of frames in the memory is 3. Find out the number of page faults respective to:\t(4 M)\nFIFO Page Replacement Algorithm\nLRU Page Replacement Algorithm",
-      "slot_score": 22.0
+      "marks": null,
+      "text": "How does the valid bit in the TLB entry differ from the valid bit in the page table entry ? Explain.",
+      "answer": "A TLB valid bit refers to whether a TLB entry has a valid translation within it. When a system boots, for example, a common initial state for each TLB entry is to be set to invalid, because no address translations are yet cached there. Once virtual memory is enabled, and once programs start running and accessing their virtual address spaces, the TLB is slowly populated, and thus valid entries soon fill the TLB. In a page table, when a page-table entry (PTE) is marked invalid, it means that the page has not been allocated by the process, and should not be accessed by a correctly-working program. The usual response when an invalid page is accessed is to trap the OS, which will respond by killing the process.",
+      "source_year": 2024,
+      "source_label": "the 2024 paper",
+      "source_q_id": "23c4218f58-2",
+      "slot_score": 31.5
     },
     {
       "q_no": 8,
-      "concept": "threads",
+      "concept": "concurrency",
       "qtype": "define_explain",
       "marks": 6.0,
-      "source_year": 2022,
-      "source_q_id": "364f4ad10f-0",
-      "text": "[6m] (i) Which of the following are more like policies, and which are more like mechanisms? \n(a) The timer interrupt - M\n (b) How long a time quantum should be - P\n(c) Saving the register state of a process - M\n(d) Continuing to run the current process when a disk I/O interrupt occurs  - P\n\n(ii) For each of the following four examples, write down which state the process (or thread) is in: \n(a) Waiting in Domain Read() for a message from some other process to arrive. - blocked\n(b) Spin-waiting for a variable x to become non-zero. - Running\n(c) Having just completed an I/O, waiting to get scheduled again on the CPU. - Ready\n(d) Waiting inside of pthread cond wait() for some other thread to signal it – blocked\n\n(iii) In a traditional single-threaded process, we have both a stack and a heap. a) What is the stack used for? b) What is the heap used for? c) If, for some reason, you could only have one of these two, which would you pick and why?\nStack - Dynamically-allocated data that is allocated and deallocated in a predictable order, namely things like procedure call parameters and local variables. Hence, this memory tends to be compiler managed (the user does not have to be involved). \nHeap - Dynamically-allocated data that is allocated and deallocated in an unpredictable manner, such as arbitrary data structures like linked lists, etc. Hence this memory tends to be user managed (requiring calls to allocate memory, and depending on the language, deallocate memory too).\n • If, for some reason, you could only have one of these two, which would you pick and why? The heap, because it is more general albeit slower",
-      "slot_score": 21.0
+      "text": "Consider the classical “Sleeping-Barber” synchronization problem using two thread types, barber and customer, and a waiting room to hold customers: - When the barber finishes with a current customer, he checks the waiting room. If a customer is waiting, he removes the customer from the waiting room and indicates he’s available to cut hair. Otherwise, the barber sleeps until a new customer arrives. - When a customer arrives, he checks the barber’s status. If the barber is sleeping, the customer wakes the barber up. Otherwise, the customer enters the waiting room. If a seat is available, the customer takes it; otherwise, he leaves (without waiting) There may be multiple barbers and customers, with up to N customers waiting in the waiting room. The solution requires three semaphores and a shared variable to track free seats in the waiting room, initialized as shown below. Write the pseudo code of barber and customer thread with appropriate comments and/or explanation of its working",
+      "answer": "void barber() { while (true) { down(customers); down(mutex); freeSeats++; up(barbers); up(mutex); cut_hair(); } }",
+      "source_year": 2023,
+      "source_label": "the 2023 paper",
+      "source_q_id": "7ef8c3ab68-6",
+      "slot_score": 29.0
     },
     {
       "q_no": 9,
-      "concept": "cpu-virtualization",
-      "qtype": "define_explain",
-      "marks": null,
-      "source_year": 2023,
-      "source_q_id": "d45f8a074c-0",
-      "text": "a)  What are the different states of process and explain the transitions between them. \nb) What are system calls and how are they different from normal function calls? \n\t\t\t\t\t\t\t\t\t\t\t(3+2 M)",
-      "slot_score": 16.0
+      "concept": "paging",
+      "qtype": "numerical",
+      "marks": 2.0,
+      "text": "A computer whose processes have 1024 pages in their address spaces keeps its page tables in memory. The overhead required for reading a word from the page table is 5 nsec. To reduce this overhead, the computer has a TLB, which holds 32 (virtual page, physical page frame) pairs, and can do a lookup in 1 nsec. What hit rate is needed to reduce the mean overhead to 2 nsec?",
+      "answer": null,
+      "source_year": 2025,
+      "source_label": "the 2025 paper",
+      "source_q_id": "4b680ed38b-4",
+      "slot_score": 28.0
     },
     {
       "q_no": 10,
-      "concept": "file-systems",
-      "qtype": "numerical",
-      "marks": 6.0,
-      "source_year": 2023,
-      "source_q_id": "d45f8a074c-2",
-      "text": "onsider a Linux-like operating system running on a 48-bit CPU hardware. The OS uses hierarchical paging, with 8 KB pages and 4 byte page table entries.\t(a) What is the maximum number of levels in the page table of a process, including both the outermost page directory and the innermost page tables?\n(b) Indicate which bits of the virtual address are used to index into each of the levels of the page table.\n(c) Calculate the maximum number of pages that may be required to store all the page table entries of a process across all levels of the page table.\t(6 M)",
+      "concept": "cpu-virtualization",
+      "qtype": "define_explain",
+      "marks": 2.0,
+      "text": "Name and briefly explain one example (apart from timer interrupt and TLB) each of where we saw the OS needed support from the hardware in order to implement CPU and memory virtualization functionality respectively.",
+      "answer": "CPU virtualization requires HW support such as ability to save/restore the user/process context to and from kernel stack during context switch or system call trap. Memory virtualization requires registers like Base/Bound or Page table address for storing the addresses of segments, page table etc. so as to allow dynamic relocation of address space, Circuitry in MMU for address translation and validity check",
+      "source_year": 2022,
+      "source_label": "the 2022 paper",
+      "source_q_id": "2853f8eb13-0",
+      "slot_score": 18.5
+    },
+    {
+      "q_no": 11,
+      "concept": "computer-architecture",
+      "qtype": "define_explain",
+      "marks": 1.0,
+      "text": "Briefly state why and how the OS uses a timer interrupt",
+      "answer": "Timer interrupt is mainly used to help OS regain the CPU after specified period. Its value is set by kernel via privileged instruction and a timer interrupt happens when the timer counts down to 0.  The timer interrupt handler in kernel invokes the process scheduler to decide which process is executed next. It is also helpful in implementation of certain scheduling strategies like round robin.",
+      "source_year": 2022,
+      "source_label": "the 2022 paper",
+      "source_q_id": "2853f8eb13-1",
       "slot_score": 16.0
+    },
+    {
+      "q_no": 12,
+      "concept": "memory-virtualization",
+      "qtype": "numerical",
+      "marks": 4.0,
+      "text": "A certain computer system has the segmented paging architecture for virtual memory. The memory is byte addressable. Both virtual and physical address spaces contain 2^16 bytes each. The virtual address space is divided into 8 non-overlapping equal size segments. The memory management unit (MMU) has a hardware segment table, each entry of which contains the physical address of the page table for the segment. Page tables are stored in the main memory and consist of 2 byte page table entries. What is the minimum page size in bytes so that the page table for a segment requires at most one page to store it?",
+      "answer": null,
+      "source_year": 2024,
+      "source_label": "the 2024 paper",
+      "source_q_id": "463b32a933-7",
+      "slot_score": 13.0
+    },
+    {
+      "q_no": 13,
+      "concept": "scheduling",
+      "qtype": "numerical",
+      "marks": 4.0,
+      "text": "Consider the set of processes with given information. In case of tie, the first arrival process is scheduled. The difference between the average turn around time using FCFS and SRTF scheduling is?",
+      "answer": null,
+      "source_year": 2024,
+      "source_label": "the 2024 paper",
+      "source_q_id": "463b32a933-1",
+      "slot_score": 12.0
+    },
+    {
+      "q_no": 14,
+      "concept": "locks",
+      "qtype": "diagram",
+      "marks": 5.0,
+      "text": "Draw a Gantt chart showing the scheduling of these processes for the first 60ms. Clearly mark when processes block for I/O, change queues, and when priority boost occurs.",
+      "answer": null,
+      "source_year": 2025,
+      "source_label": "the 2025 paper",
+      "source_q_id": "4b680ed38b-6",
+      "slot_score": 6.0
+    },
+    {
+      "q_no": 15,
+      "concept": "file-systems",
+      "qtype": "diagram",
+      "marks": 4.5,
+      "text": "Study the following program segment and a) explain the output of the program (assume inclusion of necessary header files so that the code compiles and executes successfully) and mention a use-case of this type of code segment  b) Draw figures that shows the status of file descriptor array of the processes involved, the global open file table, in-memory inode and the pointers linking these data structures just after the execution of fork()statement. Mention the content of any relevant information of these data structures in the figures. c) What changes should be reflected in the figures after execution of the close(in) statement by the processes involved.",
+      "answer": "a) It is basically a segment of a shell process which is creating a child process and executing the given command: grep xyz file by redirecting the standard in to a file for the grep command to take input and search the occurrences of xyz in the file and output on standard out (here the default monitor screen). The parent process (like a shell usually does) waits for the child process to complete and then prints the message before exiting (as here) or becoming ready for the next command. b) after fork() b) after close() the changes will be – In both the parent and child file descriptor table/array the pointer in Fd[3] will become null (0.5 marks) and in child table, the Fd[0] (STDIN) pointer will now point to that file entry in the system wide file table (0.5 marks).",
+      "source_year": 2020,
+      "source_label": "the 2020 paper",
+      "source_q_id": "4ecc50bcff-0",
+      "slot_score": 5.5
     }
   ],
   "slot_ranking": [
     {
       "concept": "locks",
       "qtype": "define_explain",
-      "score": 62.0
-    },
-    {
-      "concept": "file-systems",
-      "qtype": "define_explain",
-      "score": 43.0
-    },
-    {
-      "concept": "scheduling",
-      "qtype": "define_explain",
-      "score": 37.0
-    },
-    {
-      "concept": "persistence",
-      "qtype": "define_explain",
-      "score": 31.0
-    },
-    {
-      "concept": "computer-architecture",
-      "qtype": "define_explain",
-      "score": 25.0
-    },
-    {
-      "concept": "processes",
-      "qtype": "define_explain",
-      "score": 25.0
-    },
-    {
-      "concept": "paging",
-      "qtype": "define_explain",
-      "score": 22.0
+      "score": 97.5
     },
     {
       "concept": "threads",
       "qtype": "define_explain",
-      "score": 21.0
+      "score": 61.0
+    },
+    {
+      "concept": "processes",
+      "qtype": "define_explain",
+      "score": 54.5
+    },
+    {
+      "concept": "persistence",
+      "qtype": "define_explain",
+      "score": 40.5
+    },
+    {
+      "concept": "file-systems",
+      "qtype": "define_explain",
+      "score": 38.5
+    },
+    {
+      "concept": "scheduling",
+      "qtype": "define_explain",
+      "score": 33.0
+    },
+    {
+      "concept": "paging",
+      "qtype": "define_explain",
+      "score": 31.5
+    },
+    {
+      "concept": "concurrency",
+      "qtype": "define_explain",
+      "score": 29.0
+    },
+    {
+      "concept": "paging",
+      "qtype": "numerical",
+      "score": 28.0
     },
     {
       "concept": "cpu-virtualization",
       "qtype": "define_explain",
-      "score": 16.0
+      "score": 18.5
     },
     {
-      "concept": "file-systems",
-      "qtype": "numerical",
+      "concept": "computer-architecture",
+      "qtype": "define_explain",
       "score": 16.0
     },
     {
       "concept": "memory-virtualization",
       "qtype": "numerical",
-      "score": 16.0
-    },
-    {
-      "concept": "paging",
-      "qtype": "numerical",
-      "score": 16.0
-    },
-    {
-      "concept": "locks",
-      "qtype": "numerical",
-      "score": 14.0
-    },
-    {
-      "concept": "processes",
-      "qtype": "numerical",
-      "score": 14.0
+      "score": 13.0
     },
     {
       "concept": "scheduling",
       "qtype": "numerical",
-      "score": 14.0
+      "score": 12.0
+    },
+    {
+      "concept": "locks",
+      "qtype": "diagram",
+      "score": 6.0
+    },
+    {
+      "concept": "scheduling",
+      "qtype": "diagram",
+      "score": 6.0
     }
   ],
   "backtest": {
     "exam_type": "endsem",
-    "decay": 1.0,
-    "folds": [],
-    "mean_concept_precision": null,
-    "mean_slot_precision": null,
-    "mean_slot_recall": null,
-    "mean_semantic_closeness": null
+    "folds": [
+      {
+        "test_year": 2020,
+        "n_generated": 4,
+        "used_fallback": true,
+        "concept_precision": 1.0,
+        "concept_recall": 0.429,
+        "slot_precision": 1.0,
+        "slot_recall": 0.3
+      },
+      {
+        "test_year": 2022,
+        "n_generated": 8,
+        "used_fallback": false,
+        "concept_precision": 1.0,
+        "concept_recall": 0.5,
+        "slot_precision": 0.714,
+        "slot_recall": 0.312
+      },
+      {
+        "test_year": 2023,
+        "n_generated": 11,
+        "used_fallback": false,
+        "concept_precision": 0.7,
+        "concept_recall": 0.875,
+        "slot_precision": 0.455,
+        "slot_recall": 0.5
+      },
+      {
+        "test_year": 2024,
+        "n_generated": 10,
+        "used_fallback": false,
+        "concept_precision": 0.8,
+        "concept_recall": 0.889,
+        "slot_precision": 0.8,
+        "slot_recall": 0.727
+      },
+      {
+        "test_year": 2025,
+        "n_generated": 11,
+        "used_fallback": false,
+        "concept_precision": 0.9,
+        "concept_recall": 0.9,
+        "slot_precision": 0.909,
+        "slot_recall": 0.625
+      }
+    ],
+    "mean_concept_precision_all": 0.88,
+    "mean_concept_precision_real_folds": 0.85,
+    "n_fallback_folds": 1
   }
 }

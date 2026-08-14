@@ -10388,40 +10388,40 @@
     ]
   },
   "9bee9fa698-0": {
-    "hash": "04e05d7df346",
+    "hash": "5d448ba10bea",
     "concepts": [
       "threads"
     ]
   },
   "9bee9fa698-1": {
-    "hash": "942907c2de32",
+    "hash": "3ba375316f0b",
     "concepts": [
       "processes",
       "threads"
     ]
   },
   "9bee9fa698-2": {
-    "hash": "84725ec81671",
+    "hash": "53b646e4402d",
     "concepts": [
       "processes",
       "threads"
     ]
   },
   "9bee9fa698-3": {
-    "hash": "6f872bb6866e",
+    "hash": "685fe04c844f",
     "concepts": [
       "threads"
     ]
   },
   "9bee9fa698-4": {
-    "hash": "f45278b8ee37",
+    "hash": "a1d53022242c",
     "concepts": [
       "processes",
       "threads"
     ]
   },
   "9bee9fa698-5": {
-    "hash": "632db1b5a712",
+    "hash": "abf116edd78e",
     "concepts": [
       "scheduling",
       "threads",
@@ -10429,13 +10429,13 @@
     ]
   },
   "9bee9fa698-6": {
-    "hash": "37ac9f3889a9",
+    "hash": "f9f2932edc31",
     "concepts": [
       "threads"
     ]
   },
   "9bee9fa698-7": {
-    "hash": "ddc9fe7610ce",
+    "hash": "b1b56e65caaa",
     "concepts": [
       "cpu-virtualization",
       "threads",
@@ -10443,33 +10443,33 @@
     ]
   },
   "9bee9fa698-8": {
-    "hash": "9f1b2cda5acc",
+    "hash": "51e76c7930f5",
     "concepts": [
       "computer-architecture",
       "locks"
     ]
   },
   "9bee9fa698-9": {
-    "hash": "dc7cf60e56a7",
+    "hash": "dea7dc1aee4f",
     "concepts": [
       "threads",
       "locks"
     ]
   },
   "9bee9fa698-10": {
-    "hash": "52734c486b64",
+    "hash": "6b0ed6c03527",
     "concepts": [
       "threads"
     ]
   },
   "9bee9fa698-11": {
-    "hash": "2cff626e13e3",
+    "hash": "fce153db6784",
     "concepts": [
       "threads"
     ]
   },
   "9bee9fa698-12": {
-    "hash": "d9081efc3ac2",
+    "hash": "298275ef8d25",
     "concepts": [
       "computer-architecture",
       "threads",
@@ -10477,14 +10477,14 @@
     ]
   },
   "9bee9fa698-13": {
-    "hash": "f666b3fe6ec4",
+    "hash": "456c3026bc6c",
     "concepts": [
       "threads",
       "locks"
     ]
   },
   "9bee9fa698-14": {
-    "hash": "2d636bf2161a",
+    "hash": "d2b58efa273f",
     "concepts": [
       "computer-architecture",
       "cpu-virtualization",
@@ -10492,15 +10492,7 @@
     ]
   },
   "9bee9fa698-15": {
-    "hash": "1d9067ae235e",
-    "concepts": [
-      "cpu-virtualization",
-      "locks",
-      "persistence"
-    ]
-  },
-  "9bee9fa698-16": {
-    "hash": "ea64c157ef1f",
+    "hash": "2849a56cb566",
     "concepts": [
       "cpu-virtualization",
       "processes",
@@ -10508,199 +10500,200 @@
       "locks"
     ]
   },
+  "9bee9fa698-16": {
+    "hash": "ec248c7a778a",
+    "concepts": [
+      "threads"
+    ]
+  },
   "9bee9fa698-17": {
-    "hash": "02df777bedf4",
+    "hash": "fad0351b051b",
     "concepts": [
       "threads"
     ]
   },
   "9bee9fa698-18": {
-    "hash": "2fa145f6ac12",
+    "hash": "bef71bb40e8b",
     "concepts": [
-      "threads"
+      "concurrency",
+      "locks"
     ]
   },
   "9bee9fa698-19": {
-    "hash": "676c39b5bca1",
+    "hash": "529254468b90",
     "concepts": [
       "concurrency",
       "locks"
     ]
   },
   "9bee9fa698-20": {
-    "hash": "6255debecce2",
+    "hash": "5fccf82a5448",
     "concepts": [
       "concurrency",
       "locks"
     ]
   },
   "9bee9fa698-21": {
-    "hash": "b4903487fbb8",
-    "concepts": [
-      "concurrency",
-      "locks"
-    ]
-  },
-  "9bee9fa698-22": {
-    "hash": "3e0ed213e57b",
+    "hash": "30c61ed57780",
     "concepts": [
       "scheduling",
       "threads",
       "locks"
     ]
   },
+  "9bee9fa698-22": {
+    "hash": "bc115c112a9c",
+    "concepts": [
+      "threads"
+    ]
+  },
   "9bee9fa698-23": {
-    "hash": "0d090604234f",
+    "hash": "ece4b7ba829b",
     "concepts": [
       "threads"
     ]
   },
   "9bee9fa698-24": {
-    "hash": "6cd04e1963b9",
+    "hash": "88a9d1be73f5",
     "concepts": [
       "threads"
     ]
   },
   "9bee9fa698-25": {
-    "hash": "f344b95ef1b2",
-    "concepts": [
-      "threads"
-    ]
-  },
-  "9bee9fa698-26": {
-    "hash": "a70db72040c0",
+    "hash": "d8497a8c2f9a",
     "concepts": [
       "locks"
     ]
   },
-  "9bee9fa698-27": {
-    "hash": "fd5f757c4c95",
+  "9bee9fa698-26": {
+    "hash": "b3f0abe2b742",
     "concepts": [
       "concurrency",
       "locks"
     ]
   },
-  "9bee9fa698-28": {
-    "hash": "fe9f222248b8",
+  "9bee9fa698-27": {
+    "hash": "17d53cfbf1d6",
     "concepts": [
       "scheduling",
       "concurrency",
       "locks"
     ]
   },
-  "9bee9fa698-29": {
-    "hash": "b6022ecb6a5b",
+  "9bee9fa698-28": {
+    "hash": "746d67a339d8",
     "concepts": [
       "processes"
     ]
   },
-  "9bee9fa698-30": {
-    "hash": "3b228e345f72",
+  "9bee9fa698-29": {
+    "hash": "ef7771d68ae5",
     "concepts": [
       "processes",
       "locks"
     ]
   },
+  "9bee9fa698-30": {
+    "hash": "13952492e70b",
+    "concepts": [
+      "concurrency",
+      "locks"
+    ]
+  },
   "9bee9fa698-31": {
-    "hash": "ac0fd0453907",
+    "hash": "95fdee9069eb",
     "concepts": [
       "locks"
     ]
   },
   "9bee9fa698-32": {
-    "hash": "48cf829fc413",
+    "hash": "e15434329c27",
     "concepts": [
       "processes"
     ]
   },
   "9bee9fa698-33": {
-    "hash": "1b33def4b16e",
+    "hash": "844ec962ce07",
     "concepts": [
       "processes"
     ]
   },
   "9bee9fa698-34": {
-    "hash": "0ae2ac532b13",
+    "hash": "cf96621da0d4",
     "concepts": [
-      "processes"
+      "concurrency"
     ]
   },
   "9bee9fa698-35": {
-    "hash": "f46510b06b99",
+    "hash": "98d118643bba",
     "concepts": [
       "processes"
     ]
   },
   "9bee9fa698-36": {
-    "hash": "5e24727472a7",
+    "hash": "cd84b6c9618f",
     "concepts": [
-      "concurrency",
+      "processes"
+    ]
+  },
+  "9bee9fa698-37": {
+    "hash": "554927ccb4f0",
+    "concepts": [
       "threads",
       "locks"
     ]
   },
-  "9bee9fa698-37": {
-    "hash": "b280fd05bace",
+  "9bee9fa698-38": {
+    "hash": "d3fdc5673f39",
     "concepts": [
       "concurrency",
       "threads"
     ]
   },
-  "9bee9fa698-38": {
-    "hash": "7b58947b8ff0",
-    "concepts": [
-      "threads"
-    ]
-  },
   "9bee9fa698-39": {
-    "hash": "3c575b8cdcf7",
+    "hash": "9d6709c9bd0a",
     "concepts": [
       "threads"
     ]
   },
   "9bee9fa698-40": {
-    "hash": "a3164636a74a",
+    "hash": "6f900e7ee94f",
     "concepts": [
       "threads"
     ]
   },
   "9bee9fa698-41": {
-    "hash": "9d10899c89dc",
+    "hash": "42afdbe70924",
+    "concepts": [
+      "threads"
+    ]
+  },
+  "9bee9fa698-42": {
+    "hash": "cf263b5a55a6",
+    "concepts": [
+      "threads"
+    ]
+  },
+  "9bee9fa698-43": {
+    "hash": "68013c7e6ff9",
     "concepts": [
       "processes",
       "concurrency",
       "threads",
-      "locks"
-    ]
-  },
-  "9bee9fa698-42": {
-    "hash": "d1504440ddde",
-    "concepts": [
-      "concurrency",
-      "threads",
-      "locks"
-    ]
-  },
-  "9bee9fa698-43": {
-    "hash": "0637c6c3d595",
-    "concepts": [
-      "concurrency",
       "locks"
     ]
   },
   "9bee9fa698-44": {
-    "hash": "ae67c0512803",
+    "hash": "15816c982837",
     "concepts": [
-      "processes",
       "concurrency",
       "threads"
     ]
   },
   "9bee9fa698-45": {
-    "hash": "3df398ed5143",
+    "hash": "0637c6c3d595",
     "concepts": [
       "concurrency",
-      "threads",
       "locks"
     ]
   },
@@ -10820,44 +10813,44 @@
     ]
   },
   "e8c08a2e73-19": {
-    "hash": "d47841660c84",
-    "concepts": [
-      "processes"
-    ]
-  },
-  "e8c08a2e73-20": {
-    "hash": "dbc32a14d125",
-    "concepts": [
-      "processes"
-    ]
-  },
-  "e8c08a2e73-21": {
-    "hash": "c9ab0b14e210",
-    "concepts": [
-      "processes"
-    ]
-  },
-  "e8c08a2e73-22": {
-    "hash": "67ed46e8bff0",
-    "concepts": [
-      "scheduling"
-    ]
-  },
-  "e8c08a2e73-23": {
     "hash": "33b020ad0839",
     "concepts": [
       "processes"
     ]
   },
-  "e8c08a2e73-24": {
-    "hash": "ce6f3c2982c7",
+  "e8c08a2e73-20": {
+    "hash": "97f5f5575b1e",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "e8c08a2e73-21": {
+    "hash": "c109d5259b1d",
+    "concepts": [
+      "scheduling"
+    ]
+  },
+  "e8c08a2e73-22": {
+    "hash": "9dc6bbf60f13",
     "concepts": [
       "processes",
       "scheduling"
     ]
   },
+  "e8c08a2e73-23": {
+    "hash": "9d627f5105d3",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "e8c08a2e73-24": {
+    "hash": "9e0aa1d1e9da",
+    "concepts": [
+      "scheduling"
+    ]
+  },
   "e8c08a2e73-25": {
-    "hash": "5bb9060c8e18",
+    "hash": "b582d86e205c",
     "concepts": [
       "scheduling"
     ]
@@ -11027,13 +11020,13 @@
     ]
   },
   "e04b54797f-4": {
-    "hash": "a724ba7b4883",
+    "hash": "1fe22ed1cae7",
     "concepts": [
       "processes"
     ]
   },
   "e04b54797f-5": {
-    "hash": "1ba370caa3a5",
+    "hash": "75bb8a887d40",
     "concepts": [
       "processes"
     ]
@@ -11053,7 +11046,7 @@
     ]
   },
   "e04b54797f-8": {
-    "hash": "dd51b1d05934",
+    "hash": "19deb5bf8924",
     "concepts": [
       "computer-architecture",
       "cpu-virtualization",
@@ -11061,183 +11054,172 @@
     ]
   },
   "e04b54797f-9": {
-    "hash": "0282068df910",
+    "hash": "4cddd319c749",
     "concepts": [
       "processes",
       "scheduling"
     ]
   },
   "e04b54797f-10": {
-    "hash": "4fabfb7ce3a0",
+    "hash": "b2422a6b4bc3",
     "concepts": [
       "processes",
       "scheduling"
     ]
   },
   "e04b54797f-11": {
-    "hash": "0fbddde11b64",
+    "hash": "6a0a706c287b",
     "concepts": [
       "processes",
       "scheduling"
     ]
   },
   "e04b54797f-12": {
-    "hash": "ce277d85e6ca",
+    "hash": "52e948bf445f",
     "concepts": [
       "scheduling"
     ]
   },
   "e04b54797f-13": {
-    "hash": "3a5145fabb12",
+    "hash": "892666e275db",
     "concepts": [
       "scheduling"
     ]
   },
   "e04b54797f-14": {
-    "hash": "abccb8384961",
+    "hash": "65e5c1d5259e",
     "concepts": [
       "scheduling"
     ]
   },
   "e04b54797f-15": {
-    "hash": "bc14074310c0",
+    "hash": "6bf96f485f99",
     "concepts": [
       "processes",
       "scheduling"
     ]
   },
   "e04b54797f-16": {
-    "hash": "1aa861494755",
+    "hash": "b26a158db8e3",
     "concepts": [
       "processes",
       "scheduling"
     ]
   },
   "e04b54797f-17": {
-    "hash": "f4d67d1f72fa",
+    "hash": "05182dc85314",
     "concepts": [
       "processes",
       "scheduling"
     ]
   },
   "e04b54797f-18": {
-    "hash": "822349e4731e",
+    "hash": "40a320dd1437",
     "concepts": [
       "scheduling"
     ]
   },
   "5503749da7-0": {
-    "hash": "af5136d9122f",
+    "hash": "7e323c82a848",
     "concepts": [
-      "processes",
       "threads"
     ]
   },
   "5503749da7-1": {
-    "hash": "53b646e4402d",
+    "hash": "606cbbc4a5f0",
     "concepts": [
       "processes",
       "threads"
     ]
   },
   "5503749da7-2": {
+    "hash": "53b646e4402d",
+    "concepts": [
+      "processes",
+      "threads"
+    ]
+  },
+  "5503749da7-3": {
     "hash": "685fe04c844f",
     "concepts": [
       "threads"
     ]
   },
-  "5503749da7-3": {
+  "5503749da7-4": {
     "hash": "a1d53022242c",
     "concepts": [
       "processes",
       "threads"
     ]
   },
-  "5503749da7-4": {
-    "hash": "b34cdedb89db",
+  "5503749da7-5": {
+    "hash": "68df996ad559",
     "concepts": [
       "scheduling",
       "threads",
       "locks"
     ]
   },
-  "5503749da7-5": {
-    "hash": "f9f2932edc31",
+  "5503749da7-6": {
+    "hash": "f018abc2ca7e",
     "concepts": [
       "threads"
     ]
   },
-  "5503749da7-6": {
-    "hash": "10b709c71d7c",
-    "concepts": [
-      "computer-architecture",
-      "cpu-virtualization",
-      "processes",
-      "scheduling",
-      "concurrency",
-      "threads",
-      "locks",
-      "persistence"
-    ]
-  },
   "5503749da7-7": {
-    "hash": "fe07d4b135e2",
+    "hash": "3c089d9fd357",
     "concepts": [
-      "scheduling",
-      "concurrency",
+      "cpu-virtualization",
+      "threads",
       "locks"
     ]
   },
   "5503749da7-8": {
-    "hash": "98f500ba74ea",
+    "hash": "7656b96b76ca",
     "concepts": [
+      "computer-architecture",
       "locks"
     ]
   },
   "5503749da7-9": {
-    "hash": "3b228e345f72",
+    "hash": "dea7dc1aee4f",
     "concepts": [
-      "processes",
-      "locks"
-    ]
-  },
-  "5503749da7-10": {
-    "hash": "6ccd97942ac4",
-    "concepts": [
-      "concurrency",
-      "locks"
-    ]
-  },
-  "5503749da7-11": {
-    "hash": "f154a3a3db53",
-    "concepts": [
-      "concurrency",
       "threads",
       "locks"
     ]
   },
-  "5503749da7-12": {
-    "hash": "05fb86348e96",
+  "5503749da7-10": {
+    "hash": "faf6ba04f5fa",
     "concepts": [
-      "processes",
-      "concurrency",
+      "threads"
+    ]
+  },
+  "5503749da7-11": {
+    "hash": "8c0026baf2e5",
+    "concepts": [
+      "threads"
+    ]
+  },
+  "5503749da7-12": {
+    "hash": "e8be55fab9b9",
+    "concepts": [
+      "computer-architecture",
       "threads",
       "locks"
     ]
   },
   "5503749da7-13": {
-    "hash": "4fd34db6f54e",
+    "hash": "456c3026bc6c",
     "concepts": [
-      "processes",
-      "concurrency",
-      "threads"
+      "threads",
+      "locks"
     ]
   },
   "5503749da7-14": {
-    "hash": "c231ff948f61",
+    "hash": "e212e471b847",
     "concepts": [
-      "concurrency",
-      "threads",
+      "computer-architecture",
+      "cpu-virtualization",
       "locks"
     ]
   },
@@ -11248,152 +11230,171 @@
     ]
   },
   "323fd2fe1f-1": {
-    "hash": "bf94a4036767",
+    "hash": "cead3475a5b7",
     "concepts": [
+      "cpu-virtualization",
       "processes"
     ]
   },
   "323fd2fe1f-2": {
-    "hash": "bcaa177e2202",
+    "hash": "56674a4f59a7",
     "concepts": [
-      "processes"
+      "memory-virtualization"
     ]
   },
   "323fd2fe1f-3": {
-    "hash": "cb000ba7f1e2",
+    "hash": "653b608c6541",
     "concepts": [
-      "processes"
+      "computer-architecture",
+      "memory-virtualization"
     ]
   },
   "323fd2fe1f-4": {
-    "hash": "24204200c4a2",
+    "hash": "858ad66cd332",
     "concepts": [
       "computer-architecture",
       "memory-virtualization"
     ]
   },
   "323fd2fe1f-5": {
-    "hash": "aa95e6ab9be1",
+    "hash": "594fe662dbde",
     "concepts": [
-      "computer-architecture",
-      "memory-virtualization"
+      "paging",
+      "file-systems"
     ]
   },
   "323fd2fe1f-6": {
-    "hash": "263d7488ec87",
-    "concepts": [
-      "processes"
-    ]
-  },
-  "323fd2fe1f-7": {
-    "hash": "1b9045d14e65",
-    "concepts": [
-      "processes"
-    ]
-  },
-  "323fd2fe1f-8": {
-    "hash": "80c6309bf889",
-    "concepts": [
-      "processes"
-    ]
-  },
-  "323fd2fe1f-9": {
-    "hash": "124bff7f800c",
-    "concepts": [
-      "paging"
-    ]
-  },
-  "323fd2fe1f-10": {
     "hash": "bc455273e2ee",
     "concepts": [
       "memory-virtualization",
       "paging"
     ]
   },
-  "323fd2fe1f-11": {
-    "hash": "12fa4953ce39",
-    "concepts": [
-      "memory-virtualization"
-    ]
-  },
-  "323fd2fe1f-12": {
-    "hash": "2f8e6c2c0085",
-    "concepts": [
-      "scheduling",
-      "paging"
-    ]
-  },
-  "323fd2fe1f-13": {
-    "hash": "88f586e29134",
-    "concepts": [
-      "paging"
-    ]
-  },
-  "323fd2fe1f-14": {
-    "hash": "acca75de5542",
-    "concepts": [
-      "paging"
-    ]
-  },
-  "323fd2fe1f-15": {
-    "hash": "a3e1b9d9e34f",
+  "323fd2fe1f-7": {
+    "hash": "d0f3129dd1b6",
     "concepts": [
       "memory-virtualization",
       "paging"
     ]
   },
-  "323fd2fe1f-16": {
-    "hash": "f78f0d47adf6",
+  "323fd2fe1f-8": {
+    "hash": "e38d7209dae5",
     "concepts": [
+      "memory-virtualization",
       "paging"
     ]
   },
+  "323fd2fe1f-9": {
+    "hash": "c1e5755ec9a9",
+    "concepts": [
+      "memory-virtualization",
+      "paging"
+    ]
+  },
+  "323fd2fe1f-10": {
+    "hash": "f5a010c07647",
+    "concepts": [
+      "memory-virtualization",
+      "paging"
+    ]
+  },
+  "323fd2fe1f-11": {
+    "hash": "093bc1d09dbb",
+    "concepts": [
+      "computer-architecture",
+      "memory-virtualization",
+      "paging"
+    ]
+  },
+  "323fd2fe1f-12": {
+    "hash": "8ba92fc39abc",
+    "concepts": [
+      "memory-virtualization",
+      "paging"
+    ]
+  },
+  "323fd2fe1f-13": {
+    "hash": "8452ed5dda30",
+    "concepts": [
+      "memory-virtualization",
+      "paging"
+    ]
+  },
+  "323fd2fe1f-14": {
+    "hash": "2394835a3729",
+    "concepts": [
+      "computer-architecture",
+      "cpu-virtualization",
+      "memory-virtualization",
+      "paging"
+    ]
+  },
+  "323fd2fe1f-15": {
+    "hash": "003e25137ce9",
+    "concepts": [
+      "computer-architecture",
+      "paging"
+    ]
+  },
+  "323fd2fe1f-16": {
+    "hash": "fb018c32f7f6",
+    "concepts": [
+      "paging",
+      "file-systems"
+    ]
+  },
   "323fd2fe1f-17": {
-    "hash": "00c6acd21b6f",
+    "hash": "37353ac803f3",
     "concepts": [
       "paging"
     ]
   },
   "323fd2fe1f-18": {
-    "hash": "29410e8ee4c5",
+    "hash": "8e4f4fc5a0aa",
     "concepts": [
+      "memory-virtualization",
       "paging"
     ]
   },
   "323fd2fe1f-19": {
-    "hash": "eed03ee3946a",
+    "hash": "88f5d3ee0471",
     "concepts": [
-      "memory-virtualization"
+      "memory-virtualization",
+      "paging"
     ]
   },
   "323fd2fe1f-20": {
-    "hash": "a48010798a20",
+    "hash": "363c8581ad87",
     "concepts": [
-      "memory-virtualization"
+      "processes",
+      "paging"
     ]
   },
   "323fd2fe1f-21": {
-    "hash": "a6a43bb95522",
+    "hash": "c4dbd074aff3",
     "concepts": [
-      "processes"
+      "paging",
+      "file-systems"
     ]
   },
   "323fd2fe1f-22": {
-    "hash": "0f4c179f2788",
+    "hash": "a8fb15adb745",
     "concepts": [
       "paging"
     ]
   },
   "323fd2fe1f-23": {
-    "hash": "86f38403ad1e",
+    "hash": "db6af435f1f9",
     "concepts": [
-      "processes"
+      "scheduling",
+      "paging"
     ]
   },
   "323fd2fe1f-24": {
-    "hash": "8ec9dc1f0c6e",
+    "hash": "abc431c8d995",
     "concepts": [
-      "processes"
+      "scheduling",
+      "paging"
     ]
   },
   "323fd2fe1f-25": {
@@ -12513,6 +12514,2718 @@
     "hash": "89be4f99a6b0",
     "concepts": [
       "scheduling"
+    ]
+  },
+  "2fb156eed4-0": {
+    "hash": "f673ca1293ad",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "2fb156eed4-1": {
+    "hash": "92c82f5eed73",
+    "concepts": [
+      "cpu-virtualization",
+      "processes"
+    ]
+  },
+  "2fb156eed4-2": {
+    "hash": "24204200c4a2",
+    "concepts": [
+      "computer-architecture",
+      "memory-virtualization"
+    ]
+  },
+  "2fb156eed4-3": {
+    "hash": "aa95e6ab9be1",
+    "concepts": [
+      "computer-architecture",
+      "memory-virtualization"
+    ]
+  },
+  "2fb156eed4-4": {
+    "hash": "2c8270ceb222",
+    "concepts": [
+      "paging"
+    ]
+  },
+  "2fb156eed4-5": {
+    "hash": "4a921a93cdff",
+    "concepts": [
+      "paging"
+    ]
+  },
+  "2fb156eed4-6": {
+    "hash": "bc455273e2ee",
+    "concepts": [
+      "memory-virtualization",
+      "paging"
+    ]
+  },
+  "2fb156eed4-7": {
+    "hash": "12fa4953ce39",
+    "concepts": [
+      "memory-virtualization"
+    ]
+  },
+  "2fb156eed4-8": {
+    "hash": "2f8e6c2c0085",
+    "concepts": [
+      "scheduling",
+      "paging"
+    ]
+  },
+  "2fb156eed4-9": {
+    "hash": "88f586e29134",
+    "concepts": [
+      "paging"
+    ]
+  },
+  "2fb156eed4-10": {
+    "hash": "acca75de5542",
+    "concepts": [
+      "paging"
+    ]
+  },
+  "2fb156eed4-11": {
+    "hash": "e38d7209dae5",
+    "concepts": [
+      "memory-virtualization",
+      "paging"
+    ]
+  },
+  "2fb156eed4-12": {
+    "hash": "89a2b413571f",
+    "concepts": [
+      "memory-virtualization",
+      "paging"
+    ]
+  },
+  "2fb156eed4-13": {
+    "hash": "cef343990fd8",
+    "concepts": [
+      "memory-virtualization",
+      "paging"
+    ]
+  },
+  "2fb156eed4-14": {
+    "hash": "e36d9a8451d0",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "2fb156eed4-15": {
+    "hash": "a6a43bb95522",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "2fb156eed4-16": {
+    "hash": "0f4c179f2788",
+    "concepts": [
+      "paging"
+    ]
+  },
+  "2fb156eed4-17": {
+    "hash": "86f38403ad1e",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "2fb156eed4-18": {
+    "hash": "8ec9dc1f0c6e",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "2fb156eed4-19": {
+    "hash": "c86f6f7714bc",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "2fb156eed4-20": {
+    "hash": "1bcfe22837d8",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "2fb156eed4-21": {
+    "hash": "215d2da21275",
+    "concepts": [
+      "paging"
+    ]
+  },
+  "2fb156eed4-22": {
+    "hash": "1a45289adb34",
+    "concepts": [
+      "cpu-virtualization",
+      "memory-virtualization",
+      "paging"
+    ]
+  },
+  "2fb156eed4-23": {
+    "hash": "bca9d0364c64",
+    "concepts": [
+      "cpu-virtualization",
+      "memory-virtualization",
+      "paging"
+    ]
+  },
+  "2fb156eed4-24": {
+    "hash": "1f2ccd2bee9a",
+    "concepts": [
+      "cpu-virtualization",
+      "memory-virtualization",
+      "paging"
+    ]
+  },
+  "2fb156eed4-25": {
+    "hash": "bbe6d9cf5d5f",
+    "concepts": [
+      "cpu-virtualization",
+      "memory-virtualization",
+      "paging"
+    ]
+  },
+  "2fb156eed4-26": {
+    "hash": "d8e62640aaa7",
+    "concepts": [
+      "computer-architecture",
+      "paging"
+    ]
+  },
+  "2fb156eed4-27": {
+    "hash": "7163e9492e55",
+    "concepts": [
+      "paging"
+    ]
+  },
+  "2fb156eed4-28": {
+    "hash": "283600d3844f",
+    "concepts": [
+      "memory-virtualization",
+      "paging"
+    ]
+  },
+  "2fb156eed4-29": {
+    "hash": "7ded826f00fb",
+    "concepts": [
+      "paging",
+      "file-systems"
+    ]
+  },
+  "2fb156eed4-30": {
+    "hash": "4b38fcdda7d0",
+    "concepts": [
+      "memory-virtualization",
+      "paging"
+    ]
+  },
+  "2fb156eed4-31": {
+    "hash": "64a32a405778",
+    "concepts": [
+      "paging"
+    ]
+  },
+  "2fb156eed4-32": {
+    "hash": "26309d3663a7",
+    "concepts": [
+      "paging"
+    ]
+  },
+  "2fb156eed4-33": {
+    "hash": "565d0437e198",
+    "concepts": [
+      "paging"
+    ]
+  },
+  "2fb156eed4-34": {
+    "hash": "dee8bb820d82",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "2fb156eed4-35": {
+    "hash": "acaa0331364c",
+    "concepts": [
+      "memory-virtualization"
+    ]
+  },
+  "2fb156eed4-36": {
+    "hash": "b13ec4a62aaf",
+    "concepts": [
+      "memory-virtualization"
+    ]
+  },
+  "2fb156eed4-37": {
+    "hash": "ae6a75d3cd48",
+    "concepts": [
+      "paging"
+    ]
+  },
+  "2fb156eed4-38": {
+    "hash": "686e612a35a6",
+    "concepts": [
+      "paging"
+    ]
+  },
+  "2fb156eed4-39": {
+    "hash": "19974fe22981",
+    "concepts": [
+      "paging"
+    ]
+  },
+  "2fb156eed4-40": {
+    "hash": "93e21437dd73",
+    "concepts": [
+      "paging"
+    ]
+  },
+  "2fb156eed4-41": {
+    "hash": "51df825690d5",
+    "concepts": [
+      "paging"
+    ]
+  },
+  "2fb156eed4-42": {
+    "hash": "5b76dd385b6d",
+    "concepts": [
+      "scheduling",
+      "paging"
+    ]
+  },
+  "2fb156eed4-43": {
+    "hash": "0b771b73a9c4",
+    "concepts": [
+      "paging"
+    ]
+  },
+  "9bee9fa698-46": {
+    "hash": "ae67c0512803",
+    "concepts": [
+      "processes",
+      "concurrency",
+      "threads"
+    ]
+  },
+  "9bee9fa698-47": {
+    "hash": "3df398ed5143",
+    "concepts": [
+      "concurrency",
+      "threads",
+      "locks"
+    ]
+  },
+  "446fe786c0-0": {
+    "hash": "d8011be509a3",
+    "concepts": [
+      "scheduling"
+    ]
+  },
+  "446fe786c0-1": {
+    "hash": "f25fdbdbc4c7",
+    "concepts": [
+      "scheduling"
+    ]
+  },
+  "446fe786c0-2": {
+    "hash": "6db9382f223a",
+    "concepts": [
+      "scheduling"
+    ]
+  },
+  "446fe786c0-3": {
+    "hash": "0ce2d6c56903",
+    "concepts": [
+      "scheduling"
+    ]
+  },
+  "446fe786c0-4": {
+    "hash": "62fc5b875057",
+    "concepts": [
+      "scheduling"
+    ]
+  },
+  "446fe786c0-5": {
+    "hash": "37a53a2dc985",
+    "concepts": [
+      "scheduling"
+    ]
+  },
+  "446fe786c0-6": {
+    "hash": "79de70da811b",
+    "concepts": [
+      "scheduling"
+    ]
+  },
+  "446fe786c0-7": {
+    "hash": "fce4f4faa4ef",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "446fe786c0-8": {
+    "hash": "0e46635c5cf0",
+    "concepts": [
+      "scheduling"
+    ]
+  },
+  "446fe786c0-9": {
+    "hash": "bd3d70a896a4",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "446fe786c0-10": {
+    "hash": "c51fbc26bef5",
+    "concepts": [
+      "scheduling"
+    ]
+  },
+  "446fe786c0-11": {
+    "hash": "aba43ab949a1",
+    "concepts": [
+      "scheduling"
+    ]
+  },
+  "446fe786c0-12": {
+    "hash": "d48847e5e960",
+    "concepts": [
+      "scheduling"
+    ]
+  },
+  "446fe786c0-13": {
+    "hash": "b03eab1ae1e3",
+    "concepts": [
+      "scheduling"
+    ]
+  },
+  "446fe786c0-14": {
+    "hash": "124b54527422",
+    "concepts": [
+      "scheduling"
+    ]
+  },
+  "446fe786c0-15": {
+    "hash": "99d123880ee0",
+    "concepts": [
+      "scheduling"
+    ]
+  },
+  "446fe786c0-16": {
+    "hash": "a4f643dd2ef5",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "446fe786c0-17": {
+    "hash": "3e75901e3bad",
+    "concepts": [
+      "scheduling"
+    ]
+  },
+  "446fe786c0-18": {
+    "hash": "6e5fc8edffef",
+    "concepts": [
+      "processes",
+      "scheduling"
+    ]
+  },
+  "446fe786c0-19": {
+    "hash": "fc0ae79070f4",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "446fe786c0-20": {
+    "hash": "3474c39efb72",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "446fe786c0-21": {
+    "hash": "13e79dbc4974",
+    "concepts": [
+      "scheduling"
+    ]
+  },
+  "446fe786c0-22": {
+    "hash": "bc882abf0884",
+    "concepts": [
+      "processes",
+      "scheduling"
+    ]
+  },
+  "446fe786c0-23": {
+    "hash": "5bb9060c8e18",
+    "concepts": [
+      "scheduling"
+    ]
+  },
+  "446fe786c0-24": {
+    "hash": "8a483a0e8034",
+    "concepts": [
+      "scheduling"
+    ]
+  },
+  "446fe786c0-25": {
+    "hash": "10d7d133c55b",
+    "concepts": [
+      "scheduling"
+    ]
+  },
+  "446fe786c0-26": {
+    "hash": "bb9a8c47e715",
+    "concepts": [
+      "processes",
+      "scheduling"
+    ]
+  },
+  "446fe786c0-27": {
+    "hash": "3ffa8152bfd7",
+    "concepts": [
+      "scheduling"
+    ]
+  },
+  "446fe786c0-28": {
+    "hash": "01488a3eaa8b",
+    "concepts": [
+      "scheduling"
+    ]
+  },
+  "446fe786c0-29": {
+    "hash": "ce299dfbfc16",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "446fe786c0-30": {
+    "hash": "c0617ef223da",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "446fe786c0-31": {
+    "hash": "d72fadde487b",
+    "concepts": [
+      "processes",
+      "scheduling"
+    ]
+  },
+  "446fe786c0-32": {
+    "hash": "b39cbb35ee31",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "446fe786c0-33": {
+    "hash": "c50cedfd9777",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "446fe786c0-34": {
+    "hash": "9580a9f6a5d2",
+    "concepts": [
+      "scheduling"
+    ]
+  },
+  "446fe786c0-35": {
+    "hash": "939991b5df6e",
+    "concepts": [
+      "scheduling"
+    ]
+  },
+  "446fe786c0-36": {
+    "hash": "d4140a6db9ab",
+    "concepts": [
+      "scheduling"
+    ]
+  },
+  "446fe786c0-37": {
+    "hash": "d706ca7a947e",
+    "concepts": [
+      "processes",
+      "scheduling"
+    ]
+  },
+  "446fe786c0-38": {
+    "hash": "d141dd6ddada",
+    "concepts": [
+      "scheduling"
+    ]
+  },
+  "446fe786c0-39": {
+    "hash": "40a320dd1437",
+    "concepts": [
+      "scheduling"
+    ]
+  },
+  "446fe786c0-40": {
+    "hash": "847db0edf631",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "446fe786c0-41": {
+    "hash": "a4bfc27ccfb8",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "446fe786c0-42": {
+    "hash": "95fb6aa46ee6",
+    "concepts": [
+      "scheduling"
+    ]
+  },
+  "5503749da7-15": {
+    "hash": "a9f8bb2dcbc6",
+    "concepts": [
+      "cpu-virtualization",
+      "processes",
+      "threads",
+      "locks"
+    ]
+  },
+  "5503749da7-16": {
+    "hash": "4bdbde42aa10",
+    "concepts": [
+      "threads"
+    ]
+  },
+  "5503749da7-17": {
+    "hash": "44720d20f081",
+    "concepts": [
+      "threads"
+    ]
+  },
+  "5503749da7-18": {
+    "hash": "7f2f387402dc",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "5503749da7-19": {
+    "hash": "529254468b90",
+    "concepts": [
+      "concurrency",
+      "locks"
+    ]
+  },
+  "5503749da7-20": {
+    "hash": "e4e623e0ded9",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "5503749da7-21": {
+    "hash": "8b578fbf15d2",
+    "concepts": [
+      "locks"
+    ]
+  },
+  "5503749da7-22": {
+    "hash": "0970fee63d3a",
+    "concepts": [
+      "scheduling"
+    ]
+  },
+  "5503749da7-23": {
+    "hash": "120968e6bc27",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "5503749da7-24": {
+    "hash": "3c12369a7e8b",
+    "concepts": [
+      "scheduling",
+      "threads"
+    ]
+  },
+  "5503749da7-25": {
+    "hash": "75cf74f67147",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "5503749da7-26": {
+    "hash": "28ad335e5d98",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "5503749da7-27": {
+    "hash": "ea296b8a1316",
+    "concepts": [
+      "threads"
+    ]
+  },
+  "5503749da7-28": {
+    "hash": "3a12af58c1af",
+    "concepts": [
+      "threads"
+    ]
+  },
+  "5503749da7-29": {
+    "hash": "982ec9af3198",
+    "concepts": [
+      "threads"
+    ]
+  },
+  "5503749da7-30": {
+    "hash": "dc53ba668f87",
+    "concepts": [
+      "locks"
+    ]
+  },
+  "5503749da7-31": {
+    "hash": "0b604668e1ef",
+    "concepts": [
+      "concurrency",
+      "locks"
+    ]
+  },
+  "5503749da7-32": {
+    "hash": "4950dbc41717",
+    "concepts": [
+      "concurrency"
+    ]
+  },
+  "5503749da7-33": {
+    "hash": "98f500ba74ea",
+    "concepts": [
+      "locks"
+    ]
+  },
+  "5503749da7-34": {
+    "hash": "93f3534d0488",
+    "concepts": [
+      "processes",
+      "locks"
+    ]
+  },
+  "5503749da7-35": {
+    "hash": "eb208622f468",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "5503749da7-36": {
+    "hash": "a15523d8f8c0",
+    "concepts": [
+      "concurrency",
+      "locks"
+    ]
+  },
+  "5503749da7-37": {
+    "hash": "1566af8eb593",
+    "concepts": [
+      "concurrency"
+    ]
+  },
+  "5503749da7-38": {
+    "hash": "c6f31ef3d41e",
+    "concepts": [
+      "concurrency",
+      "threads",
+      "locks"
+    ]
+  },
+  "5503749da7-39": {
+    "hash": "b280fd05bace",
+    "concepts": [
+      "concurrency",
+      "threads"
+    ]
+  },
+  "5503749da7-40": {
+    "hash": "2b76134eaca7",
+    "concepts": [
+      "threads",
+      "locks"
+    ]
+  },
+  "5503749da7-41": {
+    "hash": "e083de4cd6ba",
+    "concepts": [
+      "processes",
+      "concurrency",
+      "threads",
+      "locks"
+    ]
+  },
+  "5503749da7-42": {
+    "hash": "1bcf630bd9c8",
+    "concepts": [
+      "concurrency",
+      "threads",
+      "locks"
+    ]
+  },
+  "5503749da7-43": {
+    "hash": "de2dff9a70e4",
+    "concepts": [
+      "threads"
+    ]
+  },
+  "5503749da7-44": {
+    "hash": "5deccac3e5fd",
+    "concepts": [
+      "processes",
+      "concurrency",
+      "threads"
+    ]
+  },
+  "5503749da7-45": {
+    "hash": "3f5681d3b109",
+    "concepts": [
+      "concurrency",
+      "threads",
+      "locks"
+    ]
+  },
+  "9c691ddc21-0": {
+    "hash": "bf94a4036767",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "9c691ddc21-1": {
+    "hash": "bcaa177e2202",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "9c691ddc21-2": {
+    "hash": "cb000ba7f1e2",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "9c691ddc21-3": {
+    "hash": "5a79a54477eb",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "9c691ddc21-4": {
+    "hash": "02990274d5cb",
+    "concepts": [
+      "scheduling"
+    ]
+  },
+  "9c691ddc21-5": {
+    "hash": "aa57cfe6e0f1",
+    "concepts": [
+      "scheduling"
+    ]
+  },
+  "9c691ddc21-6": {
+    "hash": "b837cd03842c",
+    "concepts": [
+      "scheduling"
+    ]
+  },
+  "9c691ddc21-7": {
+    "hash": "32bd8d18946b",
+    "concepts": [
+      "scheduling"
+    ]
+  },
+  "9c691ddc21-8": {
+    "hash": "432513d896ec",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "9c691ddc21-9": {
+    "hash": "e6e2d030ddb1",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "9c691ddc21-10": {
+    "hash": "ba50b54a91a2",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "9c691ddc21-11": {
+    "hash": "13b313e5399e",
+    "concepts": [
+      "paging"
+    ]
+  },
+  "9c691ddc21-12": {
+    "hash": "6450cf8d8af9",
+    "concepts": [
+      "paging"
+    ]
+  },
+  "9c691ddc21-13": {
+    "hash": "971fc84a843c",
+    "concepts": [
+      "paging"
+    ]
+  },
+  "9c691ddc21-14": {
+    "hash": "bf482bbc60ed",
+    "concepts": [
+      "paging",
+      "persistence"
+    ]
+  },
+  "9c691ddc21-15": {
+    "hash": "02331cbd13cc",
+    "concepts": [
+      "paging"
+    ]
+  },
+  "4ecc50bcff-0": {
+    "hash": "eadd6cb41839",
+    "concepts": [
+      "processes",
+      "file-systems"
+    ]
+  },
+  "4ecc50bcff-1": {
+    "hash": "6eeca7d86726",
+    "concepts": [
+      "locks",
+      "persistence"
+    ]
+  },
+  "4ecc50bcff-2": {
+    "hash": "88852f4828ae",
+    "concepts": [
+      "locks",
+      "persistence",
+      "file-systems"
+    ]
+  },
+  "4ecc50bcff-3": {
+    "hash": "36bcbf56dc6d",
+    "concepts": [
+      "processes",
+      "concurrency",
+      "locks"
+    ]
+  },
+  "4ecc50bcff-4": {
+    "hash": "aa7ebfe43d80",
+    "concepts": [
+      "threads"
+    ]
+  },
+  "4ecc50bcff-5": {
+    "hash": "ebc8f257e2d2",
+    "concepts": [
+      "threads"
+    ]
+  },
+  "4ecc50bcff-6": {
+    "hash": "363a53c9c0a7",
+    "concepts": [
+      "locks"
+    ]
+  },
+  "4ecc50bcff-7": {
+    "hash": "f69c95528bc5",
+    "concepts": [
+      "processes",
+      "locks"
+    ]
+  },
+  "4ecc50bcff-8": {
+    "hash": "d725f6022722",
+    "concepts": [
+      "file-systems"
+    ]
+  },
+  "4ecc50bcff-9": {
+    "hash": "4bd269b9d682",
+    "concepts": [
+      "scheduling",
+      "persistence"
+    ]
+  },
+  "4ecc50bcff-10": {
+    "hash": "7f4d677e80e5",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "4ecc50bcff-11": {
+    "hash": "61b0e1ce2155",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "4ecc50bcff-12": {
+    "hash": "9fbe9fe6ed5e",
+    "concepts": [
+      "persistence"
+    ]
+  },
+  "2331783c9d-0": {
+    "hash": "fe717b763145",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "2331783c9d-1": {
+    "hash": "54f2d3de01d5",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "2331783c9d-2": {
+    "hash": "4491c97f7898",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "2331783c9d-3": {
+    "hash": "3e0fe9ee6752",
+    "concepts": [
+      "locks"
+    ]
+  },
+  "2331783c9d-4": {
+    "hash": "a6b438bb56ef",
+    "concepts": [
+      "cpu-virtualization"
+    ]
+  },
+  "2331783c9d-5": {
+    "hash": "3b9b956e66a8",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "2331783c9d-6": {
+    "hash": "f73ea0f7ef1e",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "5d0a6536fe-0": {
+    "hash": "636e638d3c61",
+    "concepts": [
+      "paging",
+      "persistence"
+    ]
+  },
+  "5d0a6536fe-1": {
+    "hash": "a14bdf71b234",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "5d0a6536fe-2": {
+    "hash": "b209add3989a",
+    "concepts": [
+      "file-systems"
+    ]
+  },
+  "5d0a6536fe-3": {
+    "hash": "d33bfbf9d137",
+    "concepts": [
+      "locks",
+      "file-systems"
+    ]
+  },
+  "5d0a6536fe-4": {
+    "hash": "82f130f50499",
+    "concepts": [
+      "locks"
+    ]
+  },
+  "5d0a6536fe-5": {
+    "hash": "db9187734633",
+    "concepts": [
+      "locks"
+    ]
+  },
+  "5d0a6536fe-6": {
+    "hash": "6aea7357e3f2",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "5d0a6536fe-7": {
+    "hash": "3190b634fd4b",
+    "concepts": [
+      "locks"
+    ]
+  },
+  "5d0a6536fe-8": {
+    "hash": "bad0d7e73c19",
+    "concepts": [
+      "locks"
+    ]
+  },
+  "5d0a6536fe-9": {
+    "hash": "06e5dd669415",
+    "concepts": [
+      "locks"
+    ]
+  },
+  "5d0a6536fe-10": {
+    "hash": "0f4a73fe12f7",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "5d0a6536fe-11": {
+    "hash": "9b18499e6786",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "5d0a6536fe-12": {
+    "hash": "5c73b68380c8",
+    "concepts": [
+      "threads",
+      "locks"
+    ]
+  },
+  "c9ff423169-0": {
+    "hash": "dace87a9c29c",
+    "concepts": [
+      "memory-virtualization",
+      "paging"
+    ]
+  },
+  "c9ff423169-1": {
+    "hash": "0c7c5d562dbf",
+    "concepts": [
+      "paging"
+    ]
+  },
+  "c9ff423169-2": {
+    "hash": "6e186e2375a8",
+    "concepts": [
+      "file-systems"
+    ]
+  },
+  "c9ff423169-3": {
+    "hash": "5f0ad0d02fb2",
+    "concepts": [
+      "paging"
+    ]
+  },
+  "c9ff423169-4": {
+    "hash": "0d5f71a7b591",
+    "concepts": [
+      "computer-architecture"
+    ]
+  },
+  "c9ff423169-5": {
+    "hash": "3ffc0396123d",
+    "concepts": [
+      "paging"
+    ]
+  },
+  "c9ff423169-6": {
+    "hash": "3a35e1a9f74a",
+    "concepts": [
+      "processes",
+      "concurrency",
+      "threads"
+    ]
+  },
+  "fd7e2ab637-0": {
+    "hash": "d0741961c10d",
+    "concepts": [
+      "cpu-virtualization"
+    ]
+  },
+  "fd7e2ab637-1": {
+    "hash": "ddf68856fe86",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "fd7e2ab637-2": {
+    "hash": "a9ec517c4375",
+    "concepts": [
+      "computer-architecture",
+      "cpu-virtualization",
+      "processes"
+    ]
+  },
+  "fd7e2ab637-3": {
+    "hash": "2d16210d3a83",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "fd7e2ab637-4": {
+    "hash": "006ff28e15ac",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "fd7e2ab637-5": {
+    "hash": "f2e142e250ef",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "fd7e2ab637-6": {
+    "hash": "c23dfef2448d",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "fd7e2ab637-7": {
+    "hash": "59db4b2a523d",
+    "concepts": [
+      "scheduling"
+    ]
+  },
+  "fd7e2ab637-8": {
+    "hash": "32208a675417",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "fd7e2ab637-9": {
+    "hash": "b5f4ceefc98c",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "fd7e2ab637-10": {
+    "hash": "8cc18f695352",
+    "concepts": [
+      "scheduling"
+    ]
+  },
+  "fd7e2ab637-11": {
+    "hash": "83e04a2379d8",
+    "concepts": [
+      "computer-architecture"
+    ]
+  },
+  "fd7e2ab637-12": {
+    "hash": "e0f863e78b1e",
+    "concepts": [
+      "computer-architecture"
+    ]
+  },
+  "fd7e2ab637-13": {
+    "hash": "e1f438d2c33e",
+    "concepts": [
+      "computer-architecture"
+    ]
+  },
+  "fd7e2ab637-14": {
+    "hash": "c134e32c8247",
+    "concepts": [
+      "computer-architecture"
+    ]
+  },
+  "23c4218f58-0": {
+    "hash": "fdb722d8b6d3",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "23c4218f58-1": {
+    "hash": "f8a8b92be6e0",
+    "concepts": [
+      "scheduling"
+    ]
+  },
+  "23c4218f58-2": {
+    "hash": "6793dcb6c937",
+    "concepts": [
+      "paging"
+    ]
+  },
+  "23c4218f58-3": {
+    "hash": "2df74e2ef27e",
+    "concepts": [
+      "paging",
+      "file-systems"
+    ]
+  },
+  "23c4218f58-4": {
+    "hash": "bd9a479e09c5",
+    "concepts": [
+      "paging"
+    ]
+  },
+  "23c4218f58-5": {
+    "hash": "77f5d58bfc55",
+    "concepts": [
+      "paging"
+    ]
+  },
+  "23c4218f58-6": {
+    "hash": "4a5cbe451eab",
+    "concepts": [
+      "file-systems"
+    ]
+  },
+  "23c4218f58-7": {
+    "hash": "ca5e663ce1e7",
+    "concepts": [
+      "paging"
+    ]
+  },
+  "23c4218f58-8": {
+    "hash": "1c64cde78a44",
+    "concepts": [
+      "memory-virtualization",
+      "paging"
+    ]
+  },
+  "23c4218f58-9": {
+    "hash": "d65109372a4a",
+    "concepts": [
+      "paging"
+    ]
+  },
+  "72e06ce16b-0": {
+    "hash": "98f33e6d0f00",
+    "concepts": [
+      "cpu-virtualization"
+    ]
+  },
+  "72e06ce16b-1": {
+    "hash": "3a33811c1e48",
+    "concepts": [
+      "computer-architecture",
+      "cpu-virtualization"
+    ]
+  },
+  "72e06ce16b-2": {
+    "hash": "00e9348a2568",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "72e06ce16b-3": {
+    "hash": "d6930e6267cd",
+    "concepts": [
+      "scheduling"
+    ]
+  },
+  "72e06ce16b-4": {
+    "hash": "a1724810b9ca",
+    "concepts": [
+      "scheduling"
+    ]
+  },
+  "72e06ce16b-5": {
+    "hash": "0075e6968296",
+    "concepts": [
+      "threads",
+      "locks"
+    ]
+  },
+  "72e06ce16b-6": {
+    "hash": "fa2b0e6f8860",
+    "concepts": [
+      "processes",
+      "threads"
+    ]
+  },
+  "72e06ce16b-7": {
+    "hash": "ea53fd9d4936",
+    "concepts": [
+      "processes",
+      "locks"
+    ]
+  },
+  "72e06ce16b-8": {
+    "hash": "5645548c7fc9",
+    "concepts": [
+      "processes",
+      "threads",
+      "locks"
+    ]
+  },
+  "0c84b48073-0": {
+    "hash": "98f33e6d0f00",
+    "concepts": [
+      "cpu-virtualization"
+    ]
+  },
+  "0c84b48073-1": {
+    "hash": "3a33811c1e48",
+    "concepts": [
+      "computer-architecture",
+      "cpu-virtualization"
+    ]
+  },
+  "0c84b48073-2": {
+    "hash": "00e9348a2568",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "0c84b48073-3": {
+    "hash": "646929f10970",
+    "concepts": [
+      "scheduling"
+    ]
+  },
+  "0c84b48073-4": {
+    "hash": "ce1860f0b477",
+    "concepts": [
+      "scheduling"
+    ]
+  },
+  "0c84b48073-5": {
+    "hash": "d1dc754b43e9",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "0c84b48073-6": {
+    "hash": "92ded2734289",
+    "concepts": [
+      "processes",
+      "threads"
+    ]
+  },
+  "0c84b48073-7": {
+    "hash": "ea53fd9d4936",
+    "concepts": [
+      "processes",
+      "locks"
+    ]
+  },
+  "0c84b48073-8": {
+    "hash": "e20c7d48fc50",
+    "concepts": [
+      "processes",
+      "threads",
+      "locks"
+    ]
+  },
+  "463b32a933-0": {
+    "hash": "d30a57f8999e",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "463b32a933-1": {
+    "hash": "670a6dc23836",
+    "concepts": [
+      "scheduling"
+    ]
+  },
+  "463b32a933-2": {
+    "hash": "577116fe052b",
+    "concepts": [
+      "paging"
+    ]
+  },
+  "463b32a933-3": {
+    "hash": "7e4ddff4fe97",
+    "concepts": [
+      "paging"
+    ]
+  },
+  "463b32a933-4": {
+    "hash": "3f03c8cf3dbb",
+    "concepts": [
+      "file-systems"
+    ]
+  },
+  "463b32a933-5": {
+    "hash": "a15c121a008c",
+    "concepts": [
+      "paging"
+    ]
+  },
+  "463b32a933-6": {
+    "hash": "b6b6accdb799",
+    "concepts": [
+      "paging"
+    ]
+  },
+  "463b32a933-7": {
+    "hash": "5a7603ac741e",
+    "concepts": [
+      "memory-virtualization",
+      "paging"
+    ]
+  },
+  "463b32a933-8": {
+    "hash": "67b1207c2b74",
+    "concepts": [
+      "scheduling",
+      "locks",
+      "persistence"
+    ]
+  },
+  "463b32a933-9": {
+    "hash": "5674bb26441e",
+    "concepts": [
+      "persistence"
+    ]
+  },
+  "463b32a933-10": {
+    "hash": "6d4188b851ac",
+    "concepts": [
+      "persistence",
+      "file-systems"
+    ]
+  },
+  "463b32a933-11": {
+    "hash": "5740d4951956",
+    "concepts": [
+      "cpu-virtualization",
+      "persistence",
+      "file-systems"
+    ]
+  },
+  "463b32a933-12": {
+    "hash": "44fd5694b7d8",
+    "concepts": [
+      "locks"
+    ]
+  },
+  "463b32a933-13": {
+    "hash": "c88e2d9f0968",
+    "concepts": [
+      "locks"
+    ]
+  },
+  "463b32a933-14": {
+    "hash": "759ab18415ed",
+    "concepts": [
+      "threads"
+    ]
+  },
+  "463b32a933-15": {
+    "hash": "6f5a377ba8c7",
+    "concepts": [
+      "scheduling",
+      "threads"
+    ]
+  },
+  "e121dd1a1b-0": {
+    "hash": "d30a57f8999e",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "e121dd1a1b-1": {
+    "hash": "670a6dc23836",
+    "concepts": [
+      "scheduling"
+    ]
+  },
+  "e121dd1a1b-2": {
+    "hash": "577116fe052b",
+    "concepts": [
+      "paging"
+    ]
+  },
+  "e121dd1a1b-3": {
+    "hash": "7e4ddff4fe97",
+    "concepts": [
+      "paging"
+    ]
+  },
+  "e121dd1a1b-4": {
+    "hash": "3f03c8cf3dbb",
+    "concepts": [
+      "file-systems"
+    ]
+  },
+  "e121dd1a1b-5": {
+    "hash": "a15c121a008c",
+    "concepts": [
+      "paging"
+    ]
+  },
+  "e121dd1a1b-6": {
+    "hash": "e4bd051c9d35",
+    "concepts": [
+      "paging"
+    ]
+  },
+  "e121dd1a1b-7": {
+    "hash": "5a7603ac741e",
+    "concepts": [
+      "memory-virtualization",
+      "paging"
+    ]
+  },
+  "e121dd1a1b-8": {
+    "hash": "67b1207c2b74",
+    "concepts": [
+      "scheduling",
+      "locks",
+      "persistence"
+    ]
+  },
+  "e121dd1a1b-9": {
+    "hash": "5674bb26441e",
+    "concepts": [
+      "persistence"
+    ]
+  },
+  "e121dd1a1b-10": {
+    "hash": "635e0e5f8994",
+    "concepts": [
+      "cpu-virtualization",
+      "persistence",
+      "file-systems"
+    ]
+  },
+  "e121dd1a1b-11": {
+    "hash": "5740d4951956",
+    "concepts": [
+      "cpu-virtualization",
+      "persistence",
+      "file-systems"
+    ]
+  },
+  "e121dd1a1b-12": {
+    "hash": "44fd5694b7d8",
+    "concepts": [
+      "locks"
+    ]
+  },
+  "e121dd1a1b-13": {
+    "hash": "c88e2d9f0968",
+    "concepts": [
+      "locks"
+    ]
+  },
+  "e121dd1a1b-14": {
+    "hash": "759ab18415ed",
+    "concepts": [
+      "threads"
+    ]
+  },
+  "e121dd1a1b-15": {
+    "hash": "6f5a377ba8c7",
+    "concepts": [
+      "scheduling",
+      "threads"
+    ]
+  },
+  "e121dd1a1b-16": {
+    "hash": "7f1bbae91918",
+    "concepts": [
+      "scheduling",
+      "locks"
+    ]
+  },
+  "7ef8c3ab68-0": {
+    "hash": "05c6f46a51fc",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "7ef8c3ab68-1": {
+    "hash": "0daa698a7445",
+    "concepts": [
+      "scheduling"
+    ]
+  },
+  "7ef8c3ab68-2": {
+    "hash": "bba09a94ec54",
+    "concepts": [
+      "processes",
+      "scheduling"
+    ]
+  },
+  "7ef8c3ab68-3": {
+    "hash": "42e26fc8497f",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "7ef8c3ab68-4": {
+    "hash": "c9f4b81bf1a6",
+    "concepts": [
+      "memory-virtualization",
+      "paging",
+      "file-systems"
+    ]
+  },
+  "7ef8c3ab68-5": {
+    "hash": "eedbde606333",
+    "concepts": [
+      "memory-virtualization",
+      "paging",
+      "file-systems"
+    ]
+  },
+  "7ef8c3ab68-6": {
+    "hash": "0a2a3475ff5b",
+    "concepts": [
+      "concurrency",
+      "threads",
+      "locks"
+    ]
+  },
+  "7ef8c3ab68-7": {
+    "hash": "22d5de666569",
+    "concepts": [
+      "threads",
+      "locks"
+    ]
+  },
+  "7ef8c3ab68-8": {
+    "hash": "84fd1608a603",
+    "concepts": [
+      "processes",
+      "threads",
+      "locks"
+    ]
+  },
+  "7ef8c3ab68-9": {
+    "hash": "c5cf21247a61",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "1f851b1fe1-0": {
+    "hash": "a8608e32fc1b",
+    "concepts": [
+      "cpu-virtualization"
+    ]
+  },
+  "1f851b1fe1-1": {
+    "hash": "72b60fefefe4",
+    "concepts": [
+      "computer-architecture",
+      "cpu-virtualization"
+    ]
+  },
+  "1f851b1fe1-2": {
+    "hash": "4b794a1e2a2d",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "1f851b1fe1-3": {
+    "hash": "d6930e6267cd",
+    "concepts": [
+      "scheduling"
+    ]
+  },
+  "1f851b1fe1-4": {
+    "hash": "50bb4b045e90",
+    "concepts": [
+      "scheduling"
+    ]
+  },
+  "1f851b1fe1-5": {
+    "hash": "80e102b30b6d",
+    "concepts": [
+      "processes",
+      "threads"
+    ]
+  },
+  "1f851b1fe1-6": {
+    "hash": "5742d6263292",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "1f851b1fe1-7": {
+    "hash": "cb8f849e7981",
+    "concepts": [
+      "processes",
+      "locks"
+    ]
+  },
+  "1f851b1fe1-8": {
+    "hash": "ed6793a9df26",
+    "concepts": [
+      "processes",
+      "concurrency",
+      "threads",
+      "locks"
+    ]
+  },
+  "91c4905c6b-0": {
+    "hash": "e6356ff485b6",
+    "concepts": [
+      "cpu-virtualization"
+    ]
+  },
+  "91c4905c6b-1": {
+    "hash": "bbdb7ed2a3f3",
+    "concepts": [
+      "processes",
+      "threads"
+    ]
+  },
+  "91c4905c6b-2": {
+    "hash": "2c7e0e3958ed",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "91c4905c6b-3": {
+    "hash": "1d255e577b82",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "91c4905c6b-4": {
+    "hash": "4bf0fbbee1d4",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "91c4905c6b-5": {
+    "hash": "f4936a648b9b",
+    "concepts": [
+      "scheduling"
+    ]
+  },
+  "91c4905c6b-6": {
+    "hash": "21decb2f0188",
+    "concepts": [
+      "processes",
+      "scheduling"
+    ]
+  },
+  "91c4905c6b-7": {
+    "hash": "c4e69fa4ab43",
+    "concepts": [
+      "memory-virtualization",
+      "paging"
+    ]
+  },
+  "91c4905c6b-8": {
+    "hash": "0a194ce8fe1b",
+    "concepts": [
+      "memory-virtualization",
+      "paging"
+    ]
+  },
+  "91c4905c6b-9": {
+    "hash": "123ee5eca626",
+    "concepts": [
+      "memory-virtualization",
+      "paging",
+      "persistence"
+    ]
+  },
+  "91c4905c6b-10": {
+    "hash": "53e86b4cb02c",
+    "concepts": [
+      "paging"
+    ]
+  },
+  "91c4905c6b-11": {
+    "hash": "640cead6e6fb",
+    "concepts": [
+      "memory-virtualization",
+      "paging"
+    ]
+  },
+  "91c4905c6b-12": {
+    "hash": "d61a7846cdf3",
+    "concepts": [
+      "memory-virtualization",
+      "paging",
+      "file-systems"
+    ]
+  },
+  "1f4b3b48da-0": {
+    "hash": "4656fed82460",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "1f4b3b48da-1": {
+    "hash": "cb59abdef94c",
+    "concepts": [
+      "cpu-virtualization"
+    ]
+  },
+  "1f4b3b48da-2": {
+    "hash": "3104669a5011",
+    "concepts": [
+      "processes",
+      "scheduling",
+      "locks"
+    ]
+  },
+  "1f4b3b48da-3": {
+    "hash": "7ded826f00fb",
+    "concepts": [
+      "paging",
+      "file-systems"
+    ]
+  },
+  "1f4b3b48da-4": {
+    "hash": "4b38fcdda7d0",
+    "concepts": [
+      "memory-virtualization",
+      "paging"
+    ]
+  },
+  "1f4b3b48da-5": {
+    "hash": "64a32a405778",
+    "concepts": [
+      "paging"
+    ]
+  },
+  "1f4b3b48da-6": {
+    "hash": "0df148ac33da",
+    "concepts": [
+      "scheduling",
+      "paging"
+    ]
+  },
+  "1f4b3b48da-7": {
+    "hash": "be74c5790164",
+    "concepts": [
+      "paging"
+    ]
+  },
+  "1f4b3b48da-8": {
+    "hash": "658990afd299",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "1f4b3b48da-9": {
+    "hash": "1e8b85457c62",
+    "concepts": [
+      "locks"
+    ]
+  },
+  "1f4b3b48da-10": {
+    "hash": "1b2e4262faaf",
+    "concepts": [
+      "computer-architecture",
+      "locks"
+    ]
+  },
+  "1f4b3b48da-11": {
+    "hash": "8604bde31b12",
+    "concepts": [
+      "persistence"
+    ]
+  },
+  "1f4b3b48da-12": {
+    "hash": "e2b8e11ebbd5",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "1f4b3b48da-13": {
+    "hash": "e69c97ed32d5",
+    "concepts": [
+      "locks",
+      "file-systems"
+    ]
+  },
+  "1b4dc64a22-0": {
+    "hash": "544d8f3c23c7",
+    "concepts": [
+      "computer-architecture",
+      "cpu-virtualization"
+    ]
+  },
+  "1b4dc64a22-1": {
+    "hash": "8cf8d14651fc",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "1b4dc64a22-2": {
+    "hash": "be9abc2a3f64",
+    "concepts": [
+      "computer-architecture"
+    ]
+  },
+  "1b4dc64a22-3": {
+    "hash": "25db8133d206",
+    "concepts": [
+      "computer-architecture",
+      "persistence"
+    ]
+  },
+  "1b4dc64a22-4": {
+    "hash": "8ea3454472ae",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "1b4dc64a22-5": {
+    "hash": "ff56bdf5bab9",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "1b4dc64a22-6": {
+    "hash": "e5667ade7000",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "1b4dc64a22-7": {
+    "hash": "29c08a54d14c",
+    "concepts": [
+      "processes",
+      "threads"
+    ]
+  },
+  "1b4dc64a22-8": {
+    "hash": "aab1887ac543",
+    "concepts": [
+      "threads"
+    ]
+  },
+  "1b4dc64a22-9": {
+    "hash": "a0df63e1d517",
+    "concepts": [
+      "threads"
+    ]
+  },
+  "1b4dc64a22-10": {
+    "hash": "f55222be9e05",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "1b4dc64a22-11": {
+    "hash": "ec84093c51ef",
+    "concepts": [
+      "computer-architecture"
+    ]
+  },
+  "1b4dc64a22-12": {
+    "hash": "d90d3ad773f2",
+    "concepts": [
+      "computer-architecture"
+    ]
+  },
+  "1b4dc64a22-13": {
+    "hash": "967875f8155c",
+    "concepts": [
+      "computer-architecture"
+    ]
+  },
+  "1b4dc64a22-14": {
+    "hash": "f8730ab1e0ef",
+    "concepts": [
+      "memory-virtualization"
+    ]
+  },
+  "1b4dc64a22-15": {
+    "hash": "7f609a3a3edf",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "1b4dc64a22-16": {
+    "hash": "d35ac6b012fe",
+    "concepts": [
+      "concurrency",
+      "locks"
+    ]
+  },
+  "1b4dc64a22-17": {
+    "hash": "41e3338901c6",
+    "concepts": [
+      "computer-architecture",
+      "cpu-virtualization",
+      "concurrency",
+      "threads"
+    ]
+  },
+  "1b4dc64a22-18": {
+    "hash": "e0025278cdba",
+    "concepts": [
+      "threads",
+      "locks"
+    ]
+  },
+  "1b4dc64a22-19": {
+    "hash": "7ff69877d860",
+    "concepts": [
+      "scheduling",
+      "concurrency",
+      "threads",
+      "locks"
+    ]
+  },
+  "1b4dc64a22-20": {
+    "hash": "014ae1f4c0c2",
+    "concepts": [
+      "processes",
+      "locks"
+    ]
+  },
+  "1b4dc64a22-21": {
+    "hash": "9153d95cd3c6",
+    "concepts": [
+      "locks"
+    ]
+  },
+  "1b4dc64a22-22": {
+    "hash": "bf29cf4a4db0",
+    "concepts": [
+      "scheduling",
+      "persistence",
+      "file-systems"
+    ]
+  },
+  "1b4dc64a22-23": {
+    "hash": "b636a8fa1bbb",
+    "concepts": [
+      "locks",
+      "persistence",
+      "file-systems"
+    ]
+  },
+  "1b4dc64a22-24": {
+    "hash": "e05aeb3eb8fa",
+    "concepts": [
+      "locks",
+      "persistence",
+      "file-systems"
+    ]
+  },
+  "1b4dc64a22-25": {
+    "hash": "847d8567f8f9",
+    "concepts": [
+      "scheduling",
+      "locks",
+      "persistence"
+    ]
+  },
+  "1b4dc64a22-26": {
+    "hash": "924e0597f575",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "1b4dc64a22-27": {
+    "hash": "ead17587705c",
+    "concepts": [
+      "processes",
+      "concurrency",
+      "threads"
+    ]
+  },
+  "1b4dc64a22-28": {
+    "hash": "1930e99ea2f6",
+    "concepts": [
+      "concurrency",
+      "locks"
+    ]
+  },
+  "1b4dc64a22-29": {
+    "hash": "39386a1238d5",
+    "concepts": [
+      "concurrency"
+    ]
+  },
+  "1b4dc64a22-30": {
+    "hash": "b2f4280996b0",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "1b4dc64a22-31": {
+    "hash": "2940a6e03712",
+    "concepts": [
+      "locks"
+    ]
+  },
+  "71d2a01246-0": {
+    "hash": "43545af86bc6",
+    "concepts": [
+      "computer-architecture",
+      "memory-virtualization"
+    ]
+  },
+  "71d2a01246-1": {
+    "hash": "c0337f826b95",
+    "concepts": [
+      "paging"
+    ]
+  },
+  "71d2a01246-2": {
+    "hash": "3eb88ef3f29f",
+    "concepts": [
+      "paging"
+    ]
+  },
+  "71d2a01246-3": {
+    "hash": "d8c2703b741a",
+    "concepts": [
+      "threads"
+    ]
+  },
+  "71d2a01246-4": {
+    "hash": "3df37ab2c893",
+    "concepts": [
+      "locks"
+    ]
+  },
+  "71d2a01246-5": {
+    "hash": "3bbd0c941f5a",
+    "concepts": [
+      "memory-virtualization"
+    ]
+  },
+  "71d2a01246-6": {
+    "hash": "3f65282f5f7d",
+    "concepts": [
+      "memory-virtualization"
+    ]
+  },
+  "2853f8eb13-0": {
+    "hash": "c89aabcfb2e4",
+    "concepts": [
+      "computer-architecture",
+      "cpu-virtualization",
+      "paging"
+    ]
+  },
+  "2853f8eb13-1": {
+    "hash": "ac8b5f6918d4",
+    "concepts": [
+      "computer-architecture",
+      "cpu-virtualization"
+    ]
+  },
+  "2853f8eb13-2": {
+    "hash": "d0c27421b778",
+    "concepts": [
+      "computer-architecture",
+      "cpu-virtualization",
+      "processes"
+    ]
+  },
+  "2853f8eb13-3": {
+    "hash": "c4af95de62cc",
+    "concepts": [
+      "scheduling"
+    ]
+  },
+  "2853f8eb13-4": {
+    "hash": "a28c9107740e",
+    "concepts": [
+      "paging"
+    ]
+  },
+  "2853f8eb13-5": {
+    "hash": "036e3b0b21a1",
+    "concepts": [
+      "paging"
+    ]
+  },
+  "2853f8eb13-6": {
+    "hash": "f9581463a2ae",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "2853f8eb13-7": {
+    "hash": "153b401c2ae1",
+    "concepts": [
+      "paging"
+    ]
+  },
+  "2853f8eb13-8": {
+    "hash": "a7f544a63ffe",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "2853f8eb13-9": {
+    "hash": "d13a3e7843e3",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "2853f8eb13-10": {
+    "hash": "2964ff8aca69",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "2853f8eb13-11": {
+    "hash": "c8b0a28d746d",
+    "concepts": [
+      "locks"
+    ]
+  },
+  "2853f8eb13-12": {
+    "hash": "58caf44de46e",
+    "concepts": [
+      "file-systems"
+    ]
+  },
+  "2853f8eb13-13": {
+    "hash": "ba721711ecd4",
+    "concepts": [
+      "locks",
+      "persistence",
+      "file-systems"
+    ]
+  },
+  "2853f8eb13-14": {
+    "hash": "d618d61b7acb",
+    "concepts": [
+      "locks",
+      "file-systems"
+    ]
+  },
+  "2853f8eb13-15": {
+    "hash": "2efd51363b8a",
+    "concepts": [
+      "file-systems"
+    ]
+  },
+  "2853f8eb13-16": {
+    "hash": "c52024fdbcbc",
+    "concepts": [
+      "computer-architecture"
+    ]
+  },
+  "2853f8eb13-17": {
+    "hash": "1a7ad0395a75",
+    "concepts": [
+      "computer-architecture"
+    ]
+  },
+  "2853f8eb13-18": {
+    "hash": "afe12b5805e0",
+    "concepts": [
+      "scheduling",
+      "persistence"
+    ]
+  },
+  "2853f8eb13-19": {
+    "hash": "4639d16ee6a1",
+    "concepts": [
+      "computer-architecture",
+      "locks",
+      "persistence"
+    ]
+  },
+  "2853f8eb13-20": {
+    "hash": "96b8f66c174d",
+    "concepts": [
+      "scheduling",
+      "persistence"
+    ]
+  },
+  "2853f8eb13-21": {
+    "hash": "39d9585e1ed6",
+    "concepts": [
+      "concurrency",
+      "locks"
+    ]
+  },
+  "2853f8eb13-22": {
+    "hash": "dff5d5797a2f",
+    "concepts": [
+      "threads",
+      "locks"
+    ]
+  },
+  "2853f8eb13-23": {
+    "hash": "48595442eb1c",
+    "concepts": [
+      "locks"
+    ]
+  },
+  "2853f8eb13-24": {
+    "hash": "c3c0a463b559",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "2853f8eb13-25": {
+    "hash": "05c0b5fade59",
+    "concepts": [
+      "locks"
+    ]
+  },
+  "2853f8eb13-26": {
+    "hash": "14ad8699d6fe",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "2853f8eb13-27": {
+    "hash": "cf86f1b0c226",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "2853f8eb13-28": {
+    "hash": "56b9667f0d52",
+    "concepts": [
+      "threads"
+    ]
+  },
+  "2853f8eb13-29": {
+    "hash": "58a4f29b83f4",
+    "concepts": [
+      "concurrency",
+      "threads",
+      "locks"
+    ]
+  },
+  "2853f8eb13-30": {
+    "hash": "f238261d8479",
+    "concepts": [
+      "threads"
+    ]
+  },
+  "2853f8eb13-31": {
+    "hash": "e4edf7c5a8c0",
+    "concepts": [
+      "threads"
+    ]
+  },
+  "2853f8eb13-32": {
+    "hash": "04920bdea36c",
+    "concepts": [
+      "processes",
+      "concurrency",
+      "threads",
+      "locks"
+    ]
+  },
+  "2853f8eb13-33": {
+    "hash": "9d03d9ec4597",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "2853f8eb13-34": {
+    "hash": "7b5c07eb3273",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "2853f8eb13-35": {
+    "hash": "a9d152466446",
+    "concepts": [
+      "threads"
+    ]
+  },
+  "2853f8eb13-36": {
+    "hash": "db72cd3269f5",
+    "concepts": [
+      "processes",
+      "concurrency"
+    ]
+  },
+  "7caaba59a7-0": {
+    "hash": "9f363e687ec5",
+    "concepts": [
+      "cpu-virtualization",
+      "processes"
+    ]
+  },
+  "7caaba59a7-1": {
+    "hash": "27fefdd32dcc",
+    "concepts": [
+      "scheduling"
+    ]
+  },
+  "7caaba59a7-2": {
+    "hash": "66cc31f0a5b1",
+    "concepts": [
+      "computer-architecture",
+      "memory-virtualization"
+    ]
+  },
+  "7caaba59a7-3": {
+    "hash": "f37262c0c983",
+    "concepts": [
+      "memory-virtualization"
+    ]
+  },
+  "7caaba59a7-4": {
+    "hash": "17bf08ba2e4a",
+    "concepts": [
+      "cpu-virtualization",
+      "processes"
+    ]
+  },
+  "7caaba59a7-5": {
+    "hash": "cd46bd9a54bd",
+    "concepts": [
+      "scheduling"
+    ]
+  },
+  "7caaba59a7-6": {
+    "hash": "3edf66bc74cc",
+    "concepts": [
+      "scheduling"
+    ]
+  },
+  "18db242749-0": {
+    "hash": "9f363e687ec5",
+    "concepts": [
+      "cpu-virtualization",
+      "processes"
+    ]
+  },
+  "18db242749-1": {
+    "hash": "27fefdd32dcc",
+    "concepts": [
+      "scheduling"
+    ]
+  },
+  "18db242749-2": {
+    "hash": "7a35cfc64982",
+    "concepts": [
+      "computer-architecture",
+      "memory-virtualization"
+    ]
+  },
+  "18db242749-3": {
+    "hash": "f37262c0c983",
+    "concepts": [
+      "memory-virtualization"
+    ]
+  },
+  "18db242749-4": {
+    "hash": "17bf08ba2e4a",
+    "concepts": [
+      "cpu-virtualization",
+      "processes"
+    ]
+  },
+  "18db242749-5": {
+    "hash": "cd46bd9a54bd",
+    "concepts": [
+      "scheduling"
+    ]
+  },
+  "18db242749-6": {
+    "hash": "3edf66bc74cc",
+    "concepts": [
+      "scheduling"
+    ]
+  },
+  "fd2a68e6f9-0": {
+    "hash": "242493326bf1",
+    "concepts": [
+      "memory-virtualization"
+    ]
+  },
+  "fd2a68e6f9-1": {
+    "hash": "b1fafae4304e",
+    "concepts": [
+      "scheduling"
+    ]
+  },
+  "fd2a68e6f9-2": {
+    "hash": "cfabcccc1bbf",
+    "concepts": [
+      "memory-virtualization",
+      "paging"
+    ]
+  },
+  "fd2a68e6f9-3": {
+    "hash": "5d4f7eec922c",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "fd2a68e6f9-4": {
+    "hash": "50cc7a01086f",
+    "concepts": [
+      "paging"
+    ]
+  },
+  "fd2a68e6f9-5": {
+    "hash": "a80859ebddc4",
+    "concepts": [
+      "scheduling"
+    ]
+  },
+  "fd2a68e6f9-6": {
+    "hash": "eea61deeec06",
+    "concepts": [
+      "memory-virtualization",
+      "paging"
+    ]
+  },
+  "4b680ed38b-0": {
+    "hash": "61413f4f82a4",
+    "concepts": [
+      "processes",
+      "locks",
+      "persistence"
+    ]
+  },
+  "4b680ed38b-1": {
+    "hash": "3fc98c9de3cb",
+    "concepts": [
+      "paging"
+    ]
+  },
+  "4b680ed38b-2": {
+    "hash": "4deb46a53bbf",
+    "concepts": [
+      "cpu-virtualization",
+      "file-systems"
+    ]
+  },
+  "4b680ed38b-3": {
+    "hash": "1d16d42e2e0b",
+    "concepts": [
+      "locks"
+    ]
+  },
+  "4b680ed38b-4": {
+    "hash": "0b784aea4ae7",
+    "concepts": [
+      "paging"
+    ]
+  },
+  "4b680ed38b-5": {
+    "hash": "094522074379",
+    "concepts": [
+      "memory-virtualization",
+      "paging"
+    ]
+  },
+  "4b680ed38b-6": {
+    "hash": "6e5383b10cb0",
+    "concepts": [
+      "scheduling",
+      "locks"
+    ]
+  },
+  "4b680ed38b-7": {
+    "hash": "1af1a52c72c2",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "4b680ed38b-8": {
+    "hash": "4eb890f1b657",
+    "concepts": [
+      "memory-virtualization"
+    ]
+  },
+  "4b680ed38b-9": {
+    "hash": "932f38c44b49",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "4b680ed38b-10": {
+    "hash": "ad40e6eda53c",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "4b680ed38b-11": {
+    "hash": "8f43e1a0d4b3",
+    "concepts": [
+      "memory-virtualization",
+      "paging"
+    ]
+  },
+  "4b680ed38b-12": {
+    "hash": "9535f1a1db97",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "4b680ed38b-13": {
+    "hash": "16acddaa6162",
+    "concepts": [
+      "concurrency",
+      "locks"
+    ]
+  },
+  "4b680ed38b-14": {
+    "hash": "318779abc8ae",
+    "concepts": [
+      "threads",
+      "locks"
+    ]
+  },
+  "4b680ed38b-15": {
+    "hash": "de8f0f054c1c",
+    "concepts": [
+      "concurrency",
+      "threads",
+      "locks"
+    ]
+  },
+  "4b680ed38b-16": {
+    "hash": "ec57304077b1",
+    "concepts": [
+      "persistence"
+    ]
+  },
+  "4b680ed38b-17": {
+    "hash": "539b0cefc061",
+    "concepts": [
+      "persistence"
+    ]
+  },
+  "4b680ed38b-18": {
+    "hash": "47b4c36a1ec2",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "4b680ed38b-19": {
+    "hash": "2b8d7c37c438",
+    "concepts": [
+      "file-systems"
+    ]
+  },
+  "4b680ed38b-20": {
+    "hash": "036d12743100",
+    "concepts": [
+      "cpu-virtualization",
+      "processes",
+      "locks",
+      "persistence",
+      "file-systems"
+    ]
+  },
+  "4b680ed38b-21": {
+    "hash": "5e461c7a22a7",
+    "concepts": [
+      "scheduling",
+      "locks",
+      "persistence"
+    ]
+  },
+  "4b680ed38b-22": {
+    "hash": "5dc923cb71bd",
+    "concepts": [
+      "processes"
+    ]
+  },
+  "4b680ed38b-23": {
+    "hash": "a08eae04d547",
+    "concepts": [
+      "concurrency",
+      "locks"
     ]
   }
 }
