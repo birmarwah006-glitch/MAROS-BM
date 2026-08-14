@@ -1,0 +1,215 @@
+{
+  "exam_type": "midsem",
+  "questions": [
+    {
+      "text": "Consider a server program running in an online market place firm. The program receives buy and sell orders for one type of commodity from external clients. For every buy or sell request received by the server, the main process spawns a new buy or sell thread. We require that every buy thread waits until a sell thread arrives, and vice versa. A matched pair of buy and sell threads will both return a response to the clients and exit. You may assume that all buy/sell requests are identical to each other, so that any buy thread can be matched with any sell thread. The code executed by the buy thread is shown below (the code of the sell thread would be symmetric). You have to write the synchronization logic that must be run at the start of the execution of the thread to enable it to wait for a matching sell thread to arrive (if none exists already). Once the threads are matched, you may assume that the function completeBuy() takes care of the application logic for exchanging information with the matching thread, communicating with the client, and finishing the transaction. You may use any synchronization technique of your choice. //declare any variables here buy_thread_function:  //start of sync logic //end of sync logic  completeBuy();",
+      "answer": null,
+      "marks": 9.0,
+      "concept": "processes",
+      "source_label": "question bank"
+    },
+    {
+      "text": "Consider the following classical synchronization problem called the barbershop problem. A barbershop consists of a room with N chairs. If a customer enters the barbershop and all chairs are occupied, then the customer leaves the shop. If the barber is busy, but chairs are available, then the customer sits in one of the free chairs and awaits his turn. The barber moves onto the next waiting seated customer after he finishes one hair cut. If there are no customers to be served, the barber goes to sleep. If the barber is asleep when a customer arrives, the customer wakes up the barber to give him a hair cut. A waiting customer vacates his chair after his hair cut completes. Your goal is to write the pseudocode for the customer and barber threads below with suitable synchronization. You must use only semaphores to solve this problem. Use the standard notation of invoking up/down functions on a semaphore variable. The following variables (3 semaphores and a count) are provided to you for your solution. You must use these variables and declare any additional variables if required. semaphore mutex = 1, customers = 0, barber = 0; int waiting_count = 0; Some functions to invoke in your customer and barber threads are: • A customer who finds the waiting room full should call the function leave() to exit the shop permanently. This function does not return. • A customer should invoke the function getHairCut() in order to get his hair cut. This function returns when the hair cut completes. • The barber thread should call cutHair() to give a hair cut. When the barber invokes this function, there should be exactly one customer invoking getHairCut() concurrently.",
+      "answer": null,
+      "marks": 10.0,
+      "concept": "locks",
+      "source_label": "question bank"
+    },
+    {
+      "text": "A) Draw the logical and physical maps and page tables?",
+      "answer": null,
+      "marks": 4.0,
+      "concept": "paging",
+      "source_label": "question bank"
+    },
+    {
+      "text": "Given a 3-level MLFQ scheduler with a quantum length of 2 ms, 4ms, 6ms in its highest, middle and lowest queue respectively. \na) How often would you have to boost jobs back to the highest priority level to guarantee that a single long-running (and potentially starving) job gets at least 20% of the CPU, assuming there are not too many processes competing for CPU? [1.5m]\nb) Let say the priority boost happen every 8 ms and 3 jobs arrive together in the order A, B & C with job length of 6, 20 and 10 respectively. When the priority boost fires, the current job is pre-empted and the next scheduled job is run in round-robin order. Draw the scheduling in the below graph (as discussed in class) showing the vertical lines for key events and clearly labelling the X-axis times. [3m]",
+      "answer": null,
+      "marks": 3.0,
+      "concept": "scheduling",
+      "source_label": "question bank"
+    },
+    {
+      "text": "Does the code above solve the synchronization problem correctly? If you answer yes, provide a justification for why the code is correct. If you answer no, describe what the error is and also provide a correct solution to the problem. (If you think the code is incorrect and are providing another solution, you may change the code of both the agent and the smokers. You can also introduce new variables as necessary. You must use only semaphores to solve the problem.)",
+      "answer": null,
+      "marks": 8.0,
+      "concept": "concurrency",
+      "source_label": "question bank"
+    },
+    {
+      "text": "C) Find the physical addresses for the instructions m, d, v, r?",
+      "answer": null,
+      "marks": 4.0,
+      "concept": "memory-virtualization",
+      "source_label": "question bank"
+    },
+    {
+      "text": "Consider a process with three threads A, B, and C. The default thread of the process receives multiple requests, and places them in a request queue that is accessible by all the three threads A, B, and C. For each request, we require that the request must first be processed by thread A, then B, then C, then B again, and finally by A before it can be removed and discarded from the queue. Thread A must read the next request from the queue only after it is finished with all the above steps of the previous one. Write down code for the functions run by the threads A, B, and C, to enable this synchronization. You can only worry about the synchronization logic and ignore the application specific processing done by the threads. You may use any synchronization primitive of your choice to solve this question.",
+      "answer": null,
+      "marks": 6.0,
+      "concept": "threads",
+      "source_label": "question bank"
+    },
+    {
+      "text": "What is the purpose of a trap table in an operating system? What does it contain? When is it consulted? When is it loaded? Answer concisely.  [2m]",
+      "answer": null,
+      "marks": 2.0,
+      "concept": "cpu-virtualization",
+      "source_label": "question bank"
+    },
+    {
+      "text": "Consider a system with several running processes. The system is running a modern OS that uses virtual addresses and demand paging. It has been empirically observed that the memory access times in the system under various conditions are: t1 when the logical memory address is found in TLB cache, t2 when the address is not in TLB but does not cause a page fault, and t3 when the address results in a page fault. This memory access time includes all overheads like page fault servicing and logical-to-physical address translation. It has been observed that, on an average, 10% of the logical address accesses result in a page fault. Further, of the remaining virtual address accesses, two-thirds of them can be translated using the TLB cache, while one-third require walking the page tables. Using the information provided above, calculate the average expected memory access time in the system in terms of t1,t2, and t3.",
+      "answer": null,
+      "marks": null,
+      "concept": "computer-architecture",
+      "source_label": "question bank"
+    },
+    {
+      "text": "a) What does TLB miss handler do when TLB miss occurs during an address translation. Explain your answer based on the valid and present bits of the page table entry.\t[1.5m]\t\nb) Consider a paging system that uses a one-level page table residing in main memory and a TLB for address translation. Each main memory access takes 100 ns and TLB lookup takes 20 ns. Each page transfer to/from the disk takes 5000 ns. Assume that the TLB hit ratio is 90%, page fault rate is 10%. Assume TLB update time and page table entry update is negligible. What is the average memory access time (in ns) ? [2m]",
+      "answer": null,
+      "marks": 2.0,
+      "concept": "persistence",
+      "source_label": "question bank"
+    },
+    {
+      "text": "How many entries can appear in a maximum-sized directory? (Each entry is a pair of integers)",
+      "answer": null,
+      "marks": null,
+      "concept": "file-systems",
+      "source_label": "question bank"
+    },
+    {
+      "text": "B) Allocate each page in the corresponding frame?",
+      "answer": null,
+      "marks": 4.0,
+      "concept": "paging",
+      "source_label": "question bank"
+    },
+    {
+      "text": "D) Calculate the fragmentation if exist?",
+      "answer": null,
+      "marks": 4.0,
+      "concept": "processes",
+      "source_label": "question bank"
+    },
+    {
+      "text": "A certain computer system uses segmented paging architecture for memory virtualization. The memory is byte addressable. Both virtual and physical address spaces contain 64K bytes each. The virtual address space is divided into 8 non-overlapping equal size segments. The memory management unit (MMU) has a hardware segment table, each entry of which contains the physical address of the page table for the segment. Page tables are stored in the main memory and consist of 2 byte page table entries. What is the minimum page size in bytes so that the page table for a segment requires at most one page to store it? Show suitable calculations. [3m]",
+      "answer": null,
+      "marks": 3.0,
+      "concept": "memory-virtualization",
+      "source_label": "question bank"
+    },
+    {
+      "text": "Context switching between two threads of execution within the operating system is usually performed by a small assembly language function. In general terms, what does this small function do internally? [2m]",
+      "answer": null,
+      "marks": 2.0,
+      "concept": "processes",
+      "source_label": "question bank"
+    },
+    {
+      "text": "Consider the following code and answer the questions:\n    int main(void) {\n   \tpid_t pid = -1;\n   \tfor(int i=0; i<4; i++){\n   \tpid = fork();\n   \tif(pid != 0){\n   \tbreak;\n   \t}\n   \t}\n   \twaitpid(pid, NULL, 0);\n   \tprintf(\" %d,  %d,  %d \\n\", getpid(), pid, &pid);\n \treturn 0;\n   }\nDraw the shape (illustration) of process hierarchy that this code produces clearly indicating different processes and their relationship by appropriate name/IDs. [2m]\nWhat are the values printed by each process? Will they be same or different? [1m]\nWill the order of printing be consistent or arbitrary? Why? [1m]",
+      "answer": null,
+      "marks": 2.0,
+      "concept": "processes",
+      "source_label": "question bank"
+    },
+    {
+      "text": "Consider a main memory with five page frames and the following sequence of page references: 3, 8, 2, 3, 9, 1, 6, 3, 8, 9, 3, 6, 2, 1, 3. Assuming all frames are empty initially, find the number of page faults using Least Recently Used (LRU) page replacement policies? Show suitable calculations [2m]",
+      "answer": null,
+      "marks": 2.0,
+      "concept": "paging",
+      "source_label": "question bank"
+    },
+    {
+      "text": "The enter_CS( ) and leave_CS( ) functions to implement critical section of a process are realized using test and set instruction as follows- void enter_CS(X) {while (test-and-set(X));} void leave_CS(X) {X = 0;} In the above solution, X is a memory location associated with the CS and is initialized to 0. Now, consider the following statements- The above solution to CS problem is deadlock-free The solution is starvation free The processes enter CS in FIFO order More than one process can enter CS at the same time. Which of the above statements is true?",
+      "answer": null,
+      "marks": 1.0,
+      "concept": "scheduling",
+      "source_label": "question bank"
+    },
+    {
+      "text": "A counting semaphore S is initialized to 10. Then, 6 P operations and 4 V operations are performed on S. What is the final value of S?",
+      "answer": null,
+      "marks": 1.0,
+      "concept": "locks",
+      "source_label": "question bank"
+    },
+    {
+      "text": "A counting semaphore S is initialized to 7. Then, 20 P operations and 15 V operations are performed on S. What is the final value of S?",
+      "answer": null,
+      "marks": 1.0,
+      "concept": "locks",
+      "source_label": "question bank"
+    },
+    {
+      "text": "A shared variable x, initialized to zero, is operated on by four concurrent processes W, X, Y, Z as follows. Each of the processes W and X reads x from memory, increments by one, stores it to memory and then terminates. Each of the processes Y and Z reads x from memory, decrements by two, stores it to memory, and then terminates. Each process before reading x invokes the P operation (i.e. wait) on a counting semaphore S and invokes the V operation (i.e. signal) on the semaphore S after storing x to memory. Semaphore S is initialized to two. What is the maximum possible value of x after all processes complete execution?",
+      "answer": null,
+      "marks": 1.0,
+      "concept": "processes",
+      "source_label": "question bank"
+    },
+    {
+      "text": "Each process Pi, i = 1, 2, …, 9 is coded as follows- repeat P(mutex) { Critical Section } V(mutex) forever The code for P10 is identical except that it uses V(mutex) in place of P(mutex). What is the largest number of processes that can be inside the critical section at any moment?",
+      "answer": null,
+      "marks": 1.0,
+      "concept": "concurrency",
+      "source_label": "question bank"
+    },
+    {
+      "text": "It is possible for deadlock.\nWhich of the above are True?\na)Only 1\nb)Only 2\nc)Only 1 and 3\nd)Only  2 and 3\n\nAnswer)b\n\n\nQQ2.  A shared  variable x, initialized to zero is operated by four processes W,X,Y,Z. Process W and X increment x by one , while process Y,Z decrement  x by two. Each process before  reading perform ‘wait’ on a semaphore  ‘S’ and signal on ‘S’ after store if semaphore  ‘S’ is initialized to two. Find what is the maximum possible value of  x after all processes complete execution ?\n\na)-2\nb) -1\nc) 1\nd) 2\n\nAnswer) d\n\nQQ3.  Suppose we want to synchronize two processes P and Q  using binary semaphores  S,T.\n\nProcess P\nWhile(1)\n{\n\tW\n             Print ‘0’\n             Print ‘0’\n              X\n}\n\nProcess Q\nWhile(1)\n{\n\tY\n             Print ‘1’\n             Print ‘1’\n              Z\n}\nOutput String should be like: ‘001100110011’\nWhich option is correct?\n                 W            X                 Y                  Z\nP(S)        V(S)             P(T)              V(T)           S,T=1\nP(S)        V(T)             P(T)              V(S)           S=1,T=0\nP(S)        V(T)             P(T)              V(S) \t  S,T=1\nP(S)        V(S)             P(T)              V(T)           S=1,T=0\n\n\n\nAns) c",
+      "answer": null,
+      "marks": 1.0,
+      "concept": "processes",
+      "source_label": "question bank"
+    },
+    {
+      "text": "Consider a clinic with one doctor and a very large waiting room (of infinite capacity). Any patient entering the clinic will wait in the waiting room until the doctor is free to see her. Similarly, the the doctor also waits for a patient to arrive to treat. All communication between the patients and the doctor happens via a shared memory buffer. Any of the several patient processes, or the doctor process can write to it. Once the patient “enters the doctors office”, she conveys her symptoms to the doctor using a call to consultDoctor(), which updates the shared memory with the patient’s symptoms. The doctor then calls treatPatient() to access the buffer and update it with details of the treatment. Finally, the patient process must call noteTreatment() to see the updated treatment details in the shared buffer, before leaving the doctor’s office. A template code for the patient and doctor processes is shown below. Enhance this code to correctly synchronize between the patient and the doctor processes. Your code should ensure that no race conditions occur due to several patients overwriting the shared buffer concurrently. Similarly, you must ensure that the doctor accesses the buffer only when there is valid new patient information in it, and the patient sees the treatment only after the doctor has written it to the buffer. You must use only semaphores to solve this problem. Clearly list the semaphore variables you use and their initial values first. Please pick sensible names for your variables.\nSemaphore variables and initial values:\nPatient process:\nconsultDoctor();\nnoteTreatment();\nDoctor process: \nwhile(1) {\ntreatPatient(); \n}",
+      "answer": null,
+      "marks": 1.0,
+      "concept": "concurrency",
+      "source_label": "question bank"
+    },
+    {
+      "text": "Consider a producer-consumer situation, where a process P produces an integer using the function produceNext() and sends it to process C. Process C receives the integer from P and consumes it in the function consumeNext(). After consuming this integer, C must let P know, and P must produce the next integer only after learning that C has consumed the earlier one. Assume that P and C get a pointer to a shared memory segment of 8 bytes, that can store any two 4-byte integer-sized fields, as shown below. Both fields in the shared memory structure are zeroed out initially. P and C can read or write from it, just as they would with any other data object. Briefly describe how you would solve the producer-consumer problem described above, using only this shared memory as a means of communication and synchronization between processes P and C. You must not use any other synchronization or communication primitive. You are provided template code below which gets a pointer to the shared memory, and pro-duces/consumes integers. You must write the code for communicating the integer between the processes using the shared memory, with synchronization logic as required.\nstruct shmem_structure {\nint field1;\nint field2;\n};\nProducer:\nstruct shmem_structure *shptr = get_shared_memory_structure();\nwhile(1) {\nint produced = produceNext();\n\n}\nConsumer:\nstruct shmem_ structure *shptr = get_shared_memory_structure();\nwhile(1) {\nint consumed; //fill this value from producer\nconsumeNext(consumed);\n}\n\nConsider a multithreaded banking application. The main process receives requests to tranfer money from one account to the other, and each request is handled by a separate worker thread in the application. All threads access shared data of all user bank accounts. Bank accounts are represented by a unique integer account number, a balance, and a lock of type mylock (much like a pthreads mutex) as shown below.\nstruct account { \nint accountnum; \nint balance;\nmylock lock;\n};\nEach thread that receives a transfer request must implement the transfer function shown below, which transfers money from one account to the other. Add correct locking (by calling the dolock(&lock) and unlock(&lock) functions on a mylock variable) to the tranfer function below, so that no race conditions occur when several worker threads concurrently perform transfers. Note that you must use the fine-grained per account lock provided as part of the account object itself, and not a global lock of your own. Also make sure your solution is deadlock free, when multiple threads access the same pair of accounts concurrently.\nvoid transfer(struct account *from, struct account *to, int amount) {\nfrom->balance -= amount; // dont write anything... to->balance += amount; // ...between these two lines\n}\nConsider a process with three threads A, B, and C. The default thread of the process receives multiple requests, and places them in a request queue that is accessible by all the three threads A, B, and C. For each request, we require that the request must first be processed by thread A, then B, then C, then B again, and finally by A before it can be removed and discarded from the queue. Thread A must read the next request from the queue only after it is finished with all the above steps of the previous one. Write down code for the functions run by the threads A, B, and C, to enable this synchronization. You can only worry about the synchronization logic and ignore the application specific processing done by the threads. You may use any synchronization primitive of your choice to solve this question.\n\n6",
+      "answer": null,
+      "marks": 1.0,
+      "concept": "concurrency",
+      "source_label": "question bank"
+    },
+    {
+      "text": "How can the system distinguish between the pages that are in main memory from the pages that are on the disk?",
+      "answer": null,
+      "marks": null,
+      "concept": "persistence",
+      "source_label": "question bank"
+    },
+    {
+      "text": "Why seek() does not cause disk seek until read/write operation ?",
+      "answer": null,
+      "marks": null,
+      "concept": "persistence",
+      "source_label": "question bank"
+    },
+    {
+      "text": "Explain best fit , first fir and worst fit method.",
+      "answer": null,
+      "marks": null,
+      "concept": "processes",
+      "source_label": "question bank"
+    },
+    {
+      "text": "What is formula for disk access time?",
+      "answer": null,
+      "marks": null,
+      "concept": "persistence",
+      "source_label": "question bank"
+    },
+    {
+      "text": "Where does VAS reside is it present in the secondary memory or in the ram ?",
+      "answer": null,
+      "marks": null,
+      "concept": "processes",
+      "source_label": "question bank"
+    }
+  ]
+}

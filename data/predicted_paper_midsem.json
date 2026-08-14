@@ -1,0 +1,224 @@
+{
+  "exam_type": "midsem",
+  "blueprint": {
+    "exam_type": "midsem",
+    "n_papers": 1,
+    "target_n_questions": 10,
+    "typical_total_marks": 31.7,
+    "band_mix": {
+      "small": 0.03642857142857143,
+      "medium": 0.9614285714285714,
+      "large": 0.002142857142857143
+    }
+  },
+  "used_fallback": true,
+  "n_questions": 10,
+  "n_with_answer": 0,
+  "total_marks": 6.0,
+  "questions": [
+    {
+      "q_no": 1,
+      "concept": "processes",
+      "qtype": "define_explain",
+      "marks": null,
+      "text": "Explain best fit , first fir and worst fit method.",
+      "answer": null,
+      "source_year": 0,
+      "source_label": "question bank",
+      "source_q_id": "0aab37dcac-2",
+      "slot_score": 466.0
+    },
+    {
+      "q_no": 2,
+      "concept": "locks",
+      "qtype": "define_explain",
+      "marks": null,
+      "text": "Consider a counting semaphore S is initialized to 7. Then, 20 P operations and 15 V operations are performed on S. What is the final value of S?",
+      "answer": null,
+      "source_year": 0,
+      "source_label": "question bank",
+      "source_q_id": "0aab37dcac-89",
+      "slot_score": 254.0
+    },
+    {
+      "q_no": 3,
+      "concept": "paging",
+      "qtype": "define_explain",
+      "marks": null,
+      "text": "What do you mean by page replacement algorithm? Enlist different page replacement algorithms.",
+      "answer": null,
+      "source_year": 0,
+      "source_label": "question bank",
+      "source_q_id": "0aab37dcac-11",
+      "slot_score": 216.0
+    },
+    {
+      "q_no": 4,
+      "concept": "scheduling",
+      "qtype": "define_explain",
+      "marks": null,
+      "text": "With FIFO how many number of Page Faults will be there and what will be number of hits?",
+      "answer": null,
+      "source_year": 0,
+      "source_label": "question bank",
+      "source_q_id": "0aab37dcac-46",
+      "slot_score": 183.0
+    },
+    {
+      "q_no": 5,
+      "concept": "concurrency",
+      "qtype": "define_explain",
+      "marks": 6.0,
+      "text": "Consider a process with three threads A, B, and C. The default thread of the process receives multiple requests, and places them in a request queue that is accessible by all the three threads A, B, and C. For each request, we require that the request must first be processed by thread A, then B, then C, then B again, and finally by A before it can be removed and discarded from the queue. Thread A must read the next request from the queue only after it is finished with all the above steps of the previous one. Write down code for the functions run by the threads A, B, and C, to enable this synchronization. You can only worry about the synchronization logic and ignore the application specific processing done by the threads. You may use any synchronization primitive of your choice to solve this question.",
+      "answer": null,
+      "source_year": 0,
+      "source_label": "question bank",
+      "source_q_id": "9bee9fa698-37",
+      "slot_score": 123.0
+    },
+    {
+      "q_no": 6,
+      "concept": "memory-virtualization",
+      "qtype": "define_explain",
+      "marks": null,
+      "text": "What is the need for segmentation in OS? Does segmentation cause fragmentation?",
+      "answer": null,
+      "source_year": 0,
+      "source_label": "question bank",
+      "source_q_id": "0aab37dcac-9",
+      "slot_score": 107.0
+    },
+    {
+      "q_no": 7,
+      "concept": "threads",
+      "qtype": "define_explain",
+      "marks": null,
+      "text": "In a traditional single-threaded process, what are the stack and heap used for?",
+      "answer": null,
+      "source_year": 0,
+      "source_label": "question bank",
+      "source_q_id": "0aab37dcac-80",
+      "slot_score": 93.0
+    },
+    {
+      "q_no": 8,
+      "concept": "cpu-virtualization",
+      "qtype": "define_explain",
+      "marks": null,
+      "text": "How does trap differ from interrupts?",
+      "answer": null,
+      "source_year": 0,
+      "source_label": "question bank",
+      "source_q_id": "0aab37dcac-94",
+      "slot_score": 57.0
+    },
+    {
+      "q_no": 9,
+      "concept": "paging",
+      "qtype": "numerical",
+      "marks": null,
+      "text": "Consider a system with several running processes. The system is running a modern OS that uses virtual addresses and demand paging. It has been empirically observed that the memory access times in the system under various conditions are: t1 when the logical memory address is found in TLB cache, t2 when the address is not in TLB but does not cause a page fault, and t3 when the address results in a page fault. This memory access time includes all overheads like page fault servicing and logical-to-physical address translation. It has been observed that, on an average, 10% of the logical address accesses result in a page fault. Further, of the remaining virtual address accesses, two-thirds of them can be translated using the TLB cache, while one-third require walking the page tables. Using the information provided above, calculate the average expected memory access time in the system in terms of t1,t2, and t3.",
+      "answer": null,
+      "source_year": 0,
+      "source_label": "question bank",
+      "source_q_id": "0aab37dcac-6",
+      "slot_score": 57.0
+    },
+    {
+      "q_no": 10,
+      "concept": "scheduling",
+      "qtype": "numerical",
+      "marks": null,
+      "text": "Calculate the number of page faults by using FIFO for page sequence 2,3,2,1,5,2,4,5,3,2,5. The number of frames for this question are 3",
+      "answer": null,
+      "source_year": 0,
+      "source_label": "question bank",
+      "source_q_id": "0aab37dcac-59",
+      "slot_score": 56.0
+    }
+  ],
+  "slot_ranking": [
+    {
+      "concept": "processes",
+      "qtype": "define_explain",
+      "score": 466.0
+    },
+    {
+      "concept": "locks",
+      "qtype": "define_explain",
+      "score": 254.0
+    },
+    {
+      "concept": "paging",
+      "qtype": "define_explain",
+      "score": 216.0
+    },
+    {
+      "concept": "scheduling",
+      "qtype": "define_explain",
+      "score": 183.0
+    },
+    {
+      "concept": "concurrency",
+      "qtype": "define_explain",
+      "score": 123.0
+    },
+    {
+      "concept": "memory-virtualization",
+      "qtype": "define_explain",
+      "score": 107.0
+    },
+    {
+      "concept": "threads",
+      "qtype": "define_explain",
+      "score": 93.0
+    },
+    {
+      "concept": "cpu-virtualization",
+      "qtype": "define_explain",
+      "score": 57.0
+    },
+    {
+      "concept": "paging",
+      "qtype": "numerical",
+      "score": 57.0
+    },
+    {
+      "concept": "scheduling",
+      "qtype": "numerical",
+      "score": 56.0
+    },
+    {
+      "concept": "computer-architecture",
+      "qtype": "define_explain",
+      "score": 47.0
+    },
+    {
+      "concept": "persistence",
+      "qtype": "define_explain",
+      "score": 28.0
+    },
+    {
+      "concept": "locks",
+      "qtype": "code_trace",
+      "score": 27.0
+    },
+    {
+      "concept": "processes",
+      "qtype": "numerical",
+      "score": 27.0
+    },
+    {
+      "concept": "memory-virtualization",
+      "qtype": "numerical",
+      "score": 26.0
+    }
+  ],
+  "backtest": {
+    "exam_type": "midsem",
+    "folds": [],
+    "mean_concept_precision_all": null,
+    "mean_concept_precision_real_folds": null,
+    "n_fallback_folds": 0
+  }
+}

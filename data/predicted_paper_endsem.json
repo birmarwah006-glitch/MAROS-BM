@@ -1,0 +1,205 @@
+{
+  "exam_type": "endsem",
+  "blueprint": {
+    "exam_type": "endsem",
+    "n_papers": 4,
+    "target_n_questions": 10,
+    "typical_total_marks": 48.6,
+    "band_mix": {
+      "small": 0.17391304347826086,
+      "medium": 0.782608695652174,
+      "large": 0.043478260869565216
+    }
+  },
+  "decay": 1.0,
+  "n_questions": 10,
+  "total_marks": 25.0,
+  "questions": [
+    {
+      "q_no": 1,
+      "concept": "locks",
+      "qtype": "define_explain",
+      "marks": null,
+      "source_year": 2017,
+      "source_q_id": "dd2e4130dc-1",
+      "text": "a.\nThe refernce count is the number of hard links (names in directories) presently pointing at a particular inode. When this reaches zero, it is an indication that that inode can be deleted, since nothing points at it anymore (it has no name).\n\nb.\nQuick access to the start of the file stored in the inode itself. For small files, no direct blocks required, entire file can be in the inode. This improves the performance for small files.\n\nc.\nblock size = 512\n\nnumber of block numbers in an indirection block\n= block size / 4\n= 128\n\nnumber of blocks for file data in that file object\n\n= 16 + 128 + 128^2 + 128^3 \nMaximum file size: \n(direct + single indirect + double indirect + triple indirect) * (blocksize) \n= (16 + 512/4 + (512/4)^2 + (512/4)^3) * (512) \n= 68853964800 bytes, ~64 gigs\n\nd.\nTriple indirection is slower, as it may result in multiple seeks to get to the desired block. Seeks take a long time. Tiny files that only use a few KB will perform much better if they do not have to do seeks to find each level of indirection\n\n\n\ne.\nblock level, file level etc.",
+      "slot_score": 62.0
+    },
+    {
+      "q_no": 2,
+      "concept": "file-systems",
+      "qtype": "define_explain",
+      "marks": 4.0,
+      "source_year": 2023,
+      "source_q_id": "d45f8a074c-7",
+      "text": "Consider a file system with 512-byte blocks. Assume an inode of a file holds pointers to N direct data blocks, and a pointer to a single indirect block. Further, assume that the single indirect block can hold pointers to M other data blocks. What is the maximum file size that can be supported by such an inode design? Explain. \t\t\t                                   \t\t\t(4M)",
+      "slot_score": 43.0
+    },
+    {
+      "q_no": 3,
+      "concept": "scheduling",
+      "qtype": "define_explain",
+      "marks": null,
+      "source_year": 2017,
+      "source_q_id": "dd2e4130dc-2",
+      "text": "a.\n\n\nb.\nShared Data:\nitem buffer[N]; semaphore mutex=1, holes=N, items=0;\n\nProblem is deadlock, mutex should only protect the buffer.\n\nc.\n\n\n(a + 1, a + 2) X (b + a + 1, b + a + 2, b + 2a + 1, b + 2a + 2, b + 2a + 3, b + 2a + 4)\n\n\n\nBackup\n\n\n\n\n\n\n\nsynch\tmem\tprocess\t\tio\tfile\n\nHow does an OS detect Thrashing?. How does it deal with it?\n\nIs it possible for the CPU utilization of your system to be 100% if all the threads in the\nsystem are involved in a deadlock? Explain.\n\n\n\nThrashing can be detected by measuring the page fault frequency. A high page fault frequency\n(due to swapping) implies thrashing. It can be avoided through better scheduling. For example, a\nset of processes whose working set is likely to fit in the available RAM is run together for an\nextended time (say 1­5 seconds), and then swapped out together to allow another group of\nprocesses to get swapped in. This reduces the rate of page faults, and ensures faster overall progress.\nYes\n​\n, It is possible for system to have a 100% CPU utilization even in the case of\ndeadlock. Consider the case when the threads involved in the system use \n​\nspin locks, \n​\nnow\nif the threads are even in a deadlock scenario they will constantly check for reacquiring the\nlock whenever they get a chance to run hence consuming the cpu constantly which can result\nin 100% CPU utilization.\n\nDerivation for interleaving of instructions: n-processes, m-instructions in each thread",
+      "slot_score": 37.0
+    },
+    {
+      "q_no": 4,
+      "concept": "persistence",
+      "qtype": "define_explain",
+      "marks": null,
+      "source_year": 2017,
+      "source_q_id": "dd2e4130dc-0",
+      "text": "a.\nSwapping is the act of running each whole process in main memory for a time then placing back onto disk and vice versa. It is used when the system does not have enough main memory to hold all the currently active processes.\n\nAssuming that an application is one program and hence a single process, swapping will not permit an application(process) requiring 16M of memory to run on a machine with 8M RAM (main memory) as the whole process is too large to fit into main memory.\n\nb.\n- Internal fragmentation: the space wasted internal to the allocated region.Allocated memory might be slightly larger than requested memory.\n- External fragmentation: the space wasted external to the allocated region.memory exists to satisfy a reqest but it's unsuable as it's not contiguous.\n\nStattic partitioning is more likely to suffer from internal fragmentation.\nDynamic partitioning is more likely to suffer from external fragmentation.\n\nc.\n\n\nd.",
+      "slot_score": 31.0
+    },
+    {
+      "q_no": 5,
+      "concept": "computer-architecture",
+      "qtype": "define_explain",
+      "marks": null,
+      "source_year": 2023,
+      "source_q_id": "d45f8a074c-5",
+      "text": "a) In the semantics of the condition variable, wait takes a lock as its second input along with the condition variable, but the signal call only takes a condition. Explain why.\n b) Disabling interrupts was one of the earlier methods proposed for the implementation of locks. Discuss a few problems with this approach.\t\t\t\t\t\t\t\t\t\t\t\t\t(2+3 M)",
+      "slot_score": 25.0
+    },
+    {
+      "q_no": 6,
+      "concept": "processes",
+      "qtype": "define_explain",
+      "marks": 5.0,
+      "source_year": 2023,
+      "source_q_id": "d45f8a074c-4",
+      "text": "A single processor system has three resource types X, Y and Z, which are shared by three processes. There are 5 units of each resource type. Consider the following scenario, where the column alloc denotes the number of units of each resource type allocated to each process, and the column request denotes the number of units of each resource type requested by a process in order to complete execution. Which of these processes will finish LAST?\t\t\t(5M)",
+      "slot_score": 25.0
+    },
+    {
+      "q_no": 7,
+      "concept": "paging",
+      "qtype": "define_explain",
+      "marks": 4.0,
+      "source_year": 2023,
+      "source_q_id": "d45f8a074c-3",
+      "text": "onsider a reference string: 4, 7, 6, 1, 7, 6, 1, 2, 7, 2. the number of frames in the memory is 3. Find out the number of page faults respective to:\t(4 M)\nFIFO Page Replacement Algorithm\nLRU Page Replacement Algorithm",
+      "slot_score": 22.0
+    },
+    {
+      "q_no": 8,
+      "concept": "threads",
+      "qtype": "define_explain",
+      "marks": 6.0,
+      "source_year": 2022,
+      "source_q_id": "364f4ad10f-0",
+      "text": "[6m] (i) Which of the following are more like policies, and which are more like mechanisms? \n(a) The timer interrupt - M\n (b) How long a time quantum should be - P\n(c) Saving the register state of a process - M\n(d) Continuing to run the current process when a disk I/O interrupt occurs  - P\n\n(ii) For each of the following four examples, write down which state the process (or thread) is in: \n(a) Waiting in Domain Read() for a message from some other process to arrive. - blocked\n(b) Spin-waiting for a variable x to become non-zero. - Running\n(c) Having just completed an I/O, waiting to get scheduled again on the CPU. - Ready\n(d) Waiting inside of pthread cond wait() for some other thread to signal it – blocked\n\n(iii) In a traditional single-threaded process, we have both a stack and a heap. a) What is the stack used for? b) What is the heap used for? c) If, for some reason, you could only have one of these two, which would you pick and why?\nStack - Dynamically-allocated data that is allocated and deallocated in a predictable order, namely things like procedure call parameters and local variables. Hence, this memory tends to be compiler managed (the user does not have to be involved). \nHeap - Dynamically-allocated data that is allocated and deallocated in an unpredictable manner, such as arbitrary data structures like linked lists, etc. Hence this memory tends to be user managed (requiring calls to allocate memory, and depending on the language, deallocate memory too).\n • If, for some reason, you could only have one of these two, which would you pick and why? The heap, because it is more general albeit slower",
+      "slot_score": 21.0
+    },
+    {
+      "q_no": 9,
+      "concept": "cpu-virtualization",
+      "qtype": "define_explain",
+      "marks": null,
+      "source_year": 2023,
+      "source_q_id": "d45f8a074c-0",
+      "text": "a)  What are the different states of process and explain the transitions between them. \nb) What are system calls and how are they different from normal function calls? \n\t\t\t\t\t\t\t\t\t\t\t(3+2 M)",
+      "slot_score": 16.0
+    },
+    {
+      "q_no": 10,
+      "concept": "file-systems",
+      "qtype": "numerical",
+      "marks": 6.0,
+      "source_year": 2023,
+      "source_q_id": "d45f8a074c-2",
+      "text": "onsider a Linux-like operating system running on a 48-bit CPU hardware. The OS uses hierarchical paging, with 8 KB pages and 4 byte page table entries.\t(a) What is the maximum number of levels in the page table of a process, including both the outermost page directory and the innermost page tables?\n(b) Indicate which bits of the virtual address are used to index into each of the levels of the page table.\n(c) Calculate the maximum number of pages that may be required to store all the page table entries of a process across all levels of the page table.\t(6 M)",
+      "slot_score": 16.0
+    }
+  ],
+  "slot_ranking": [
+    {
+      "concept": "locks",
+      "qtype": "define_explain",
+      "score": 62.0
+    },
+    {
+      "concept": "file-systems",
+      "qtype": "define_explain",
+      "score": 43.0
+    },
+    {
+      "concept": "scheduling",
+      "qtype": "define_explain",
+      "score": 37.0
+    },
+    {
+      "concept": "persistence",
+      "qtype": "define_explain",
+      "score": 31.0
+    },
+    {
+      "concept": "computer-architecture",
+      "qtype": "define_explain",
+      "score": 25.0
+    },
+    {
+      "concept": "processes",
+      "qtype": "define_explain",
+      "score": 25.0
+    },
+    {
+      "concept": "paging",
+      "qtype": "define_explain",
+      "score": 22.0
+    },
+    {
+      "concept": "threads",
+      "qtype": "define_explain",
+      "score": 21.0
+    },
+    {
+      "concept": "cpu-virtualization",
+      "qtype": "define_explain",
+      "score": 16.0
+    },
+    {
+      "concept": "file-systems",
+      "qtype": "numerical",
+      "score": 16.0
+    },
+    {
+      "concept": "memory-virtualization",
+      "qtype": "numerical",
+      "score": 16.0
+    },
+    {
+      "concept": "paging",
+      "qtype": "numerical",
+      "score": 16.0
+    },
+    {
+      "concept": "locks",
+      "qtype": "numerical",
+      "score": 14.0
+    },
+    {
+      "concept": "processes",
+      "qtype": "numerical",
+      "score": 14.0
+    },
+    {
+      "concept": "scheduling",
+      "qtype": "numerical",
+      "score": 14.0
+    }
+  ],
+  "backtest": {
+    "exam_type": "endsem",
+    "decay": 1.0,
+    "folds": [],
+    "mean_concept_precision": null,
+    "mean_slot_precision": null,
+    "mean_slot_recall": null,
+    "mean_semantic_closeness": null
+  }
+}
