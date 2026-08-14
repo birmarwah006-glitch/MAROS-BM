@@ -22,55 +22,86 @@
 // go further and stagger their nodes/edges in one at a time, so a concept
 // map draws itself rather than appearing fully formed.
 
-// ─── Callout preprocessor ────────────────────────────────────────────────────
+// ─── Quote preprocessor (callouts + plain blockquotes) ──────────────────────
 const CALLOUT_TYPES = ['note', 'tip', 'important', 'warning', 'caution'];
 const CALLOUT_LABELS = {
   note: 'DEFINITION', tip: 'EXAMPLE', important: 'KEY INSIGHT',
   warning: 'COMMON MISTAKE', caution: 'CAUTION'
 };
 
-function _extractCallouts(md) {
-  // Pull > [!TYPE] blocks out of the markdown and replace them with
-  // placeholder tokens. Returns { cleaned: string, callouts: string[] }.
+// Both callouts (> [!TYPE]) and plain blockquotes (>) are extracted here as
+// ONE pass, fully to finished HTML, BEFORE math extraction ever runs on the
+// surrounding document. This matters: math extraction (_extractMath, below)
+// inserts bare newlines around display-math ($$...$$) placeholders with no
+// ">" prefix of their own. If quotes were extracted from *already math-
+// extracted* text (the previous design), a $$...$$ block — or any text
+// trailing it on the same original line — would land on an unprefixed line
+// and the quote-continuation scan would stop right there, truncating the
+// quote and leaking the rest as unstructured top-level text (with a stray
+// literal ">" on whatever line followed).
+//
+// Extracting quotes first sidesteps that entirely: each quote's raw body is
+// pulled out as plain text (no ">" markers to lose), and math extraction is
+// then run on that raw body in isolation via _extractMath, so it can insert
+// whatever newlines it wants without anything downstream needing to know it
+// was ever inside a quote.
+function _extractQuotes(md, mathBlocks) {
   const lines = md.split('\n');
   const out = [];
-  const callouts = [];
+  const quotes = [];
   let i = 0;
   while (i < lines.length) {
-    const m = lines[i].match(/^\s*>\s*\[!(\w+)\]\s*$/i);
-    if (m && CALLOUT_TYPES.includes(m[1].toLowerCase())) {
-      const type = m[1].toLowerCase();
-      const body = [];
-      i++;
-      while (i < lines.length && /^\s*>/.test(lines[i])) {
-        body.push(lines[i].replace(/^\s*>\s?/, ''));
-        i++;
+    if (/^\s*>/.test(lines[i])) {
+      const calloutHead = lines[i].match(/^\s*>\s*\[!(\w+)\]\s*$/i);
+      const isCallout = !!(calloutHead && CALLOUT_TYPES.includes(calloutHead[1].toLowerCase()));
+
+      const bodyLines = [];
+      let j = i + (isCallout ? 1 : 0);
+      while (j < lines.length && /^\s*>/.test(lines[j])) {
+        bodyLines.push(lines[j].replace(/^\s*>\s?/, ''));
+        j++;
       }
-      const bodyHtml = _inlineFormat(body.join('\n').trim());
-      const label = CALLOUT_LABELS[type] || type.toUpperCase();
-      callouts.push(
-        `<div class="md-callout md-callout-${type}">` +
-        `<div class="md-callout-label">${label}</div>` +
-        `<div class="md-callout-body">${bodyHtml}</div></div>`
-      );
-      out.push(`%%CALLOUT_${callouts.length - 1}%%`);
+      const bodyRaw = bodyLines.join('\n');
+      // Math extraction on the isolated body — safe to insert bare
+      // newlines here since there's no ">" prefix left to preserve.
+      const { cleaned: bodyMathed } = _extractMath(bodyRaw, mathBlocks);
+      const bodyHtml = _inlineFormat(bodyMathed.trim());
+
+      let html;
+      if (isCallout) {
+        const type = calloutHead[1].toLowerCase();
+        const label = CALLOUT_LABELS[type] || type.toUpperCase();
+        html =
+          `<div class="md-callout md-callout-${type}">` +
+          `<div class="md-callout-label">${label}</div>` +
+          `<div class="md-callout-body">${bodyHtml}</div></div>`;
+      } else {
+        html = `<blockquote>${bodyHtml}</blockquote>`;
+      }
+      quotes.push(html);
+      out.push(`%%QUOTE_${quotes.length - 1}%%`);
+      i = j;
     } else {
       out.push(lines[i]);
       i++;
     }
   }
-  return { cleaned: out.join('\n'), callouts };
+  return { cleaned: out.join('\n'), quotes };
 }
 
 // ─── Math extractor ───────────────────────────────────────────────────────
-// $$...$$ = display math, $...$ = inline math. Runs BEFORE callout/block
-// parsing (same reason callouts are extracted first — so bold/italic/code
-// regexes in _inlineFormat never get a chance to mangle LaTeX). Skips fenced
-// code blocks entirely so code containing literal $ (shell prompts, etc.)
-// is left untouched.
-function _extractMath(md) {
-  const mathBlocks = []; // { tex, display }
-
+// $$...$$ = display math, $...$ = inline math. Skips fenced code blocks
+// entirely so code containing literal $ (shell prompts, etc.) is left
+// untouched.
+//
+// Display-math placeholders are inserted on their OWN line (surrounded by
+// bare \n) so _renderMarkdown can treat them as a block-level element.
+// Takes an optional shared `mathBlocks` array so callers extracting math
+// from several pieces of text (e.g. a quote body, then the surrounding
+// document) can accumulate into one array with IDs that don't collide —
+// see _extractQuotes, which calls this on each quote body BEFORE quotes are
+// spliced back into the document and this runs again on what's left.
+function _extractMath(md, mathBlocks = []) {
   const parts = md.split(/(```[\s\S]*?```)/g);
   const processed = parts.map((part) => {
     if (part.startsWith('```')) return part; // leave code fences untouched
@@ -173,13 +204,24 @@ function _inlineFormat(text) {
   s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
   s = s.replace(/\*([^*]+)\*/g, '<em>$1</em>');
   s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+  // Quote bodies (_extractQuotes) run their raw text through _extractMath
+  // directly and never pass through _renderMarkdown's block-level parser, so
+  // a MATHBLOCK placeholder landing here needs its own div (normally that
+  // conversion happens in _renderMarkdown when the placeholder sits alone on
+  // a line at the top level). Harmless no-op for top-level paragraph text,
+  // where a bare MATHBLOCK line is always intercepted before it gets here.
+  s = s.replace(/%%MATHBLOCK_(\d+)%%/g, '<div class="math-display" data-math-id="$1"></div>');
   s = s.replace(/%%MATHINLINE_(\d+)%%/g, '<span class="math-inline" data-math-id="$1"></span>');
   s = s.replace(/\n/g, '<br>');
   return s;
 }
 
 // ─── Block-level markdown parser ─────────────────────────────────────────────
-function _renderMarkdown(md, callouts) {
+// `quotes` holds pre-rendered HTML for both callouts and plain blockquotes —
+// see _extractQuotes, which pulls them (and their math) out of the document
+// before this function ever runs. There is no blockquote-scanning logic
+// here anymore; a %%QUOTE_n%% placeholder is just dropped in as-is.
+function _renderMarkdown(md, quotes) {
   const lines = md.split('\n');
   const html = [];
   let i = 0;
@@ -197,11 +239,12 @@ function _renderMarkdown(md, callouts) {
     // Empty line — close any open list, skip
     if (!trimmed) { closeList(); i++; continue; }
 
-    // Callout placeholder
-    const calloutMatch = trimmed.match(/^%%CALLOUT_(\d+)%%$/);
-    if (calloutMatch) {
+    // Quote placeholder (callout or plain blockquote — already fully
+    // rendered to HTML, math and all, by _extractQuotes)
+    const quoteMatch = trimmed.match(/^%%QUOTE_(\d+)%%$/);
+    if (quoteMatch) {
       closeList();
-      html.push(callouts[parseInt(calloutMatch[1])]);
+      html.push(quotes[parseInt(quoteMatch[1])]);
       i++; continue;
     }
 
@@ -243,17 +286,11 @@ function _renderMarkdown(md, callouts) {
       i++; continue;
     }
 
-    // Blockquote (non-callout — callouts already extracted)
-    if (trimmed.startsWith('>')) {
-      closeList();
-      const bqLines = [];
-      while (i < lines.length && lines[i].trim().startsWith('>')) {
-        bqLines.push(lines[i].trim().replace(/^>\s?/, ''));
-        i++;
-      }
-      html.push(`<blockquote>${_inlineFormat(bqLines.join('\n'))}</blockquote>`);
-      continue;
-    }
+    // Note: no blockquote handling here — both callouts and plain
+    // blockquotes are fully extracted (text, math, and all) by
+    // _extractQuotes before this function runs. A raw ">" line should never
+    // reach this point; if one does, it falls through to the paragraph
+    // case below and renders as plain text, which is a safe degradation.
 
     // Unordered list
     if (/^[\-\*]\s+/.test(trimmed)) {
@@ -291,7 +328,7 @@ function _renderMarkdown(md, callouts) {
            !lines[i].trim().startsWith('#') &&
            !lines[i].trim().startsWith('```') &&
            !lines[i].trim().startsWith('>') &&
-           !lines[i].trim().match(/^%%CALLOUT_\d+%%$/) &&
+           !lines[i].trim().match(/^%%QUOTE_\d+%%$/) &&
            !lines[i].trim().match(/^%%MATHBLOCK_\d+%%$/) &&
            lines[i].trim() !== '%%CONCEPT_MAP%%' &&
            !lines[i].trim().match(/^[\-\*]\s+/) &&
@@ -736,13 +773,16 @@ export async function renderNotes(markdownStr, targetEl) {
     return;
   }
 
-  // 1. Extract math, then callouts, from raw markdown (before any other
-  //    parsing — math first so callout bodies can contain LaTeX too)
-  const { cleaned: mathCleaned, mathBlocks } = _extractMath(markdownStr);
-  const { cleaned, callouts } = _extractCallouts(mathCleaned);
+  // 1. Extract quotes (callouts + plain blockquotes) first — each one pulls
+  //    math out of its own raw body via _extractMath internally, so a
+  //    display-math block never has to survive being embedded in a ">"
+  //    line. Then extract math from whatever text is left at the top level.
+  const mathBlocks = [];
+  const { cleaned: quotesCleaned, quotes } = _extractQuotes(markdownStr, mathBlocks);
+  const { cleaned } = _extractMath(quotesCleaned, mathBlocks);
 
   // 2. Render markdown → HTML (self-contained, no CDN)
-  const html = _renderMarkdown(cleaned, callouts);
+  const html = _renderMarkdown(cleaned, quotes);
   targetEl.innerHTML = html;
 
   // 3. Render mermaid diagrams (lazy CDN load, graceful fallback)
@@ -765,9 +805,10 @@ export async function renderChatContent(markdownStr, targetEl) {
   if (!targetEl) return;
   if (!markdownStr || !markdownStr.trim()) { targetEl.innerHTML = ''; return; }
 
-  const { cleaned: mathCleaned, mathBlocks } = _extractMath(markdownStr);
-  const { cleaned, callouts } = _extractCallouts(mathCleaned);
-  targetEl.innerHTML = _renderMarkdown(cleaned, callouts);
+  const mathBlocks = [];
+  const { cleaned: quotesCleaned, quotes } = _extractQuotes(markdownStr, mathBlocks);
+  const { cleaned } = _extractMath(quotesCleaned, mathBlocks);
+  targetEl.innerHTML = _renderMarkdown(cleaned, quotes);
 
   await _renderMermaidBlocks(targetEl);
   await _renderMathBlocks(targetEl, mathBlocks);

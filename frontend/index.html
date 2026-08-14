@@ -188,6 +188,11 @@
 
     const existingSession = localStorage.getItem('maros_session');
 
+    // ── BETA PASSCODES ─────────────────────────────────────────────────
+    // Change these two lines whenever you want to rotate the codes.
+    const STUDENT_PASSCODE = 'vnit2026';
+    const PROF_PASSCODE    = 'oak-admin-2026';
+
     // ── NAVIGATION ─────────────────────────────────────────────────────
     const studentCard = document.getElementById('student-card');
     const roleCards   = document.getElementById('role-cards');
@@ -200,6 +205,10 @@
       }
       const code = prompt('Enter professor passcode:');
       if (code === null) return;
+      if (code.trim() !== PROF_PASSCODE) {
+        alert('Incorrect passcode.');
+        return;
+      }
       sessionStorage.setItem('maros_prof_token', code.trim());
       sessionStorage.setItem('maros_prof', '1');
       window.location.href = 'professor.html';
@@ -207,6 +216,17 @@
 
     studentCard.addEventListener('click', () => {
       if (existingSession) { window.location.href = 'student.html'; return; }
+
+      if (sessionStorage.getItem('maros_student_gate') !== '1') {
+        const code = prompt('Enter student beta passcode:');
+        if (code === null) return;
+        if (code.trim() !== STUDENT_PASSCODE) {
+          alert('Incorrect passcode.');
+          return;
+        }
+        sessionStorage.setItem('maros_student_gate', '1');
+      }
+
       roleCards.style.display = 'none';
       loginPanel.classList.add('active');
       document.getElementById('login-name').focus();
