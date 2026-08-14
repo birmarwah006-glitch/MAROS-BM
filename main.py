@@ -75,6 +75,12 @@ class QuizSubmitResult(BaseModel):
 class YouTubeIngestRequest(BaseModel):
     url: str
 
+# Path to the Deno JS runtime yt-dlp needs to solve YouTube's signature
+# challenge (installed via `winget install DenoLand.Deno` on the VNIT
+# Windows server; PATH wasn't picking it up reliably, so it's pointed at
+# directly here instead of relying on `deno` being on PATH).
+DENO_PATH = r"C:\Users\Dell\AppData\Local\Microsoft\WinGet\Packages\DenoLand.Deno_Microsoft.Winget.Source_8wekyb3d8bbwe\deno.exe"
+
 class CodeExecRequest(BaseModel):
     language: str
     code:     str
@@ -612,7 +618,7 @@ async def ingest_youtube(
     video_title = None
     try:
         title_res = subprocess.run(
-            ["yt-dlp", "--print", "title", "--no-playlist", "--skip-download", req.url],
+            ["yt-dlp", "--js-runtimes", f"deno:{DENO_PATH}", "--print", "title", "--no-playlist", "--skip-download", req.url],
             capture_output=True, text=True, timeout=30,
         )
         video_title = (title_res.stdout or "").strip().splitlines()[0] if title_res.stdout else None
@@ -631,6 +637,7 @@ async def ingest_youtube(
             result = subprocess.run(
                 [
                     "yt-dlp",
+                    "--js-runtimes", f"deno:{DENO_PATH}",  # YouTube now requires JS to solve sig challenge
                     "-x",                         # extract audio only
                     "--audio-format", "mp3",
                     "--audio-quality", "5",        # medium quality, small file
@@ -640,11 +647,16 @@ async def ingest_youtube(
                 ],
                 capture_output=True, text=True, timeout=600,
             )
+            if result.returncode != 0:
+                print(f"[MAROS] yt-dlp failed (code {result.returncode}): {result.stderr[-2000:]}")
+                raise RuntimeError(f"yt-dlp exited {result.returncode}: {result.stderr[-500:]}")
             # yt-dlp may name it slightly differently
             actual = output if output.exists() else output.with_suffix(".mp3")
             if not actual.exists():
                 matches = list(UPLOADS_DIR.glob(f"{job_id}*"))
                 actual  = matches[0] if matches else output
+            if not actual.exists():
+                raise RuntimeError(f"yt-dlp reported success but no output file found for job {job_id}")
 
             print(f"[MAROS] YouTube download done → {actual}")
             chipper.run_pipeline(actual, job_id)
@@ -1659,7 +1671,7 @@ When the student answers the Quick Check:
 
 Rules:
 - Stay on the current concept. If the student asks about something else, answer briefly, then steer back to the Quick Check.
-- No passive filler ("let me know if...", "feel free to...").
+- No passive filler ("let me know if...", "feel free to..."").
 - Keep it tight — this is prep, not a lecture.""" + OAK_VISUAL_RULES
     }
 }
