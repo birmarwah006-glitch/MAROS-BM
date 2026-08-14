@@ -24,6 +24,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import Callable, Iterable
@@ -99,6 +100,12 @@ class Question:
     concepts: list[str] = field(default_factory=list)  # filled by the tagger
     exam_type: str = "endsem"      # "midsem" | "endsem" — defaults to endsem
     # (whole-syllabus) for backward compat with data that predates this field.
+    role: str = "analysis"         # "analysis" | "pool" | "both" — analysis
+    # rows train/backtest the predictor; pool rows are the practice question
+    # bank generate_paper draws from. Defaults to analysis for old data.
+    answer: str | None = None      # worked solution, if the source paper had
+    # one (extract_questions.py pulls it into its own field so it never
+    # gets glued into `text` — see paper_predictor.py's validation gate).
 
 
 def load_questions(path: str) -> list[Question]:
@@ -128,6 +135,8 @@ def load_questions(path: str) -> list[Question]:
             text=r["text"] if "text" in r else r["question_text"],
             concepts=concepts,
             exam_type=r.get("exam_type", "endsem"),
+            role=r.get("role", "analysis"),
+            answer=(r.get("answer") or "").strip() or None,
         ))
     return out
 
@@ -147,6 +156,56 @@ def _tag_prompt(question_text: str) -> str:
         '{"concepts": ["<id>", ...]}\n'
         "Use only ids from the list above."
     )
+
+
+# ---------------------------------------------------------------------------
+# NO-LLM FALLBACK — keyword-based concept tagger for when the API is dead
+# (rate-limited, no key, offline demo). Lower quality than the real tagger:
+# no semantic understanding, just substring matching on each concept's id
+# words + a few hand-picked terms from its gloss. Good enough to unblock a
+# demo tonight; RE-RUN with the real LLM tagger once keys are healthy —
+# tag_cache.json is keyed by q_id+text hash, so a real rerun only re-tags
+# what changed, it won't waste calls re-tagging what this already covered.
+# ---------------------------------------------------------------------------
+_CONCEPT_KEYWORDS: dict[str, list[str]] = {
+    "computer-architecture": ["cache", "register", "interrupt", "instruction execution",
+                               "memory hierarchy", "cpu architecture"],
+    "cpu-virtualization":    ["limited direct execution", "trap", "system call",
+                               "user mode", "kernel mode", "timer interrupt", "lde"],
+    "processes":             ["fork", "exec", "wait(", "process control block", "pcb",
+                               "process state", "address space layout", "process api"],
+    "scheduling":            ["fifo", "sjf", "stcf", "round robin", "mlfq", "lottery",
+                               "scheduling", "turnaround time", "response time",
+                               "waiting time", "scheduler"],
+    "memory-virtualization": ["base and bound", "base-and-bound", "segmentation",
+                               "virtual address", "physical address", "address translation"],
+    "paging":                ["page table", "tlb", "page fault", "page replacement",
+                               "multi-level page", "paging", "swap", "frame"],
+    "concurrency":           ["race condition", "critical section", "concurrency",
+                               "atomicity", "synchroniz"],
+    "threads":               ["thread", "pthread_create", "multi-threaded"],
+    "locks":                 ["mutex", "lock", "semaphore", "spinlock", "condition variable"],
+    "persistence":           ["disk", "raid", "i/o device", "persistence", "storage device"],
+    "file-systems":          ["inode", "file system", "directory", "fat", "ffs",
+                               "journal", "vfs"],
+    "data-integrity":        ["checksum", "crash consistency", "fsck", "data integrity",
+                               "acid", "durab"],
+}
+
+
+def heuristic_concept_tagger(prompt: str) -> str:
+    """Drop-in replacement for llm_call in tag_questions/tag_types when the
+    LLM API is unavailable. Extracts the question text back out of the
+    prompt (it's wrapped in triple-quotes by _tag_prompt) and keyword-matches
+    it against every concept's term list. Returns the same JSON shape the
+    real tagger returns, so nothing downstream needs to change."""
+    m = re.search(r'"""(.*?)"""', prompt, re.DOTALL)
+    text = (m.group(1) if m else prompt).lower()
+    hits = [cid for cid, kws in _CONCEPT_KEYWORDS.items()
+            if any(kw in text for kw in kws)]
+    if not hits:
+        hits = ["processes"]           # safest single default over nothing
+    return json.dumps({"concepts": hits})
 
 
 def default_llm_tagger(prompt: str) -> str:

@@ -131,6 +131,81 @@
   }
   .prep-legend-item { display: flex; align-items: center; gap: 5px; }
   .prep-legend-dot { width: 7px; height: 7px; border-radius: 50%; }
+
+  /* ── Stage bar (teach -> quiz -> practice) ── */
+  .prep-stage-bar {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 16px; border-bottom: 1px solid var(--border);
+    font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.06em;
+  }
+  .prep-stage-chip {
+    padding: 3px 10px; border-radius: 999px; border: 1px solid var(--border);
+    color: var(--muted2); background: var(--bg);
+  }
+  .prep-stage-chip.on {
+    border-color: var(--green-line, var(--green)); color: var(--fg);
+    background: var(--surface); font-weight: 700;
+  }
+  .prep-stage-chip.passed { color: var(--green); border-color: var(--green-line, var(--green)); }
+  .prep-stage-arrow { color: var(--muted2); }
+  .prep-stage-action {
+    margin-left: auto; background: var(--green); border: none; border-radius: 6px;
+    color: var(--bg); cursor: pointer; padding: 5px 12px; font-size: 11px;
+    font-family: var(--font-mono); font-weight: 700;
+  }
+  .prep-stage-action:hover { filter: brightness(1.1); }
+  .prep-stage-action.outline {
+    background: none; border: 1px solid var(--border); color: var(--fg);
+  }
+
+  /* ── Event banners inside the chat stream ── */
+  .prep-banner {
+    align-self: center; text-align: center;
+    font-family: var(--font-mono); font-size: 11px;
+    border: 1px solid var(--border); border-radius: 999px;
+    padding: 6px 16px; margin: 10px auto; max-width: 90%;
+    color: var(--muted2); background: var(--surface);
+    animation: fadeUp 0.3s ease;
+  }
+  .prep-banner.pass { color: var(--green); border-color: var(--green-line, var(--green)); }
+  .prep-banner.fail { color: var(--red, #ff6b6b); border-color: var(--red, #ff6b6b); }
+
+  /* ── Predicted paper ── */
+  .prep-paper-badge {
+    display: inline-block; font-family: var(--font-mono); font-size: 10px;
+    border: 1px solid var(--green-line, var(--green)); color: var(--green);
+    border-radius: 999px; padding: 3px 10px; margin: 0 6px 12px 0;
+  }
+  .prep-paper-q {
+    padding: 12px 0; border-bottom: 1px solid var(--border);
+  }
+  .prep-paper-q:last-child { border-bottom: none; }
+  .prep-paper-q-top {
+    display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px;
+  }
+  .prep-paper-q-no { font-weight: 700; font-size: 13px; }
+  .prep-paper-q-marks {
+    margin-left: auto; font-family: var(--font-mono); font-size: 10px;
+    color: var(--fg); border: 1px solid var(--border); border-radius: 6px;
+    padding: 2px 8px; white-space: nowrap;
+  }
+  .prep-paper-q-text { font-size: 13px; line-height: 1.55; }
+  .prep-paper-q-answer {
+    font-size: 13px; line-height: 1.55; margin-top: 8px; padding: 10px 12px;
+    background: var(--bg); border-left: 3px solid var(--green-line, var(--green));
+    border-radius: 4px;
+  }
+  .prep-paper-q-answer-label {
+    font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.06em;
+    color: var(--green); margin-bottom: 4px; text-transform: uppercase;
+  }
+  .prep-paper-q-no-answer {
+    font-family: var(--font-mono); font-size: 10px; color: var(--muted2);
+    font-style: italic; margin-top: 8px;
+  }
+  .prep-paper-q-meta {
+    font-family: var(--font-mono); font-size: 9px; color: var(--muted2); margin-top: 5px;
+  }
 </style>
 </head>
 <body>
@@ -169,6 +244,9 @@
     <button class="prep-back-link" id="prep-back-to-tree" title="Back to your plan" style="margin-right:6px">← plan</button>
   </div>
 
+  <!-- teach -> quiz -> practice progress + contextual action -->
+  <div class="prep-stage-bar" id="prep-stage-bar"></div>
+
   <div class="oak-messages" id="oak-messages"></div>
 
   <div class="oak-input-row">
@@ -199,9 +277,29 @@ const TIER_COLORS = {
 };
 const TIER_LABELS = { high: 'High priority', medium: 'Medium priority', low: 'Lower priority' };
 
-let chatHistory     = [];
-let currentExamType = null;
+const TYPE_LABELS = {
+  define_explain: 'explain',
+  numerical:      'numerical',
+  compare:        'compare',
+  code_trace:     'code',
+  diagram:        'diagram',
+  short_note:     'short note',
+};
+
+const STAGES = ['teach', 'quiz', 'practice'];
+const QUIZ_PASS = 3, QUIZ_TOTAL = 5;
+
+// Client-side fallback for the backend markers — used only if /chat doesn't
+// return prep_events yet (parse_prep_markers not wired, or api.js not
+// passing it through). Either way the student never sees raw markers.
+const QUIZ_MARKER_RE     = /\[PREP_QUIZ\s+(\d+)\s*\/\s*(\d+)\]/;
+const PRACTICE_MARKER_RE = /\[PREP_PRACTICE_DONE\]/;
+
+let chatHistory         = [];
+let currentExamType     = null;
 let currentConceptLabel = '';
+let currentStage        = 'teach';
+let lastQuizFailed      = false;
 
 function setupArea() { return document.getElementById('prep-setup-area'); }
 
@@ -216,6 +314,7 @@ async function boot() {
 
   if (existing && existing.active && !existing.expired && existing.total > 0) {
     currentExamType = existing.exam_type;
+    currentStage    = existing.stage || 'teach';
     renderResumeCard(existing);
     return;
   }
@@ -319,11 +418,12 @@ function renderCandidates(examType, data) {
 function renderResumeCard(sess) {
   const area = setupArea();
   const c = sess.current_concept;
+  const stageNote = c && sess.stage ? ` (${sess.stage} stage)` : '';
   area.innerHTML = `
     <div class="prep-card">
       <div class="prep-heading">Welcome back</div>
       <div class="prep-subtext">
-        ${sess.completed_count} of ${sess.total} concepts done${c ? ` · currently on: ${c.label}` : ''}.
+        ${sess.completed_count} of ${sess.total} concepts done${c ? ` · currently on: ${c.label}${stageNote}` : ''}.
         ${sess.days_left != null ? ` ${sess.days_left} days left.` : ''}
       </div>
       <button class="btn btn-primary" id="prep-resume-btn">View plan</button>
@@ -406,9 +506,13 @@ async function renderTree() {
         <div class="prep-legend-item"><span class="prep-legend-dot" style="background:${TIER_COLORS.medium}"></span> Medium priority</div>
         <div class="prep-legend-item"><span class="prep-legend-dot" style="background:${TIER_COLORS.low}"></span> Lower priority</div>
       </div>
-      ${tree.completed_count >= tree.total ? '<div class="prep-subtext" style="margin-top:14px;color:var(--green)">🎉 You\'ve covered every concept in this plan.</div>' : ''}
+
+      <button class="btn btn-outline" id="prep-paper-btn" style="margin-top:16px">View predicted paper</button>
+      ${tree.completed_count >= tree.total ? '<div class="prep-subtext" style="margin-top:14px;color:var(--green)">You\'ve covered every concept in this plan.</div>' : ''}
     </div>
   `;
+
+  document.getElementById('prep-paper-btn').addEventListener('click', renderPredictedPaper);
 
   area.querySelectorAll('.prep-node').forEach(btn => {
     btn.addEventListener('click', async () => {
@@ -421,6 +525,7 @@ async function renderTree() {
         });
         if (!res.ok) throw new Error(`${res.status}`);
         currentConceptLabel = label;
+        currentStage = 'teach';   // jump always restarts the concept flow
         enterChat();
       } catch (e) {
         alert(`Couldn't switch to that concept: ${e.message}`);
@@ -429,16 +534,199 @@ async function renderTree() {
   });
 }
 
-function enterChat() {
+// ── Predicted paper screen ──
+async function renderPredictedPaper() {
+  const area = setupArea();
+  area.innerHTML = `<div class="prep-card"><div class="prep-subtext">Loading the predicted paper...</div></div>`;
+
+  let data;
+  try {
+    const res = await fetch(`${BASE}/prep/important-questions?exam_type=${currentExamType}&k=30`, { headers: AUTH_HEADERS });
+    if (!res.ok) {
+      if (res.status === 503) throw new Error('not built yet — ask your professor');
+      throw new Error(`${res.status}`);
+    }
+    data = await res.json();
+  } catch (e) {
+    area.innerHTML = `<div class="prep-card">
+      <div class="prep-heading">Predicted paper</div>
+      <div class="prep-error">Couldn't load it: ${e.message}</div>
+      <button class="btn btn-outline" id="prep-paper-back" style="margin-top:14px">← Back to plan</button>
+    </div>`;
+    document.getElementById('prep-paper-back').addEventListener('click', renderTree);
+    return;
+  }
+
+  const questions = data.questions || [];
+
+  const qHtml = questions.map((q, i) => `
+    <div class="prep-paper-q">
+      <div class="prep-paper-q-top">
+        <span class="prep-paper-q-no">Q${i + 1}</span>
+        <span class="prep-paper-q-marks">${q.marks != null ? q.marks + ' marks' : '—'}</span>
+      </div>
+      <div class="prep-paper-q-text">${escapeHtml(q.text)}</div>
+      ${q.answer
+        ? `<div class="prep-paper-q-answer">
+             <div class="prep-paper-q-answer-label">Answer</div>
+             ${escapeHtml(q.answer)}
+           </div>`
+        : `<div class="prep-paper-q-no-answer">No worked solution available for this one.</div>`
+      }
+      <div class="prep-paper-q-meta">${(q.concept || '').replace(/-/g, ' ')} · ${q.source_label || ''}</div>
+    </div>
+  `).join('');
+
+  area.innerHTML = `
+    <div class="prep-card">
+      <div class="prep-heading">Predicted ${currentExamType === 'midsem' ? 'Midterm' : 'Endsem'} paper</div>
+      <div class="prep-subtext">
+        Top ${questions.length} most important real past questions, ranked by how
+        often and how heavily they've been examined — with worked answers where
+        available.
+      </div>
+      ${qHtml}
+      <button class="btn btn-outline" id="prep-paper-back" style="margin-top:18px">← Back to plan</button>
+    </div>
+  `;
+  document.getElementById('prep-paper-back').addEventListener('click', renderTree);
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+// ── Chat + stage machine ──
+async function enterChat() {
   setupArea().style.display = 'none';
   document.getElementById('prep-chat-wrap').style.display = 'flex';
   document.body.classList.add('oak-fullscreen');
+  document.getElementById('oak-messages').innerHTML = '';
+  chatHistory = [];
+  lastQuizFailed = false;
+
+  // Pull the authoritative stage for this concept (resume mid-quiz etc.)
+  try {
+    const res = await fetch(`${BASE}/prep/session?exam_type=${currentExamType}`, { headers: AUTH_HEADERS });
+    if (res.ok) {
+      const s = await res.json();
+      currentStage = s.stage || currentStage || 'teach';
+      if (!currentConceptLabel && s.current_concept) currentConceptLabel = s.current_concept.label;
+    }
+  } catch (e) { /* non-fatal — keep local stage */ }
+
+  updateStatusLine();
+  updateStageBar();
+  sendPrepTurn("Let's start.", /*showUserBubble=*/false);
+}
+
+function updateStatusLine() {
   document.getElementById('prep-status-line').innerHTML =
     `&#9679; ${currentExamType === 'midsem' ? 'Midterm' : 'Endsem'} Prep` +
     (currentConceptLabel ? ` — ${currentConceptLabel}` : '');
-  document.getElementById('oak-messages').innerHTML = '';
-  chatHistory = [];
-  sendPrepTurn("Let's start.", /*showUserBubble=*/false);
+}
+
+function updateStageBar() {
+  const bar = document.getElementById('prep-stage-bar');
+  const idx = STAGES.indexOf(currentStage);
+  const chips = STAGES.map((s, i) => {
+    const cls = s === currentStage ? 'on' : (i < idx ? 'passed' : '');
+    return `<span class="prep-stage-chip ${cls}">${s}</span>`;
+  }).join('<span class="prep-stage-arrow">→</span>');
+
+  let action = '';
+  if (currentStage === 'teach') {
+    action = `<button class="prep-stage-action" id="prep-stage-action-btn">Start quiz (${QUIZ_TOTAL} Qs · pass ${QUIZ_PASS}/${QUIZ_TOTAL})</button>`;
+  } else if (currentStage === 'quiz' && lastQuizFailed) {
+    action = `<button class="prep-stage-action outline" id="prep-stage-action-btn">Retry quiz</button>`;
+  }
+  bar.innerHTML = chips + action;
+
+  const btn = document.getElementById('prep-stage-action-btn');
+  if (btn) btn.addEventListener('click', async () => {
+    btn.disabled = true;
+    await setStage('quiz');
+    lastQuizFailed = false;
+    updateStageBar();
+    sendPrepTurn('Quiz me.', /*showUserBubble=*/false);
+  });
+}
+
+async function setStage(stage) {
+  currentStage = stage;
+  try {
+    await fetch(`${BASE}/prep/stage`, {
+      method: 'POST', headers: AUTH_HEADERS,
+      body: JSON.stringify({ exam_type: currentExamType, stage }),
+    });
+  } catch (e) {
+    console.warn('[MAROS] prep stage set failed:', e);
+  }
+}
+
+function addBanner(text, kind) {
+  const msgs = document.getElementById('oak-messages');
+  const div = document.createElement('div');
+  div.className = `prep-banner ${kind || ''}`;
+  div.textContent = text;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+// Server events preferred; falls back to parsing raw markers out of the text.
+function extractPrepEvents(reply) {
+  let content = String(reply.content ?? '');
+  let events = reply.prep_events && Object.keys(reply.prep_events).length
+    ? reply.prep_events : null;
+  let derived = false;
+
+  if (!events) {
+    events = {};
+    const m = content.match(QUIZ_MARKER_RE);
+    if (m) events.quiz = {
+      score: parseInt(m[1], 10),
+      total: parseInt(m[2], 10) || QUIZ_TOTAL,
+      passed: parseInt(m[1], 10) >= QUIZ_PASS,
+    };
+    if (PRACTICE_MARKER_RE.test(content)) events.practice_done = true;
+    derived = Object.keys(events).length > 0;
+    if (!derived) events = null;
+  }
+  content = content.replace(QUIZ_MARKER_RE, '').replace(PRACTICE_MARKER_RE, '').trim();
+  return { content, events, derived };
+}
+
+async function handlePrepEvents(events, derived) {
+  if (events.quiz) {
+    const { score, total, passed } = events.quiz;
+    if (passed) {
+      addBanner(`Quiz passed — ${score}/${total}. Moving to practice problems.`, 'pass');
+      lastQuizFailed = false;
+      // When events came from the server, the stage is already 'practice';
+      // when derived client-side, sync it ourselves. Idempotent either way.
+      await setStage('practice');
+      updateStageBar();
+      sendPrepTurn('Start the practice problems.', /*showUserBubble=*/false);
+    } else {
+      addBanner(`${score}/${total} — you need ${QUIZ_PASS}/${total}. Review the misses, then retry.`, 'fail');
+      lastQuizFailed = true;
+      if (derived) await setStage('quiz');
+      currentStage = 'quiz';
+      updateStageBar();
+    }
+  }
+
+  if (events.practice_done) {
+    addBanner('Concept complete. Nice work — pick your next one from the plan.', 'pass');
+    if (derived) {
+      // Backend markers not wired: replicate what parse_prep_markers would do.
+      // NOTE: needs a small /prep/complete route if you keep client-side mode;
+      // with parse_prep_markers wired into /chat this branch never runs.
+      console.warn('[MAROS] practice_done derived client-side — wire parse_prep_markers into /chat to persist completion.');
+    }
+    currentStage = 'teach';
+    setTimeout(renderTree, 1800);
+  }
 }
 
 document.getElementById('prep-back-to-tree').addEventListener('click', renderTree);
@@ -477,19 +765,29 @@ async function sendPrepTurn(message, showUserBubble = true) {
       history: chatHistory, role: 'student', mode: 'prep',
     });
     removeTyping();
-    addMessage('assistant', reply.content);
-    chatHistory.push({ role: 'assistant', content: reply.content, timestamp: new Date().toISOString() });
+    const { content, events, derived } = extractPrepEvents(reply);
+    addMessage('assistant', content);
+    chatHistory.push({ role: 'assistant', content, timestamp: new Date().toISOString() });
+    if (events) await handlePrepEvents(events, derived);
   } catch (e) {
     removeTyping();
     addMessage('assistant', `Connection issue: ${e.message}`);
   }
 }
 
-document.getElementById('oak-send-btn').addEventListener('click', () => {
+document.getElementById('oak-send-btn').addEventListener('click', async () => {
   const input = document.getElementById('oak-input');
   const msg = input.value.trim();
   if (!msg) return;
   input.value = '';
+
+  // Typed quiz intent during teach stage: sync the server stage FIRST so the
+  // next context Oak gets is the quiz stage, not teach.
+  if (currentStage === 'teach' && /\b(quiz me|test me|i'?m ready|ready for (the )?quiz|start (the )?quiz)\b/i.test(msg)) {
+    await setStage('quiz');
+    lastQuizFailed = false;
+    updateStageBar();
+  }
   sendPrepTurn(msg);
 });
 document.getElementById('oak-input').addEventListener('keydown', (e) => {

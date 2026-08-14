@@ -15,6 +15,8 @@ Flow (v2 — free navigation):
   GET  /prep/session  ?exam_type=                    -> resume where they left off
   GET  /prep/tree      ?exam_type=                   -> every concept + status, for the tree UI
   POST /prep/jump     {exam_type, concept_id}         -> student picked a concept from the tree
+  GET  /prep/paper     ?exam_type=                     -> the predicted exam paper + backtest scores
+  POST /prep/stage    {exam_type, stage}               -> explicit teach/quiz/practice transition
 
 Prep tracks per-student progress, so all routes require login.
 """
@@ -116,3 +118,55 @@ async def prep_jump(req: PrepJumpRequest, request: Request):
         payload={"exam_type": req.exam_type, "concept_id": req.concept_id},
     )
     return result
+
+class PrepStageRequest(BaseModel):
+    exam_type: str
+    stage: str                # "teach" | "quiz" | "practice"
+
+
+@router.get("/paper")
+async def prep_paper(request: Request, exam_type: str):
+    """The predicted exam paper (real PYQs assembled per the slot ranking +
+    blueprint), with its walk-forward backtest attached so accuracy is shown,
+    not implied. Frozen artifact — rebuild with paper_predictor.py --build."""
+    await _require_login(request)
+    try:
+        return prep.get_predicted_paper(exam_type)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=503, detail=f"Predicted paper not built: {e}")
+
+
+@router.post("/stage")
+async def prep_stage(req: PrepStageRequest, request: Request):
+    """Explicit stage transition for the current concept — e.g. the frontend's
+    'Start quiz' / 'Retry quiz' buttons. Marker-driven advancement (quiz pass,
+    practice done) happens automatically inside /chat via parse_prep_markers."""
+    user_id = await _require_login(request)
+    try:
+        result = prep.set_prep_stage(user_id, req.exam_type, req.stage)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Prep stage failed: {e}")
+
+    log_interaction(
+        student_id=user_id, event_type="prep_stage",
+        payload={"exam_type": req.exam_type, "stage": req.stage},
+    )
+    return result
+
+@router.get("/important-questions")
+async def prep_important_questions(request: Request, exam_type: str, k: int = 30, concept: str = None):
+    """Top-30 most important real past questions ranked by importance,
+    with worked answers where available. Frozen artifact — rebuild with
+    paper_predictor.py --build."""
+    await _require_login(request)
+    try:
+        items = prep.get_important_questions(exam_type, k=k, concept=concept)
+        return {"exam_type": exam_type, "questions": items}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=503, detail=f"Important questions not built: {e}")

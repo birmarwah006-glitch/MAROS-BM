@@ -76,15 +76,16 @@ class Quiz(BaseModel):
 # CHAT
 # ─────────────────────────────────────────────
 
+
 class ChatRole(str, Enum):
     user      = "user"
     assistant = "assistant"
 
 class ChatMessage(BaseModel):
-    role      : ChatRole
+    role      : str                          # ← was ChatRole enum; str accepts anything
     content   : str
     module_id : Optional[int] = None
-    timestamp : datetime
+    timestamp : Optional[datetime] = None    # ← was required datetime
 
 
 # ─────────────────────────────────────────────

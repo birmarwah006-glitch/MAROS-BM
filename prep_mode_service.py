@@ -29,6 +29,7 @@ where each student is in it.
 from __future__ import annotations
 
 import json
+import re
 from datetime import datetime, timezone, date
 from pathlib import Path
 from functools import lru_cache
@@ -41,6 +42,20 @@ from prep_mode import (
 
 DATA_DIR = Path(__file__).parent / "data"
 VALID_EXAM_TYPES = ("midsem", "endsem")
+
+# Per-concept teaching stages (the notebook flow):
+#   teach    -> why / definition / example / code / "think of it as" comparison
+#   quiz     -> 5 questions, ONE at a time, pass gate is 3/5
+#   practice -> 5 real PYQ problems, deep model answers + what-NOT-to-do
+# Passing practice marks the concept done; the student picks the next node.
+STAGES = ("teach", "quiz", "practice")
+QUIZ_PASS = 3          # out of...
+QUIZ_TOTAL = 5
+
+# Markers Oak is instructed to emit so /chat can advance the stage machine
+# without any extra LLM call. parse_prep_markers() consumes + strips them.
+QUIZ_MARKER = re.compile(r"\[PREP_QUIZ\s+(\d+)\s*/\s*(\d+)\]")
+PRACTICE_MARKER = re.compile(r"\[PREP_PRACTICE_DONE\]")
 
 
 # ─────────────────────────────────────────────
@@ -57,6 +72,101 @@ def _load_ranking(exam_type: str) -> dict:
             f"{path} missing — run prep_rankings.py to generate it."
         )
     return json.loads(path.read_text())
+
+
+@lru_cache(maxsize=4)
+def _load_predicted_paper(exam_type: str) -> dict:
+    """Frozen predicted-paper artifact (paper_predictor.py --build). Same
+    read-only discipline as rankings: rebuild = rerun script + restart."""
+    path = DATA_DIR / f"predicted_paper_{exam_type}.json"
+    if not path.exists():
+        raise FileNotFoundError(
+            f"{path} missing — run paper_predictor.py --build to generate it."
+        )
+    return json.loads(path.read_text())
+
+
+def get_predicted_paper(exam_type: str) -> dict:
+    """Public accessor for the /prep/paper route. Includes the walk-forward
+    backtest block so the UI can show validated accuracy next to the paper
+    instead of implying certainty the data doesn't support."""
+    if exam_type not in VALID_EXAM_TYPES:
+        raise ValueError(f"exam_type must be one of {VALID_EXAM_TYPES}")
+    return _load_predicted_paper(exam_type)
+
+
+@lru_cache(maxsize=4)
+def _load_important_questions(exam_type: str) -> dict:
+    """Frozen artifact (paper_predictor.py --build). Same read-only
+    discipline as rankings and the predicted paper."""
+    path = DATA_DIR / f"important_questions_{exam_type}.json"
+    if not path.exists():
+        raise FileNotFoundError(
+            f"{path} missing — run paper_predictor.py --build to generate it."
+        )
+    return json.loads(path.read_text())
+
+
+def get_important_questions(exam_type: str, k: int | None = None,
+                            concept: str | None = None) -> list[dict]:
+    """Fast, no-LLM read for Oak's chat ('give me the most important
+    questions'). Slices the frozen top-30 build artifact — never re-tags
+    or re-ranks live inside a chat turn."""
+    if exam_type not in VALID_EXAM_TYPES:
+        raise ValueError(f"exam_type must be one of {VALID_EXAM_TYPES}")
+    items = _load_important_questions(exam_type)["questions"]
+    if concept:
+        items = [it for it in items if it["concept"] == concept]
+    return items[:k] if k else items
+
+
+def get_active_exam_type(owner_key: str) -> str | None:
+    """Which exam the student's active prep session is for, or None if
+    they have no active session — used by /chat to know which frozen
+    important-questions artifact to read for an ad-hoc 'give me the most
+    important questions' ask."""
+    sb = get_sb()
+    if not sb or not owner_key:
+        return None
+    row = _active_session(sb, owner_key)
+    return row["exam_type"] if row else None
+
+
+@lru_cache(maxsize=4)
+def _load_important_questions(exam_type: str) -> dict:
+    """Frozen artifact (paper_predictor.py --build). Same read-only
+    discipline as rankings and the predicted paper."""
+    path = DATA_DIR / f"important_questions_{exam_type}.json"
+    if not path.exists():
+        raise FileNotFoundError(
+            f"{path} missing — run paper_predictor.py --build to generate it."
+        )
+    return json.loads(path.read_text())
+
+
+def get_important_questions(exam_type: str, k: int | None = None,
+                            concept: str | None = None) -> list[dict]:
+    """Fast, no-LLM read for Oak's chat ('give me the most important
+    questions'). Slices the frozen top-30 build artifact — never re-tags
+    or re-ranks live inside a chat turn."""
+    if exam_type not in VALID_EXAM_TYPES:
+        raise ValueError(f"exam_type must be one of {VALID_EXAM_TYPES}")
+    items = _load_important_questions(exam_type)["questions"]
+    if concept:
+        items = [it for it in items if it["concept"] == concept]
+    return items[:k] if k else items
+
+
+def get_active_exam_type(owner_key: str) -> str | None:
+    """Which exam the student's active prep session is for, or None if
+    they have no active session — used by /chat to know which frozen
+    important-questions artifact to read for an ad-hoc 'give me the most
+    important questions' ask."""
+    sb = get_sb()
+    if not sb or not owner_key:
+        return None
+    row = _active_session(sb, owner_key)
+    return row["exam_type"] if row else None
 
 
 def _concept_meta(exam_type: str, concept_id: str) -> Optional[dict]:
@@ -197,6 +307,8 @@ def finalize_prep_plan(owner_key: str, exam_type: str,
         "status": "active",
         "weak_concepts": [],
         "revisit_added": False,
+        "stage": "teach",
+        "quiz_scores": {},        # concept_id -> best "x/5" achieved
     })
     _upsert(sb, row)
     _deactivate_others(sb, owner_key, keep_exam=exam_type)
@@ -235,6 +347,8 @@ def get_prep_session(owner_key: str, exam_type: str | None = None) -> dict:
         "total": len(queue),
         "completed_count": len(completed),
         "current_concept": current,
+        "stage": row.get("stage", "teach"),
+        "quiz_scores": row.get("quiz_scores", {}) or {},
         "done": bool(queue) and len(completed) >= len(queue),
     }
 
@@ -305,6 +419,7 @@ def jump_to_concept(owner_key: str, exam_type: str, concept_id: str) -> dict:
 
     row["current_concept"] = concept_id
     row["status"] = "active"
+    row["stage"] = "teach"        # every concept starts at the top of the flow
     _upsert(sb, row)
     _deactivate_others(sb, owner_key, keep_exam=exam_type)
 
@@ -354,32 +469,174 @@ def build_prep_context(owner_key: Optional[str]) -> tuple[str, Optional[str]]:
     queue = row.get("queue", [])
     completed_count = len(row.get("completed", []) or [])
 
-    # Ground the explanation in real past-paper material for THIS concept.
-    rag_block = ""
-    try:
-        from rag import build_rag_context
-        rag_query = f"{label}: {gloss[:160]}"
-        rag = build_rag_context(rag_query, n_results=5)
-        if rag:
-            rag_block = (
-                "\n\nGROUND YOUR EXPLANATION IN THIS PAST-PAPER MATERIAL "
-                "(quote/adapt exam phrasing where useful):\n" + rag[:4000] + "\n"
-            )
-    except Exception as e:
-        print(f"[MAROS] prep RAG grounding skipped (non-fatal): {e}")
+    stage = row.get("stage", "teach")
+    if stage not in STAGES:
+        stage = "teach"
 
-    context = f"""
+    # Ground in real material for THIS concept. Quiz/practice stages want
+    # actual exam questions (doc_type=year_paper); teach wants everything.
+    rag_block = _prep_rag(label, gloss, stage)
+
+    header = f"""
 PREP MODE — focused {exam_type} exam prep. The exam is {when}.
-The student has completed {completed_count} of {len(queue)} concepts in their plan and picked this one to study now.
+The student has completed {completed_count} of {len(queue)} concepts in their plan.
 
-TEACH ONLY THIS CONCEPT NOW:
-CONCEPT: {label}
+CURRENT CONCEPT: {label}
 WHY IT MATTERS: importance rank #{rank} for {exam_type}; appeared in {appeared} of the last {total_papers} {exam_type} papers.
 SCOPE OF THIS CONCEPT: {gloss}{rag_block}
 
-Teach it with the What it is / How it works / Example / Exam angle structure, then end with ONE Quick Check styled like a real exam question on this concept. Do NOT move to another concept yourself — the student picks the next one from their plan once they pass the Quick Check.
+CURRENT STAGE: {stage.upper()} (flow per concept: teach -> quiz -> practice -> done). Do NOT move to another concept yourself — the student picks the next one from their plan tree.
 """
-    return context, concept_id
+
+    if stage == "teach":
+        body = f"""
+STAGE INSTRUCTIONS — TEACH:
+Explain {label} in exactly this order, clearly separated:
+1. WHY — why this concept exists / what problem it solves.
+2. DEFINITION — precise, exam-ready definition (the phrasing that earns marks).
+3. EXAMPLE — one concrete worked example.
+4. CODE — a short code snippet or pseudo-code if the concept has one (fork, scheduling calc, page-table walk); skip only if genuinely code-free.
+5. THINK OF IT AS — compare it to something from everyday life that is very easy to understand.
+Where the past-paper material above shows how this is actually asked, mirror that phrasing.
+End with: "Type 'quiz me' when you're ready — {QUIZ_TOTAL} questions, you need {QUIZ_PASS}/{QUIZ_TOTAL} to pass."
+If the student says quiz me / ready / test me, begin the QUIZ stage behavior immediately in that same reply.
+"""
+    elif stage == "quiz":
+        body = f"""
+STAGE INSTRUCTIONS — QUIZ:
+Run a {QUIZ_TOTAL}-question quiz on {label}, ONE question at a time — never dump all at once.
+- Base questions on the real past-paper material above; keep them exam-styled.
+- After each student answer: say correct/incorrect with a ONE-line reason, then ask the next question.
+- Track the running score yourself across turns (count the correct answers so far in this quiz).
+- After question {QUIZ_TOTAL} is answered, report the result and emit this marker EXACTLY on its own line: [PREP_QUIZ x/{QUIZ_TOTAL}] where x is the score.
+- {QUIZ_PASS}/{QUIZ_TOTAL} or better passes. If they pass, tell them practice problems are next. If they fail, briefly re-explain ONLY the concepts behind the missed questions, then offer to retry the quiz.
+"""
+    else:  # practice
+        body = f"""
+STAGE INSTRUCTIONS — PRACTICE (real past-paper walkthrough):
+Work through 5 REAL previous-year questions on {label}, drawn from the past-paper material above (pick actual exam questions, with their marks if visible). ONE at a time:
+1. Show the question and let the student attempt it (or ask for the approach).
+2. Then give a DEEP model answer: step by step, the way a topper would write it, including the key terms/diagram/working that actually earn the marks.
+3. Then WHAT NOT TO DO: the common mistakes students make on exactly this question type and what loses marks.
+After all 5 are done, congratulate briefly and emit this marker EXACTLY on its own line: [PREP_PRACTICE_DONE]
+Then tell the student to pick their next concept from the plan tree.
+"""
+
+    return header + body, concept_id
+
+
+def _prep_rag(label: str, gloss: str, stage: str) -> str:
+    """Stage-appropriate RAG block. quiz/practice filter to real exam papers
+    (doc_type=year_paper) when rag.py supports the filter; teach pulls from
+    the whole corpus. All failures are non-fatal."""
+    rag_query = f"{label}: {gloss[:160]}"
+    text = ""
+    try:
+        if stage in ("quiz", "practice"):
+            try:
+                from rag import query_rag
+                res = query_rag(rag_query, n_results=8, doc_type="year_paper")
+                if isinstance(res, str):
+                    text = res
+                elif isinstance(res, (list, tuple)):
+                    text = "\n---\n".join(str(r) for r in res)
+                elif isinstance(res, dict):
+                    text = "\n---\n".join(str(d) for d in res.get("documents", []))
+            except (ImportError, TypeError):
+                text = ""                     # fall through to build_rag_context
+        if not text:
+            from rag import build_rag_context
+            text = build_rag_context(rag_query, n_results=5) or ""
+    except Exception as e:
+        print(f"[MAROS] prep RAG grounding skipped (non-fatal): {e}")
+        return ""
+    if not text:
+        return ""
+    head = ("REAL PAST-PAPER QUESTIONS ON THIS CONCEPT (use these as your "
+            "question source):" if stage in ("quiz", "practice") else
+            "GROUND YOUR EXPLANATION IN THIS PAST-PAPER MATERIAL "
+            "(quote/adapt exam phrasing where useful):")
+    return f"\n\n{head}\n{text[:4000]}\n"
+
+
+# ─────────────────────────────────────────────
+# STAGE MACHINE  (advance / markers)
+# ─────────────────────────────────────────────
+
+def set_prep_stage(owner_key: str, exam_type: str, stage: str) -> dict:
+    """Explicit stage set from the frontend (e.g. a 'Start quiz' button, or a
+    'retry quiz' after a fail). Stage applies to the current concept."""
+    if stage not in STAGES:
+        raise ValueError(f"stage must be one of {STAGES}")
+    sb = get_sb()
+    if not sb:
+        raise RuntimeError("Supabase not configured")
+    row = _get_row(sb, owner_key, exam_type)
+    if not row or not row.get("current_concept"):
+        raise ValueError("No active concept to set a stage on.")
+    row["stage"] = stage
+    _upsert(sb, row)
+    return {"stage": stage, "current_concept": row["current_concept"]}
+
+
+def parse_prep_markers(owner_key: Optional[str], reply_text: str) -> tuple[str, dict]:
+    """Call this from /chat on Oak's reply when mode == 'prep'.
+
+    Consumes stage markers, advances the session, and returns
+    (clean_text, events) where clean_text has the markers stripped and events
+    describes what happened so the frontend can react (confetti, tree refresh):
+
+      {"quiz": {"score": 4, "total": 5, "passed": True}}      when a quiz ends
+      {"practice_done": True, "concept_done": {...}}          when practice ends
+
+    Quiz pass -> stage 'practice'. Quiz fail -> stays 'quiz' + struggle flag.
+    Practice done -> concept marked complete, stage reset to 'teach' for
+    whatever the student jumps to next. No-ops safely without a session."""
+    events: dict = {}
+    clean = reply_text
+
+    m = QUIZ_MARKER.search(reply_text)
+    if m:
+        score, total = int(m.group(1)), int(m.group(2)) or QUIZ_TOTAL
+        passed = score >= QUIZ_PASS
+        events["quiz"] = {"score": score, "total": total, "passed": passed}
+        clean = QUIZ_MARKER.sub("", clean)
+        sb = get_sb()
+        if sb and owner_key:
+            row = _active_session(sb, owner_key)
+            if row and row.get("current_concept"):
+                cid = row["current_concept"]
+                scores = row.get("quiz_scores", {}) or {}
+                prev = scores.get(cid)
+                if prev is None or score > int(str(prev).split("/")[0] or 0):
+                    scores[cid] = f"{score}/{total}"
+                row["quiz_scores"] = scores
+                row["stage"] = "practice" if passed else "quiz"
+                try:
+                    _upsert(sb, row)
+                except Exception as e:
+                    print(f"[MAROS] prep quiz-marker upsert failed (non-fatal): {e}")
+                if not passed:
+                    mark_prep_struggle(owner_key, cid)
+
+    if PRACTICE_MARKER.search(reply_text):
+        clean = PRACTICE_MARKER.sub("", clean)
+        events["practice_done"] = True
+        sb = get_sb()
+        if sb and owner_key:
+            row = _active_session(sb, owner_key)
+            if row and row.get("current_concept"):
+                cid = row["current_concept"]
+                events["concept_done"] = mark_prep_concept_done(owner_key, cid)
+                row2 = _active_session(sb, owner_key)
+                if row2:
+                    row2["stage"] = "teach"
+                    try:
+                        _upsert(sb, row2)
+                    except Exception as e:
+                        print(f"[MAROS] prep stage-reset failed (non-fatal): {e}")
+
+    return clean.strip(), events
 
 
 def mark_prep_struggle(owner_key: str, concept_id: str) -> None:
