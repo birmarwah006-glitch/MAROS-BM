@@ -55,6 +55,21 @@ FOLDER_ROLE = {
     # "concepts", "tpoic vise concept:pdfs": notes/textbook material, not questions — never include here
 }
 
+# Filename-based fallback for FOLDER_ROLE, for layouts like W17/EndSem-OS-W17.docx
+# where exam type lives in the FILENAME, not a midterm/endsem subfolder. Only
+# consulted when no ancestor folder matches. Order matters — re-exam before
+# endsem, since "ReExam" filenames also contain "exam"-adjacent text.
+FILE_ROLE = [
+    (re.compile(r"re[\s\-_]?exam", re.I),       ("pool",     "endsem")),  # supplementary, treated as endsem-equivalent
+    (re.compile(r"e[\s\-_]?exam", re.I),         ("analysis", "endsem")),  # "EExam" = end exam (W24)
+    (re.compile(r"end[\s\-_]?sem", re.I),        ("analysis", "endsem")),
+    (re.compile(r"\bESE\b", re.I),               ("analysis", "endsem")),  # End Semester Exam abbreviation (W22, W24)
+    (re.compile(r"end[\s\-_]?paper", re.I),      ("analysis", "endsem")),  # "End-Paper" (W25)
+    (re.compile(r"sessional", re.I),             ("pool",     "midsem")),  # "First Sessional", "Second Sessional" (W19, W22)
+    (re.compile(r"ct\d|ts\d", re.I),             ("pool",     "midsem")),  # CT1/CT2/TS1
+    (re.compile(r"mid[\s\-_]?(term|sem)", re.I), ("both",     "midsem")),
+]
+
 SUPPORTED_EXT = {".pdf", ".docx", ".txt", ".md"}
 
 # Filenames in your folders are the year signal (17-25 == 2017-2025).
@@ -93,7 +108,9 @@ def guess_year_from_path(file_path: Path, root: Path) -> Optional[int]:
 
 def classify_folder(file_path: Path, root: Path) -> Optional[tuple[str, str]]:
     """(role, exam_type) from the closest matching ancestor folder name, or
-    None if nothing in FOLDER_ROLE matches -> file is skipped."""
+    a filename-based fallback (FILE_ROLE) for layouts like W17/EndSem-OS-W17.docx
+    with no midterm/endsem subfolder at all. None if neither matches -> file
+    is skipped."""
     try:
         parts = file_path.relative_to(root).parts[:-1]
     except ValueError:
@@ -101,6 +118,10 @@ def classify_folder(file_path: Path, root: Path) -> Optional[tuple[str, str]]:
     for part in reversed(parts):
         hit = FOLDER_ROLE.get(part.strip().lower())
         if hit:
+            return hit
+    stem = file_path.stem
+    for pattern, hit in FILE_ROLE:
+        if pattern.search(stem):
             return hit
     return None
 
