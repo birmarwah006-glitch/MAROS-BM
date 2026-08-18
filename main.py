@@ -75,6 +75,27 @@ class QuizSubmitResult(BaseModel):
 class YouTubeIngestRequest(BaseModel):
     url: str
 
+# Path to the Deno JS runtime yt-dlp needs to solve YouTube's signature
+# challenge (installed via `winget install DenoLand.Deno` on the VNIT
+# Windows server; PATH wasn't picking it up reliably, so it's pointed at
+# directly here instead of relying on `deno` being on PATH).
+import shutil as _shutil
+DENO_PATH = (
+    os.getenv("DENO_PATH")
+    or _shutil.which("deno")
+    or r"C:\Users\Dell\AppData\Local\Microsoft\WinGet\Packages\DenoLand.Deno_Microsoft.Winget.Source_8wekyb3d8bbwe\deno.exe"
+)
+
+
+def _ytdlp_js_runtime_args() -> list:
+    """Only pass --js-runtimes if the deno binary actually exists at
+    DENO_PATH — avoids hard-failing yt-dlp on machines/OSes where deno
+    isn't installed at that exact path (e.g. dev Mac vs. the Windows box
+    this was originally wired up on)."""
+    if DENO_PATH and Path(DENO_PATH).exists():
+        return ["--js-runtimes", f"deno:{DENO_PATH}"]
+    return []
+
 class CodeExecRequest(BaseModel):
     language: str
     code:     str
@@ -601,6 +622,10 @@ async def execute_code(req: CodeExecRequest):
 # just runs without cookies (works fine for videos that don't need auth).
 # Cookies expire periodically (weeks–months) — when downloads start 403ing
 # again, re-export from a logged-in browser session and overwrite the file.
+#
+# NOTE ON JS RUNTIME: YouTube also now requires solving a JS signature
+# challenge to resolve stream URLs — yt-dlp needs a JS runtime (Deno) to do
+# this. See DENO_PATH / _ytdlp_js_runtime_args() near the top of this file.
 # ─────────────────────────────────────────────
 
 YTDLP_COOKIES_PATH = os.getenv(
@@ -640,7 +665,7 @@ async def ingest_youtube(
     video_title = None
     try:
         title_res = subprocess.run(
-            ["yt-dlp"] + _ytdlp_cookie_args()
+            ["yt-dlp"] + _ytdlp_cookie_args() + _ytdlp_js_runtime_args()
             + ["--print", "title", "--no-playlist", "--skip-download", req.url],
             capture_output=True, text=True, timeout=30,
         )
@@ -657,7 +682,7 @@ async def ingest_youtube(
 
     def _download_and_process(url: str, output: Path, job_id: str):
         try:
-            cmd = ["yt-dlp"] + _ytdlp_cookie_args() + [
+            cmd = ["yt-dlp"] + _ytdlp_cookie_args() + _ytdlp_js_runtime_args() + [
                 "-x",                         # extract audio only
                 "--audio-format", "mp3",
                 "--audio-quality", "5",        # medium quality, small file
@@ -667,16 +692,14 @@ async def ingest_youtube(
             ]
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=600)
 
-            # FIX: previously the returncode was never checked — a failed
-            # (e.g. 403) download would fall through, log "done", and hand
-            # Chipper a path that was never created.
             if result.returncode != 0:
+                print(f"[MAROS] yt-dlp failed (code {result.returncode}): {result.stderr[-2000:]}")
                 raise RuntimeError(f"yt-dlp exited {result.returncode}: {result.stderr[-500:]}")
 
             # yt-dlp may name the output slightly differently than requested.
-            # FIX: verify against what's actually on disk instead of assuming
-            # `output` exists — previously this fell back to `output` even
-            # when nothing matched, silently handing Chipper a dead path.
+            # Verify against what's actually on disk instead of assuming
+            # `output` exists — a stale/mismatched fallback here was the
+            # original bug that silently handed Chipper a dead path.
             matches = list(UPLOADS_DIR.glob(f"{job_id}*"))
             if not matches:
                 raise RuntimeError(f"yt-dlp reported success but no output file found for job {job_id}")
