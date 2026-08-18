@@ -589,6 +589,34 @@ async def execute_code(req: CodeExecRequest):
 # ─────────────────────────────────────────────
 # YOUTUBE INGEST — paste a link instead of uploading
 # ─────────────────────────────────────────────
+#
+# NOTE ON AUTH: YouTube increasingly 403s anonymous yt-dlp requests, even for
+# public videos (format-level 403, not age/region restriction). The fix is
+# passing browser cookies to yt-dlp. `--cookies-from-browser` only works on a
+# machine with a local, logged-in browser — fine for dev, not for a deployed
+# server. Instead we point at an EXPORTED cookies.txt file (Netscape format,
+# via a browser extension like "Get cookies.txt LOCALLY"), which is portable
+# across dev/prod. Path is configurable via YTDLP_COOKIES_FILE so each
+# environment can point at its own file; if the file doesn't exist, yt-dlp
+# just runs without cookies (works fine for videos that don't need auth).
+# Cookies expire periodically (weeks–months) — when downloads start 403ing
+# again, re-export from a logged-in browser session and overwrite the file.
+# ─────────────────────────────────────────────
+
+YTDLP_COOKIES_PATH = os.getenv(
+    "YTDLP_COOKIES_FILE",
+    str(Path.home() / "Desktop/MAROS/config/cookies.txt"),
+)
+
+
+def _ytdlp_cookie_args() -> list:
+    """Shared helper — returns ['--cookies', path] if the cookies file
+    exists, else an empty list. Used by both the title-fetch and the
+    actual download so they stay in sync."""
+    if YTDLP_COOKIES_PATH and Path(YTDLP_COOKIES_PATH).exists():
+        return ["--cookies", YTDLP_COOKIES_PATH]
+    return []
+
 
 @app.post("/jobs/youtube", response_model=Job)
 async def ingest_youtube(
@@ -612,7 +640,8 @@ async def ingest_youtube(
     video_title = None
     try:
         title_res = subprocess.run(
-            ["yt-dlp", "--print", "title", "--no-playlist", "--skip-download", req.url],
+            ["yt-dlp"] + _ytdlp_cookie_args()
+            + ["--print", "title", "--no-playlist", "--skip-download", req.url],
             capture_output=True, text=True, timeout=30,
         )
         video_title = (title_res.stdout or "").strip().splitlines()[0] if title_res.stdout else None
@@ -628,23 +657,30 @@ async def ingest_youtube(
 
     def _download_and_process(url: str, output: Path, job_id: str):
         try:
-            result = subprocess.run(
-                [
-                    "yt-dlp",
-                    "-x",                         # extract audio only
-                    "--audio-format", "mp3",
-                    "--audio-quality", "5",        # medium quality, small file
-                    "-o", str(output.with_suffix("")),  # yt-dlp adds extension
-                    "--no-playlist",               # single video only
-                    url,
-                ],
-                capture_output=True, text=True, timeout=600,
-            )
-            # yt-dlp may name it slightly differently
-            actual = output if output.exists() else output.with_suffix(".mp3")
-            if not actual.exists():
-                matches = list(UPLOADS_DIR.glob(f"{job_id}*"))
-                actual  = matches[0] if matches else output
+            cmd = ["yt-dlp"] + _ytdlp_cookie_args() + [
+                "-x",                         # extract audio only
+                "--audio-format", "mp3",
+                "--audio-quality", "5",        # medium quality, small file
+                "-o", str(output.with_suffix("")),  # yt-dlp adds extension
+                "--no-playlist",               # single video only
+                url,
+            ]
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=600)
+
+            # FIX: previously the returncode was never checked — a failed
+            # (e.g. 403) download would fall through, log "done", and hand
+            # Chipper a path that was never created.
+            if result.returncode != 0:
+                raise RuntimeError(f"yt-dlp exited {result.returncode}: {result.stderr[-500:]}")
+
+            # yt-dlp may name the output slightly differently than requested.
+            # FIX: verify against what's actually on disk instead of assuming
+            # `output` exists — previously this fell back to `output` even
+            # when nothing matched, silently handing Chipper a dead path.
+            matches = list(UPLOADS_DIR.glob(f"{job_id}*"))
+            if not matches:
+                raise RuntimeError(f"yt-dlp reported success but no output file found for job {job_id}")
+            actual = matches[0]
 
             print(f"[MAROS] YouTube download done → {actual}")
             chipper.run_pipeline(actual, job_id)
