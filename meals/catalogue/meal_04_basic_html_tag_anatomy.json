@@ -1,0 +1,102 @@
+{
+  "meal": {
+    "schema_version": "1.0",
+    "id": "meal_04_basic_html_tag_anatomy",
+    "title": "Basic HTML Tag Anatomy",
+    "concept": "python.project.overview",
+    "objective": "Identify opening and closing tags, nesting, and common tags like div and a",
+    "difficulty": "beginner",
+    "prerequisites": [],
+    "next_concepts": [
+      "python.modules.import",
+      "python.modules.import"
+    ],
+    "source": {
+      "kind": "lecture"
+    },
+    "voice": {
+      "script": "What tells a browser where a paragraph ends? How do you know which tags open and close HTML elements? You see the angle brackets. An opening tag looks like <p> and starts a paragraph. A closing tag looks like </p> and ends it. Tags can contain other tags, that\u2019s nesting, like <div> <a href=\"#\">Link</a> </div>. Common tags include <head> for metadata, <body> for page content, <h1> for main headings, <div> for sections, <a> for links, and <p> for paragraphs. Remember each opening tag needs a matching closing tag, and they must nest properly. Open a simple HTML file and label each opening and closing tag for the headings and links.",
+      "voice_id": "en-US-BrianNeural",
+      "rate": "+6%"
+    },
+    "captions": {
+      "enabled": true,
+      "words_per_line": 5,
+      "highlight_active_word": true
+    },
+    "scenes": [
+      {
+        "beat": "hook",
+        "visual": {
+          "type": "text",
+          "tone": "hook",
+          "text": "What tells a browser where a paragraph ends?"
+        },
+        "narration_anchor": "What tells a browser where a paragraph ends?",
+        "min_duration": 2.0
+      },
+      {
+        "beat": "question",
+        "visual": {
+          "type": "text",
+          "tone": "question",
+          "text": "How do you know which tags open and close HTML elements?"
+        },
+        "narration_anchor": "How do you know which tags open and close HTML elements?"
+      },
+      {
+        "beat": "concept",
+        "visual": {
+          "type": "flow",
+          "layout": "vertical",
+          "nodes": [
+            {
+              "id": "a",
+              "label": "Tag anatomy",
+              "kind": "box"
+            }
+          ],
+          "edges": []
+        },
+        "narration_anchor": "An opening tag looks like <p> and starts a paragraph."
+      },
+      {
+        "beat": "takeaway",
+        "visual": {
+          "type": "text",
+          "tone": "takeaway",
+          "text": "Opening tags start elements, closing tags end them, and proper nesting keeps HTML valid."
+        },
+        "narration_anchor": "Remember each opening tag needs a matching closing tag, and they must nest properly.",
+        "min_duration": 2.5
+      },
+      {
+        "beat": "practice",
+        "visual": {
+          "type": "practice",
+          "prompt": "Open a simple HTML file and label each opening and closing tag for the headings and links."
+        },
+        "narration_anchor": "Open a simple HTML file and label each opening and closing tag for the headings and links.",
+        "min_duration": 2.5
+      }
+    ],
+    "render": {
+      "width": 1080,
+      "height": 1920,
+      "fps": 30
+    },
+    "practice": {
+      "kind": "write_code",
+      "prompt": "Open a simple HTML file and label each opening and closing tag for the headings and links.",
+      "hint": "Look for < and > characters and match the slash."
+    },
+    "series": {
+      "title": "BeautifulSoup Web Scraping Basics",
+      "artifact": "A Python script that fetches a webpage, extracts article titles, links, and optional YouTube IDs, and outputs the data",
+      "order": 4,
+      "total": 9,
+      "previous_id": "meal_03_html_vs_xml_analogy",
+      "next_id": "meal_05_import_libraries_and_read_local_html"
+    }
+  }
+}

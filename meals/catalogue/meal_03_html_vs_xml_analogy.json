@@ -1,0 +1,99 @@
+{
+  "meal": {
+    "schema_version": "1.0",
+    "id": "meal_03_html_vs_xml_analogy",
+    "title": "HTML and XML share the same tag structure",
+    "concept": "python.project.overview",
+    "objective": "Describe how HTML structure is similar to XML",
+    "difficulty": "beginner",
+    "prerequisites": [],
+    "next_concepts": [
+      "python.project.overview",
+      "python.modules.import"
+    ],
+    "source": {
+      "kind": "lecture"
+    },
+    "voice": {
+      "script": "Ever wondered why HTML feels like XML? If you're at all familiar with XML then it's very similar to that. Both use tags enclosed in angle brackets, a hierarchical tree, and closing tags to define structure. Think of a document as a family tree: each element can contain children, just like XML elements. That similarity means the parsing tools you learn for XML work for HTML too. So when you see <div> or <p>, treat them as XML nodes.",
+      "voice_id": "en-US-BrianNeural",
+      "rate": "+6%"
+    },
+    "captions": {
+      "enabled": true,
+      "words_per_line": 5,
+      "highlight_active_word": true
+    },
+    "scenes": [
+      {
+        "beat": "hook",
+        "visual": {
+          "type": "text",
+          "tone": "hook",
+          "text": "Ever wondered why HTML feels like XML?"
+        },
+        "narration_anchor": "Ever wondered why HTML feels like XML?",
+        "min_duration": 2.0
+      },
+      {
+        "beat": "question",
+        "visual": {
+          "type": "text",
+          "tone": "question",
+          "text": "Ever wondered why HTML feels like XML?"
+        },
+        "narration_anchor": "Ever wondered why HTML feels like XML?"
+      },
+      {
+        "beat": "concept",
+        "visual": {
+          "type": "flow",
+          "layout": "vertical",
+          "nodes": [
+            {
+              "id": "a",
+              "label": "HTML tags like XML nodes",
+              "kind": "box"
+            }
+          ],
+          "edges": []
+        },
+        "narration_anchor": "Both use tags enclosed in angle brackets"
+      },
+      {
+        "beat": "takeaway",
+        "visual": {
+          "type": "text",
+          "tone": "takeaway",
+          "text": "Treat HTML tags as XML nodes when parsing."
+        },
+        "min_duration": 2.5
+      },
+      {
+        "beat": "practice",
+        "visual": {
+          "type": "practice",
+          "prompt": "Write a short XML snippet and rewrite it using HTML tags."
+        },
+        "min_duration": 2.5
+      }
+    ],
+    "render": {
+      "width": 1080,
+      "height": 1920,
+      "fps": 30
+    },
+    "practice": {
+      "kind": "write_code",
+      "prompt": "Write a short XML snippet and rewrite it using HTML tags."
+    },
+    "series": {
+      "title": "BeautifulSoup Web Scraping Basics",
+      "artifact": "A Python script that fetches a webpage, extracts article titles, links, and optional YouTube IDs, and outputs the data",
+      "order": 3,
+      "total": 9,
+      "previous_id": "meal_02_install_required_packages",
+      "next_id": "meal_04_basic_html_tag_anatomy"
+    }
+  }
+}

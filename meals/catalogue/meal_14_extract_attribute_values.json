@@ -1,0 +1,167 @@
+{
+  "meal": {
+    "schema_version": "1.0",
+    "id": "meal_14_extract_attribute_values",
+    "title": "Extract attribute values from BeautifulSoup tags",
+    "concept": "python.data.dicts",
+    "objective": "Retrieve an attribute like src from a tag using dictionary\u2011style indexing",
+    "difficulty": "beginner",
+    "prerequisites": [
+      "python.data.lists"
+    ],
+    "next_concepts": [],
+    "source": {
+      "kind": "lecture"
+    },
+    "voice": {
+      "script": "Where does the video URL live in the HTML? How to grab a src attribute from a tag? You might see an iframe tag with a src attribute, but how do you pull that value out? In BeautifulSoup a tag works like a dictionary, so you can index it with the attribute name. For example, after locating the article element, you write video_src = article.find('iframe', class_='YouTube player')['src'] and then print(video_src) to see the link. Remember you can treat a tag like a dict to get its attributes. Now try extracting the href from each article link on your own.",
+      "voice_id": "en-US-BrianNeural",
+      "rate": "+6%"
+    },
+    "captions": {
+      "enabled": true,
+      "words_per_line": 5,
+      "highlight_active_word": true
+    },
+    "scenes": [
+      {
+        "beat": "hook",
+        "visual": {
+          "type": "text",
+          "tone": "hook",
+          "text": "Where does the video URL live in the HTML?"
+        },
+        "narration_anchor": "Where does the video URL live in the HTML?",
+        "min_duration": 2.0
+      },
+      {
+        "beat": "question",
+        "visual": {
+          "type": "text",
+          "tone": "question",
+          "text": "How to grab a src attribute from a tag?"
+        },
+        "narration_anchor": "How to grab a src attribute from a tag?"
+      },
+      {
+        "beat": "concept",
+        "visual": {
+          "type": "flow",
+          "layout": "vertical",
+          "nodes": [
+            {
+              "id": "a",
+              "label": "Tag as dict",
+              "kind": "box"
+            },
+            {
+              "id": "b",
+              "label": "Get attribute",
+              "kind": "box"
+            }
+          ],
+          "edges": [
+            {
+              "from": "a",
+              "to": "b",
+              "label": "index with name"
+            }
+          ]
+        },
+        "narration_anchor": "In BeautifulSoup a tag works like a dictionary, so you can index it with the attribute name."
+      },
+      {
+        "beat": "code",
+        "visual": {
+          "type": "code_editor",
+          "language": "python",
+          "filename": "main.py",
+          "code": "import sys\nfrom bs4 import BeautifulSoup\n\nhtml = '''\n<div class=\"article\">\n  <iframe class=\"YouTube player\" src=\"https://youtu.be/abc123\"></iframe>\n</div>\n'''\n\nsoup = BeautifulSoup(html, 'lxml')\narticle = soup.find('div', class_='article')\nvideo_src = article.find('iframe', class_='YouTube player')['src']\nprint(video_src)\n",
+          "show_line_numbers": true,
+          "actions": [
+            {
+              "action": "type",
+              "text": "import sys\nfrom bs4 import BeautifulSoup\n\nhtml = '''\n<div class=\"article\">\n  <iframe class=\"YouTube player\" src=\"https://youtu.be/abc123\"></iframe>\n</div>\n'''\n\nsoup = BeautifulSoup(html, 'lxml')\narticle = soup.find('div', class_='article')\nvideo_src = article.find('iframe', class_='YouTube player')['src']\nprint(video_src)",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13
+              ],
+              "speed_cps": 26
+            },
+            {
+              "action": "highlight",
+              "text": "['src']"
+            }
+          ]
+        },
+        "narration_anchor": "video_src = article.find('iframe', class_='YouTube player')['src']"
+      },
+      {
+        "beat": "execution",
+        "visual": {
+          "type": "terminal",
+          "command": "python main.py",
+          "stdin": [],
+          "execution": {
+            "verified": true,
+            "source": "local_sandbox",
+            "executed_at": "2026-08-21T07:44:29+00:00",
+            "stdout": "https://youtu.be/abc123\n",
+            "stderr": "",
+            "exit_code": 0
+          }
+        },
+        "narration_anchor": "print(video_src)",
+        "min_duration": 3.0
+      },
+      {
+        "beat": "takeaway",
+        "visual": {
+          "type": "text",
+          "tone": "takeaway",
+          "text": "Remember you can treat a tag like a dict to get its attributes."
+        },
+        "narration_anchor": "Remember you can treat a tag like a dict to get its attributes.",
+        "min_duration": 2.5
+      },
+      {
+        "beat": "practice",
+        "visual": {
+          "type": "practice",
+          "prompt": "Extract the href attribute from each <a> link in a sample HTML page."
+        },
+        "narration_anchor": "Now try extracting the href from each article link on your own.",
+        "min_duration": 2.5
+      }
+    ],
+    "render": {
+      "width": 1080,
+      "height": 1920,
+      "fps": 30
+    },
+    "practice": {
+      "kind": "write_code",
+      "prompt": "Extract the href attribute from each <a> link in a sample HTML page.",
+      "hint": "Use tag['href'] after finding the <a> element."
+    },
+    "series": {
+      "title": "BeautifulSoup Web Scraping Basics",
+      "artifact": "A Python script that fetches a webpage, extracts article titles, links, and optional YouTube IDs, and outputs the data",
+      "order": 9,
+      "total": 9,
+      "previous_id": "meal_11_handle_python_keyword_class",
+      "next_id": null
+    }
+  }
+}

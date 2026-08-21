@@ -1,0 +1,160 @@
+{
+  "meal": {
+    "schema_version": "1.0",
+    "id": "meal_06_create_beautifulsoup_object",
+    "title": "Create a BeautifulSoup object with lxml parser",
+    "concept": "python.modules.import",
+    "objective": "Instantiate a BeautifulSoup parser using the lxml engine.",
+    "difficulty": "beginner",
+    "prerequisites": [
+      "python.functions.define"
+    ],
+    "next_concepts": [
+      "python.data.dicts",
+      "python.project.overview"
+    ],
+    "source": {
+      "kind": "lecture"
+    },
+    "voice": {
+      "script": "Ever tried to read a web page without a parser? We have raw HTML but no way to query it. First, we import BeautifulSoup from bs4. Then we create a soup object by calling BeautifulSoup with the html string and the lxml parser. That soup variable now holds a navigable tree of the page. Try loading a different page and print soup.title.text.",
+      "voice_id": "en-US-BrianNeural",
+      "rate": "+6%"
+    },
+    "captions": {
+      "enabled": true,
+      "words_per_line": 5,
+      "highlight_active_word": true
+    },
+    "scenes": [
+      {
+        "beat": "hook",
+        "visual": {
+          "type": "text",
+          "tone": "hook",
+          "text": "Ever tried to read a web page without a parser?"
+        },
+        "narration_anchor": "Ever tried to read a web page without a parser?",
+        "min_duration": 2.0
+      },
+      {
+        "beat": "question",
+        "visual": {
+          "type": "text",
+          "tone": "question",
+          "text": "We have raw HTML but no way to query it."
+        },
+        "narration_anchor": "We have raw HTML but no way to query it."
+      },
+      {
+        "beat": "concept",
+        "visual": {
+          "type": "flow",
+          "layout": "vertical",
+          "nodes": [
+            {
+              "id": "a",
+              "label": "Import BeautifulSoup",
+              "kind": "box"
+            },
+            {
+              "id": "b",
+              "label": "Create soup",
+              "kind": "box"
+            }
+          ],
+          "edges": [
+            {
+              "from": "a",
+              "to": "b",
+              "label": "call"
+            }
+          ]
+        },
+        "narration_anchor": "First, we import BeautifulSoup from bs4."
+      },
+      {
+        "beat": "code",
+        "visual": {
+          "type": "code_editor",
+          "language": "python",
+          "filename": "main.py",
+          "code": "from bs4 import BeautifulSoup\nhtml = \"<html><body><h1>Title</h1></body></html>\"\nsoup = BeautifulSoup(html, 'lxml')\nprint(soup.h1.text)\n",
+          "show_line_numbers": true,
+          "actions": [
+            {
+              "action": "type",
+              "text": "from bs4 import BeautifulSoup\nhtml = \"<html><body><h1>Title</h1></body></html>\"\nsoup = BeautifulSoup(html, 'lxml')\nprint(soup.h1.text)",
+              "lines": [
+                1,
+                2,
+                3,
+                4
+              ],
+              "speed_cps": 26
+            },
+            {
+              "action": "highlight",
+              "text": "BeautifulSoup(html, 'lxml')"
+            }
+          ]
+        },
+        "narration_anchor": "Then we create a soup object by calling BeautifulSoup with the html string and the lxml parser."
+      },
+      {
+        "beat": "execution",
+        "visual": {
+          "type": "terminal",
+          "command": "python main.py",
+          "stdin": [],
+          "execution": {
+            "verified": true,
+            "source": "local_sandbox",
+            "executed_at": "2026-08-21T07:44:28+00:00",
+            "stdout": "Title\n",
+            "stderr": "",
+            "exit_code": 0
+          }
+        },
+        "min_duration": 3.0
+      },
+      {
+        "beat": "takeaway",
+        "visual": {
+          "type": "text",
+          "tone": "takeaway",
+          "text": "The soup object is a parsed tree you can navigate with BeautifulSoup."
+        },
+        "narration_anchor": "That soup variable now holds a navigable tree of the page.",
+        "min_duration": 2.5
+      },
+      {
+        "beat": "practice",
+        "visual": {
+          "type": "practice",
+          "prompt": "Load another webpage and print the text of its first paragraph."
+        },
+        "narration_anchor": "Try loading a different page and print soup.title.text.",
+        "min_duration": 2.5
+      }
+    ],
+    "render": {
+      "width": 1080,
+      "height": 1920,
+      "fps": 30
+    },
+    "practice": {
+      "kind": "write_code",
+      "prompt": "Load another webpage and print the text of its first paragraph.",
+      "hint": "Use requests.get to fetch the page and pass response.text to BeautifulSoup."
+    },
+    "series": {
+      "title": "BeautifulSoup Web Scraping Basics",
+      "artifact": "A Python script that fetches a webpage, extracts article titles, links, and optional YouTube IDs, and outputs the data",
+      "order": 6,
+      "total": 9,
+      "previous_id": "meal_05_import_libraries_and_read_local_html",
+      "next_id": "meal_08_access_a_tag_via_attribute"
+    }
+  }
+}

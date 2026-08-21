@@ -1,0 +1,104 @@
+{
+  "meal": {
+    "schema_version": "1.0",
+    "id": "meal_02_install_required_packages",
+    "title": "Install BeautifulSoup4, lxml, and requests",
+    "concept": "python.modules.import",
+    "objective": "Install beautifulsoup4, lxml, and requests using pip",
+    "difficulty": "beginner",
+    "prerequisites": [
+      "python.functions.define"
+    ],
+    "next_concepts": [
+      "python.project.overview",
+      "python.project.overview"
+    ],
+    "source": {
+      "kind": "lecture"
+    },
+    "voice": {
+      "script": "Want to start scraping but missing the tools? Which packages do you need to install? We\u2019ll import modules after installing them. Run these pip commands: pip install beautifulsoup4 pip install lxml pip install requests. Remember: beautifulsoup4, lxml, and requests are the core trio. Now try installing the packages on your own machine.",
+      "voice_id": "en-US-BrianNeural",
+      "rate": "+6%"
+    },
+    "captions": {
+      "enabled": true,
+      "words_per_line": 5,
+      "highlight_active_word": true
+    },
+    "scenes": [
+      {
+        "beat": "hook",
+        "visual": {
+          "type": "text",
+          "tone": "hook",
+          "text": "Want to start scraping but missing the tools?"
+        },
+        "narration_anchor": "Want to start scraping but missing the tools?",
+        "min_duration": 2.0
+      },
+      {
+        "beat": "question",
+        "visual": {
+          "type": "text",
+          "tone": "question",
+          "text": "Which packages do you need to install?"
+        },
+        "narration_anchor": "Which packages do you need to install?"
+      },
+      {
+        "beat": "concept",
+        "visual": {
+          "type": "flow",
+          "layout": "vertical",
+          "nodes": [
+            {
+              "id": "a",
+              "label": "Install packages",
+              "kind": "box"
+            }
+          ],
+          "edges": []
+        },
+        "narration_anchor": "We\u2019ll import modules after installing them."
+      },
+      {
+        "beat": "takeaway",
+        "visual": {
+          "type": "text",
+          "tone": "takeaway",
+          "text": "beautifulsoup4, lxml, and requests are the core trio you need."
+        },
+        "narration_anchor": "Remember: beautifulsoup4, lxml, and requests are the core trio.",
+        "min_duration": 2.5
+      },
+      {
+        "beat": "practice",
+        "visual": {
+          "type": "practice",
+          "prompt": "Install the three packages on your computer and verify they are available."
+        },
+        "narration_anchor": "Now try installing the packages on your own machine.",
+        "min_duration": 2.5
+      }
+    ],
+    "render": {
+      "width": 1080,
+      "height": 1920,
+      "fps": 30
+    },
+    "practice": {
+      "kind": "write_code",
+      "prompt": "Install the three packages on your computer and verify they are available.",
+      "hint": "Use pip list to confirm the installations."
+    },
+    "series": {
+      "title": "BeautifulSoup Web Scraping Basics",
+      "artifact": "A Python script that fetches a webpage, extracts article titles, links, and optional YouTube IDs, and outputs the data",
+      "order": 2,
+      "total": 9,
+      "previous_id": "meal_01_define_web_scraping",
+      "next_id": "meal_03_html_vs_xml_analogy"
+    }
+  }
+}

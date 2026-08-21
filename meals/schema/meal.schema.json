@@ -161,6 +161,45 @@
           "default": 30
         }
       }
+    },
+    "series": {
+      "type": "object",
+      "description": "Position in a Meal series generated from one lecture. A series is watched in order and the last Meal completes the build, so the feed needs to know where a Meal sits and what follows.",
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "artifact": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "order": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "total": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "previous_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "next_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
     }
   },
   "$defs": {
@@ -367,6 +406,28 @@
         },
         "execution": {
           "$ref": "#/$defs/execution"
+        },
+        "files": {
+          "type": "array",
+          "description": "Fixture files written into the working directory before the snippet runs. A Meal that teaches reading a file must be able to actually read one, so the file travels with the Meal rather than the Meal being barred from touching the filesystem.",
+          "items": {
+            "type": "object",
+            "required": [
+              "name",
+              "content"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "name": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9._-]+$",
+                "description": "Filename only \u2014 no paths, no traversal."
+              },
+              "content": {
+                "type": "string"
+              }
+            }
+          }
         }
       }
     },

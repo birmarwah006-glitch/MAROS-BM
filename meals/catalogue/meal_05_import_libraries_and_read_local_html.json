@@ -1,0 +1,160 @@
+{
+  "meal": {
+    "schema_version": "1.0",
+    "id": "meal_05_import_libraries_and_read_local_html",
+    "title": "Import BeautifulSoup and requests, then load local HTML",
+    "concept": "python.modules.import",
+    "objective": "Import BeautifulSoup and requests, then read an HTML file into a string",
+    "difficulty": "beginner",
+    "prerequisites": [
+      "python.functions.define"
+    ],
+    "next_concepts": [
+      "python.modules.import",
+      "python.data.dicts"
+    ],
+    "source": {
+      "kind": "lecture"
+    },
+    "voice": {
+      "script": "How do you bring a webpage into Python? How to import libraries and load HTML from a file? We import BeautifulSoup and requests, then read the file into a string. Here is the minimal code you need:\n\nfrom bs4 import BeautifulSoup\nimport requests\n\nwith open('simple.html') as f:\n    html = f.read()\n\nRunning it prints nothing, but now html contains the page source. You can picture the file being read into memory as a simple text block. Importing modules and reading files are the first steps before parsing. Create a file named sample.html with any HTML and run the script.",
+      "voice_id": "en-US-BrianNeural",
+      "rate": "+6%"
+    },
+    "captions": {
+      "enabled": true,
+      "words_per_line": 5,
+      "highlight_active_word": true
+    },
+    "scenes": [
+      {
+        "beat": "hook",
+        "visual": {
+          "type": "text",
+          "tone": "hook",
+          "text": "How do you bring a webpage into Python?"
+        },
+        "narration_anchor": "How do you bring a webpage into Python?",
+        "min_duration": 2.0
+      },
+      {
+        "beat": "question",
+        "visual": {
+          "type": "text",
+          "tone": "question",
+          "text": "How to import libraries and load HTML from a file?"
+        },
+        "narration_anchor": "How to import libraries and load HTML from a file?"
+      },
+      {
+        "beat": "concept",
+        "visual": {
+          "type": "flow",
+          "layout": "vertical",
+          "nodes": [
+            {
+              "id": "a",
+              "label": "Import modules",
+              "kind": "box"
+            },
+            {
+              "id": "b",
+              "label": "Read HTML file",
+              "kind": "box"
+            }
+          ],
+          "edges": [
+            {
+              "from": "a",
+              "to": "b",
+              "label": "then"
+            }
+          ]
+        },
+        "narration_anchor": "We import BeautifulSoup and requests, then read the file into a string."
+      },
+      {
+        "beat": "code",
+        "visual": {
+          "type": "code_editor",
+          "language": "python",
+          "filename": "main.py",
+          "code": "from bs4 import BeautifulSoup\nimport requests\n\nwith open('simple.html') as f:\n    html = f.read()\n",
+          "show_line_numbers": true,
+          "actions": [
+            {
+              "action": "type",
+              "text": "from bs4 import BeautifulSoup\nimport requests\n\nwith open('simple.html') as f:\n    html = f.read()",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5
+              ],
+              "speed_cps": 26
+            },
+            {
+              "action": "highlight",
+              "text": "html = f.read()"
+            }
+          ]
+        },
+        "narration_anchor": "Here is the minimal code you need:"
+      },
+      {
+        "beat": "execution",
+        "visual": {
+          "type": "terminal",
+          "command": "python main.py",
+          "stdin": [],
+          "execution": {
+            "verified": false,
+            "source": "unverified",
+            "stdout": "",
+            "stderr": "",
+            "exit_code": -1
+          }
+        },
+        "narration_anchor": "Running it prints nothing, but now html contains the page source.",
+        "min_duration": 3.0
+      },
+      {
+        "beat": "takeaway",
+        "visual": {
+          "type": "text",
+          "tone": "takeaway",
+          "text": "Importing modules and reading files are the first steps before parsing."
+        },
+        "narration_anchor": "Importing modules and reading files are the first steps before parsing.",
+        "min_duration": 2.5
+      },
+      {
+        "beat": "practice",
+        "visual": {
+          "type": "practice",
+          "prompt": "Create a file named sample.html with any HTML and run the script."
+        },
+        "narration_anchor": "Create a file named sample.html with any HTML and run the script.",
+        "min_duration": 2.5
+      }
+    ],
+    "render": {
+      "width": 1080,
+      "height": 1920,
+      "fps": 30
+    },
+    "practice": {
+      "kind": "write_code",
+      "prompt": "Create a file named sample.html with any HTML and run the script."
+    },
+    "series": {
+      "title": "BeautifulSoup Web Scraping Basics",
+      "artifact": "A Python script that fetches a webpage, extracts article titles, links, and optional YouTube IDs, and outputs the data",
+      "order": 5,
+      "total": 9,
+      "previous_id": "meal_04_basic_html_tag_anatomy",
+      "next_id": "meal_06_create_beautifulsoup_object"
+    }
+  }
+}

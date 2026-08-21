@@ -1,0 +1,164 @@
+{
+  "meal": {
+    "schema_version": "1.0",
+    "id": "meal_08_access_a_tag_via_attribute",
+    "title": "Access a tag via attribute with dot notation",
+    "concept": "python.data.dicts",
+    "objective": "Retrieve the first occurrence of a tag using dot notation",
+    "difficulty": "beginner",
+    "prerequisites": [
+      "python.data.lists"
+    ],
+    "next_concepts": [
+      "python.project.overview",
+      "python.data.dicts"
+    ],
+    "source": {
+      "kind": "lecture"
+    },
+    "voice": {
+      "script": "Want the page title in one line? How do you grab the first title tag without searching? You can just treat a tag like an attribute. Instead of looping or calling find, use dot notation. For example, after creating soup, write title_tag = soup.title and then print(title_tag). That accesses the first title element directly. Running this prints something like <title>My Page</title>. Remember, dot access gives you the first occurrence of that tag. Now try accessing the first h1 tag the same way.",
+      "voice_id": "en-US-BrianNeural",
+      "rate": "+6%"
+    },
+    "captions": {
+      "enabled": true,
+      "words_per_line": 5,
+      "highlight_active_word": true
+    },
+    "scenes": [
+      {
+        "beat": "hook",
+        "visual": {
+          "type": "text",
+          "tone": "hook",
+          "text": "Want the page title in one line?"
+        },
+        "narration_anchor": "Want the page title in one line?",
+        "min_duration": 2.0
+      },
+      {
+        "beat": "question",
+        "visual": {
+          "type": "text",
+          "tone": "question",
+          "text": "How do you grab the first title tag without searching?"
+        },
+        "narration_anchor": "How do you grab the first title tag without searching?"
+      },
+      {
+        "beat": "concept",
+        "visual": {
+          "type": "flow",
+          "layout": "vertical",
+          "nodes": [
+            {
+              "id": "a",
+              "label": "soup.title",
+              "kind": "value"
+            },
+            {
+              "id": "b",
+              "label": "title_tag",
+              "kind": "box"
+            }
+          ],
+          "edges": [
+            {
+              "from": "a",
+              "to": "b",
+              "label": "assign"
+            }
+          ]
+        },
+        "narration_anchor": "You can just treat a tag like an attribute."
+      },
+      {
+        "beat": "code",
+        "visual": {
+          "type": "code_editor",
+          "language": "python",
+          "filename": "main.py",
+          "code": "import requests\nfrom bs4 import BeautifulSoup\n\nhtml = requests.get('https://example.com').text\nsoup = BeautifulSoup(html, 'lxml')\ntitle_tag = soup.title\nprint(title_tag)\n",
+          "show_line_numbers": true,
+          "actions": [
+            {
+              "action": "type",
+              "text": "import requests\nfrom bs4 import BeautifulSoup\n\nhtml = requests.get('https://example.com').text\nsoup = BeautifulSoup(html, 'lxml')\ntitle_tag = soup.title\nprint(title_tag)",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7
+              ],
+              "speed_cps": 26
+            },
+            {
+              "action": "highlight",
+              "text": "title_tag = soup.title"
+            }
+          ]
+        },
+        "narration_anchor": "title_tag = soup.title"
+      },
+      {
+        "beat": "execution",
+        "visual": {
+          "type": "terminal",
+          "command": "python main.py",
+          "stdin": [],
+          "execution": {
+            "verified": true,
+            "source": "local_sandbox",
+            "executed_at": "2026-08-21T07:44:29+00:00",
+            "stdout": "<title>Example Domain</title>\n",
+            "stderr": "",
+            "exit_code": 0
+          }
+        },
+        "narration_anchor": "Running this prints something like <title>My Page</title>",
+        "min_duration": 3.0
+      },
+      {
+        "beat": "takeaway",
+        "visual": {
+          "type": "text",
+          "tone": "takeaway",
+          "text": "Remember, dot access gives you the first occurrence of that tag."
+        },
+        "narration_anchor": "Remember, dot access gives you the first occurrence of that tag.",
+        "min_duration": 2.5
+      },
+      {
+        "beat": "practice",
+        "visual": {
+          "type": "practice",
+          "prompt": "Now try accessing the first h1 tag the same way in your own script."
+        },
+        "narration_anchor": "Now try accessing the first h1 tag the same way.",
+        "min_duration": 2.5
+      }
+    ],
+    "render": {
+      "width": 1080,
+      "height": 1920,
+      "fps": 30
+    },
+    "practice": {
+      "kind": "write_code",
+      "prompt": "Now try accessing the first h1 tag the same way in your own script.",
+      "hint": "Replace title with h1 in the dot notation."
+    },
+    "series": {
+      "title": "BeautifulSoup Web Scraping Basics",
+      "artifact": "A Python script that fetches a webpage, extracts article titles, links, and optional YouTube IDs, and outputs the data",
+      "order": 7,
+      "total": 9,
+      "previous_id": "meal_06_create_beautifulsoup_object",
+      "next_id": "meal_11_handle_python_keyword_class"
+    }
+  }
+}

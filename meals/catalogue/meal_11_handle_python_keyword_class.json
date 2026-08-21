@@ -1,0 +1,157 @@
+{
+  "meal": {
+    "schema_version": "1.0",
+    "id": "meal_11_handle_python_keyword_class",
+    "title": "Use class_ to search for CSS classes",
+    "concept": "python.project.overview",
+    "objective": "Use the class_ parameter when searching for a CSS class",
+    "difficulty": "beginner",
+    "prerequisites": [],
+    "next_concepts": [
+      "python.data.dicts"
+    ],
+    "source": {
+      "kind": "lecture"
+    },
+    "voice": {
+      "script": "Why does BeautifulSoup use class_ instead of class? When you search for a CSS class, Python's class keyword would cause a syntax error. BeautifulSoup avoids that by naming the parameter class_ with an underscore. For example, to find a div with class article, write article_div = soup.find('div', class_='article'). This tells BeautifulSoup to look for the HTML class attribute without breaking the code. Remember, always use class_ when specifying a CSS class in find or find_all. Try finding all span tags with class highlight using find_all.",
+      "voice_id": "en-US-BrianNeural",
+      "rate": "+6%"
+    },
+    "captions": {
+      "enabled": true,
+      "words_per_line": 5,
+      "highlight_active_word": true
+    },
+    "scenes": [
+      {
+        "beat": "hook",
+        "visual": {
+          "type": "text",
+          "tone": "hook",
+          "text": "Why does BeautifulSoup use class_ instead of class?"
+        },
+        "narration_anchor": "Why does BeautifulSoup use class_ instead of class?",
+        "min_duration": 2.0
+      },
+      {
+        "beat": "question",
+        "visual": {
+          "type": "text",
+          "tone": "question",
+          "text": "How to search for elements by CSS class without syntax errors?"
+        },
+        "narration_anchor": "When you search for a CSS class, Python's class keyword would cause a syntax error."
+      },
+      {
+        "beat": "concept",
+        "visual": {
+          "type": "flow",
+          "layout": "vertical",
+          "nodes": [
+            {
+              "id": "a",
+              "label": "search by class",
+              "kind": "box"
+            },
+            {
+              "id": "b",
+              "label": "use class_",
+              "kind": "box"
+            }
+          ],
+          "edges": [
+            {
+              "from": "a",
+              "to": "b",
+              "label": "avoid syntax error"
+            }
+          ]
+        },
+        "narration_anchor": "BeautifulSoup avoids that by naming the parameter class_ with an underscore."
+      },
+      {
+        "beat": "code",
+        "visual": {
+          "type": "code_editor",
+          "language": "python",
+          "filename": "main.py",
+          "code": "import bs4\nhtml = '<div class=\"article\">Title</div>'\nsoup = bs4.BeautifulSoup(html, 'lxml')\narticle_div = soup.find('div', class_='article')\nprint(article_div.text)\n",
+          "show_line_numbers": true,
+          "actions": [
+            {
+              "action": "type",
+              "text": "import bs4\nhtml = '<div class=\"article\">Title</div>'\nsoup = bs4.BeautifulSoup(html, 'lxml')\narticle_div = soup.find('div', class_='article')\nprint(article_div.text)",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5
+              ],
+              "speed_cps": 26
+            },
+            {
+              "action": "highlight",
+              "text": "class_='article'"
+            }
+          ]
+        },
+        "narration_anchor": "article_div = soup.find('div', class_='article')"
+      },
+      {
+        "beat": "execution",
+        "visual": {
+          "type": "terminal",
+          "command": "python main.py",
+          "stdin": [],
+          "execution": {
+            "verified": true,
+            "source": "local_sandbox",
+            "executed_at": "2026-08-21T07:44:29+00:00",
+            "stdout": "Title\n",
+            "stderr": "",
+            "exit_code": 0
+          }
+        },
+        "min_duration": 3.0
+      },
+      {
+        "beat": "takeaway",
+        "visual": {
+          "type": "text",
+          "tone": "takeaway",
+          "text": "Always use class_ when specifying a CSS class in find or find_all."
+        },
+        "min_duration": 2.5
+      },
+      {
+        "beat": "practice",
+        "visual": {
+          "type": "practice",
+          "prompt": "Find all span tags with class highlight using find_all."
+        },
+        "narration_anchor": "Try finding all span tags with class highlight using find_all.",
+        "min_duration": 2.5
+      }
+    ],
+    "render": {
+      "width": 1080,
+      "height": 1920,
+      "fps": 30
+    },
+    "practice": {
+      "kind": "write_code",
+      "prompt": "Find all span tags with class highlight using find_all.",
+      "hint": "Pass class_='highlight' as the argument."
+    },
+    "series": {
+      "title": "BeautifulSoup Web Scraping Basics",
+      "artifact": "A Python script that fetches a webpage, extracts article titles, links, and optional YouTube IDs, and outputs the data",
+      "order": 8,
+      "total": 9,
+      "previous_id": "meal_08_access_a_tag_via_attribute",
+      "next_id": "meal_14_extract_attribute_values"
+    }
+  }
+}

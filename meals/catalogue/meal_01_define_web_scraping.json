@@ -1,0 +1,101 @@
+{
+  "meal": {
+    "schema_version": "1.0",
+    "id": "meal_01_define_web_scraping",
+    "title": "Define web scraping",
+    "concept": "python.project.overview",
+    "objective": "Explain what web scraping is and why it is useful",
+    "difficulty": "beginner",
+    "prerequisites": [],
+    "next_concepts": [
+      "python.modules.import",
+      "python.project.overview"
+    ],
+    "source": {
+      "kind": "lecture"
+    },
+    "voice": {
+      "script": "Ever wondered how bots gather headlines from dozens of sites in seconds? What is web scraping and why would you use it? Scraping means parsing a website\u2019s content and pulling out exactly the information you want. It\u2019s useful for collecting data at scale, feeding analysis, or monitoring changes without manual copy\u2011paste. Now let's see a tiny example. Web scraping lets you automatically collect the data you need from the web. Try listing three websites you could scrape and what data you'd extract.",
+      "voice_id": "en-US-BrianNeural",
+      "rate": "+6%"
+    },
+    "captions": {
+      "enabled": true,
+      "words_per_line": 5,
+      "highlight_active_word": true
+    },
+    "scenes": [
+      {
+        "beat": "hook",
+        "visual": {
+          "type": "text",
+          "tone": "hook",
+          "text": "Ever wondered how bots gather headlines from dozens of sites in seconds?"
+        },
+        "narration_anchor": "Ever wondered how bots gather headlines from dozens of sites in seconds?",
+        "min_duration": 2.0
+      },
+      {
+        "beat": "question",
+        "visual": {
+          "type": "text",
+          "tone": "question",
+          "text": "What is web scraping and why would you use it?"
+        },
+        "narration_anchor": "What is web scraping and why would you use it?"
+      },
+      {
+        "beat": "concept",
+        "visual": {
+          "type": "flow",
+          "layout": "vertical",
+          "nodes": [
+            {
+              "id": "a",
+              "label": "Web scraping",
+              "kind": "box"
+            }
+          ],
+          "edges": []
+        },
+        "narration_anchor": "Scraping means parsing a website\u2019s content and pulling out exactly the information you want."
+      },
+      {
+        "beat": "takeaway",
+        "visual": {
+          "type": "text",
+          "tone": "takeaway",
+          "text": "Web scraping lets you automatically collect the data you need from the web."
+        },
+        "narration_anchor": "Web scraping lets you automatically collect the data you need from the web.",
+        "min_duration": 2.5
+      },
+      {
+        "beat": "practice",
+        "visual": {
+          "type": "practice",
+          "prompt": "List three websites you could scrape and the specific data you would extract from each."
+        },
+        "narration_anchor": "Try listing three websites you could scrape and what data you'd extract.",
+        "min_duration": 2.5
+      }
+    ],
+    "render": {
+      "width": 1080,
+      "height": 1920,
+      "fps": 30
+    },
+    "practice": {
+      "kind": "write_code",
+      "prompt": "List three websites you could scrape and the specific data you would extract from each."
+    },
+    "series": {
+      "title": "BeautifulSoup Web Scraping Basics",
+      "artifact": "A Python script that fetches a webpage, extracts article titles, links, and optional YouTube IDs, and outputs the data",
+      "order": 1,
+      "total": 9,
+      "previous_id": null,
+      "next_id": "meal_02_install_required_packages"
+    }
+  }
+}

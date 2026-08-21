@@ -34,9 +34,26 @@ from pathlib import Path
 TIMEOUT_SEC = 10
 
 
-def run_python(code: str, stdin_lines: list[str]) -> dict:
-    """Execute one snippet and capture exactly what it printed."""
+def run_python(code: str, stdin_lines: list[str],
+               files: list[dict] | None = None) -> dict:
+    """Execute one snippet and capture exactly what it printed.
+
+    Any fixture files the Meal declares are written alongside the script, so a
+    Meal that teaches reading a file can actually read one. Names are filenames
+    only; anything with a path separator is refused rather than allowed to
+    write outside the sandbox.
+    """
     with tempfile.TemporaryDirectory() as tmp:
+        for fixture in files or []:
+            name = fixture.get("name", "")
+            if not name or "/" in name or "\\" in name or name.startswith("."):
+                return {
+                    "verified": False, "source": "unverified", "stdout": "",
+                    "stderr": f"refused unsafe fixture filename: {name!r}",
+                    "exit_code": -1,
+                }
+            (Path(tmp) / name).write_text(fixture.get("content", ""))
+
         script = Path(tmp) / "main.py"
         script.write_text(code)
         stdin_data = "".join(line + "\n" for line in stdin_lines)
@@ -91,7 +108,7 @@ def verify_meal(path: Path, write: bool = True) -> bool:
             continue
 
         stdin = visual.get("stdin", [])
-        result = run_python(latest_code, stdin)
+        result = run_python(latest_code, stdin, visual.get("files"))
         visual["execution"] = result
 
         if result["verified"] and result["exit_code"] == 0:
