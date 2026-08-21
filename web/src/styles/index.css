@@ -1,0 +1,141 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ──────────────────────────────────────────────────────────────────────────
+   MAROS tokens.
+
+   Mirrored from frontend/style.css so the new app, the existing /app
+   frontend, and reel_planner.py's video output stay visually identical.
+   Do not fork these values — change them in both places or neither.
+   ────────────────────────────────────────────────────────────────────────── */
+
+:root {
+  --bg: #000000;
+  --surface: #0a0a0a;
+  --surface2: #111111;
+  --border: rgba(255, 255, 255, 0.06);
+  --border2: rgba(255, 255, 255, 0.12);
+  --text: #f0ede6;
+  --muted: #555550;
+  --muted2: #888880;
+
+  --green: #c8f060;
+  --accent-ink: #000000;
+  --green-soft: rgba(200, 240, 96, 0.08);
+  --green-line: rgba(200, 240, 96, 0.22);
+  --blue: #60c8f0;
+  --blue-soft: rgba(96, 200, 240, 0.08);
+  --blue-line: rgba(96, 200, 240, 0.22);
+  --orange: #f0a060;
+  --red: #f06060;
+  --red-soft: rgba(240, 96, 96, 0.06);
+  --red-line: rgba(240, 96, 96, 0.4);
+  --purple: #a060f0;
+
+  --radius: 12px;
+  --radius-lg: 20px;
+}
+
+.light {
+  --bg: #f0ece3;
+  --surface: #ffffff;
+  --surface2: #f7f3ea;
+  --border: rgba(20, 18, 10, 0.08);
+  --border2: rgba(20, 18, 10, 0.16);
+  --text: #171510;
+  --muted: #b3ad9d;
+  --muted2: #6d685b;
+
+  --green: #5b7d0f;
+  --accent-ink: #f4f1e8;
+  --green-soft: rgba(91, 125, 15, 0.1);
+  --green-line: rgba(91, 125, 15, 0.3);
+  --blue: #1f7bad;
+  --blue-soft: rgba(31, 123, 173, 0.1);
+  --blue-line: rgba(31, 123, 173, 0.3);
+  --orange: #b06010;
+  --red: #c0322d;
+  --red-soft: rgba(192, 50, 45, 0.07);
+  --red-line: rgba(192, 50, 45, 0.4);
+  --purple: #7a3fc4;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-bg font-display text-base text-ink antialiased;
+    /* iOS: keep the feed usable inside the safe area */
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Focus is a product feature, not an accessibility afterthought. */
+  :focus-visible {
+    @apply outline-none ring-2 ring-green ring-offset-2;
+    --tw-ring-offset-color: var(--bg);
+  }
+
+  ::selection {
+    background: var(--green);
+    color: var(--accent-ink);
+  }
+
+  /* Respect the user's motion preference everywhere, in one place. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  /* A hairline that reads as structure rather than decoration. */
+  .rule {
+    @apply border-line;
+  }
+
+  .card {
+    @apply rounded border border-line bg-surface transition-colors duration-200;
+  }
+
+  .card-interactive {
+    @apply card hover:border-line2;
+  }
+
+  /* Small caps label — used for section headers and metadata. */
+  .eyebrow {
+    @apply font-mono text-micro uppercase tracking-[0.14em] text-muted2;
+  }
+
+  .skeleton {
+    @apply relative overflow-hidden rounded bg-surface2;
+  }
+
+  .skeleton::after {
+    content: '';
+    @apply absolute inset-0;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      var(--border),
+      transparent
+    );
+    animation: shimmer 1.6s infinite;
+    transform: translateX(-100%);
+  }
+
+  @keyframes shimmer {
+    100% {
+      transform: translateX(100%);
+    }
+  }
+}
