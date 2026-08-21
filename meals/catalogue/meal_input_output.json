@@ -1,0 +1,282 @@
+{
+  "meal": {
+    "schema_version": "1.0",
+    "id": "meal_input_output",
+    "title": "How input() and print() work",
+    "concept": "python.basics.input_output",
+    "objective": "Understand that input() brings data into a program and print() sends data out.",
+    "difficulty": "beginner",
+    "prerequisites": [],
+    "next_concepts": [
+      "python.basics.variables",
+      "python.basics.type_conversion"
+    ],
+    "source": {
+      "kind": "curated"
+    },
+    "voice": {
+      "script": "How does Python actually talk to you? Every program needs a way to receive information and a way to give it back. Python has two built-ins for exactly that. The input function pauses your program and waits for the user to type something. Whatever they type comes back as text, and we store it in a variable called name. Then the print function takes that value and displays it. So the data flows in one direction. Input brings it in, the variable holds it, print sends it back out. Remember: input gets information in, print sends information out. Now you try. Write a program that asks for your age and prints it back.",
+      "voice_id": "en-US-BrianNeural",
+      "rate": "+6%"
+    },
+    "captions": {
+      "enabled": true,
+      "words_per_line": 5,
+      "highlight_active_word": true
+    },
+    "scenes": [
+      {
+        "beat": "hook",
+        "narration_anchor": "How does Python actually talk to you?",
+        "min_duration": 2.0,
+        "visual": {
+          "type": "text",
+          "tone": "hook",
+          "text": "How does Python actually talk to you?",
+          "emphasis": [
+            "talk to you"
+          ]
+        }
+      },
+      {
+        "beat": "question",
+        "narration_anchor": "Every program needs a way to receive information and a way to give it back.",
+        "visual": {
+          "type": "flow",
+          "layout": "vertical",
+          "nodes": [
+            {
+              "id": "prog",
+              "label": "Your program",
+              "kind": "box"
+            },
+            {
+              "id": "user",
+              "label": "The person using it",
+              "kind": "actor"
+            }
+          ],
+          "edges": [
+            {
+              "from": "prog",
+              "to": "user",
+              "label": "?"
+            },
+            {
+              "from": "user",
+              "to": "prog",
+              "label": "?"
+            }
+          ]
+        }
+      },
+      {
+        "beat": "concept",
+        "narration_anchor": "Python has two built-ins for exactly that.",
+        "visual": {
+          "type": "flow",
+          "layout": "vertical",
+          "nodes": [
+            {
+              "id": "py",
+              "label": "Python",
+              "kind": "box"
+            },
+            {
+              "id": "ask",
+              "label": "\"What's your name?\"",
+              "kind": "value"
+            },
+            {
+              "id": "user",
+              "label": "USER",
+              "kind": "actor"
+            },
+            {
+              "id": "typed",
+              "label": "\"Bir\"",
+              "kind": "value"
+            },
+            {
+              "id": "var",
+              "label": "name = \"Bir\"",
+              "kind": "output"
+            }
+          ],
+          "edges": [
+            {
+              "from": "py",
+              "to": "ask"
+            },
+            {
+              "from": "ask",
+              "to": "user"
+            },
+            {
+              "from": "user",
+              "to": "typed"
+            },
+            {
+              "from": "typed",
+              "to": "var"
+            }
+          ]
+        }
+      },
+      {
+        "beat": "code",
+        "narration_anchor": "The input function pauses your program and waits for the user to type something.",
+        "visual": {
+          "type": "code_editor",
+          "language": "python",
+          "filename": "main.py",
+          "code": "name = input(\"What's your name? \")\nprint(\"Hello\", name)\n",
+          "show_line_numbers": true,
+          "actions": [
+            {
+              "action": "type",
+              "text": "name = input(\"What's your name? \")",
+              "lines": [
+                1
+              ],
+              "speed_cps": 26,
+              "narration_anchor": "The input function pauses your program and waits for the user to type something."
+            },
+            {
+              "action": "highlight",
+              "lines": [
+                1
+              ],
+              "text": "input",
+              "narration_anchor": "Whatever they type comes back as text, and we store it in a variable called name."
+            },
+            {
+              "action": "type",
+              "text": "print(\"Hello\", name)",
+              "lines": [
+                2
+              ],
+              "speed_cps": 26,
+              "narration_anchor": "Then the print function takes that value and displays it."
+            },
+            {
+              "action": "highlight",
+              "lines": [
+                2
+              ],
+              "text": "print"
+            }
+          ]
+        }
+      },
+      {
+        "beat": "execution",
+        "narration_anchor": "So the data flows in one direction.",
+        "min_duration": 3.0,
+        "visual": {
+          "type": "terminal",
+          "command": "python main.py",
+          "stdin": [
+            "Bir"
+          ],
+          "execution": {
+            "verified": true,
+            "source": "local_sandbox",
+            "executed_at": "2026-08-20T22:36:04+00:00",
+            "stdout": "What's your name? Hello Bir\n",
+            "stderr": "",
+            "exit_code": 0
+          }
+        }
+      },
+      {
+        "beat": "visual",
+        "narration_anchor": "Input brings it in, the variable holds it, print sends it back out.",
+        "visual": {
+          "type": "flow",
+          "layout": "vertical",
+          "nodes": [
+            {
+              "id": "in",
+              "label": "input()",
+              "kind": "box"
+            },
+            {
+              "id": "data",
+              "label": "user enters data",
+              "kind": "actor"
+            },
+            {
+              "id": "var",
+              "label": "variable",
+              "kind": "value"
+            },
+            {
+              "id": "out",
+              "label": "print()",
+              "kind": "box"
+            },
+            {
+              "id": "result",
+              "label": "output",
+              "kind": "output"
+            }
+          ],
+          "edges": [
+            {
+              "from": "in",
+              "to": "data"
+            },
+            {
+              "from": "data",
+              "to": "var"
+            },
+            {
+              "from": "var",
+              "to": "out"
+            },
+            {
+              "from": "out",
+              "to": "result"
+            }
+          ]
+        }
+      },
+      {
+        "beat": "takeaway",
+        "narration_anchor": "Remember: input gets information in, print sends information out.",
+        "min_duration": 2.5,
+        "visual": {
+          "type": "text",
+          "tone": "takeaway",
+          "text": "input() gets information in. print() sends information out.",
+          "emphasis": [
+            "input()",
+            "print()"
+          ]
+        }
+      },
+      {
+        "beat": "practice",
+        "narration_anchor": "Write a program that asks for your age and prints it back.",
+        "min_duration": 2.5,
+        "visual": {
+          "type": "practice",
+          "prompt": "Write a program that asks for your age and prints it back."
+        }
+      }
+    ],
+    "practice": {
+      "kind": "write_code",
+      "prompt": "Write a program that asks for your age and prints it back.",
+      "starter_code": "# ask for the user's age, then print it\n",
+      "expected_stdout": "How old are you? You are 20\n",
+      "hint": "input() always returns text. You do not need to convert it just to print it back."
+    },
+    "render": {
+      "width": 1080,
+      "height": 1920,
+      "fps": 30
+    }
+  }
+}

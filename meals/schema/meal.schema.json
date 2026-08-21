@@ -1,0 +1,661 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://maros.dev/schema/meal.schema.json",
+  "title": "MAROS Meal",
+  "description": "The canonical contract between the AI planner and the renderer. The planner decides WHAT is taught, said, shown, and when. The renderer decides HOW it looks. Nothing in this document is renderer-specific: no pixel coordinates, no CSS, no library node names.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "id",
+    "title",
+    "concept",
+    "objective",
+    "voice",
+    "scenes"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "1.0",
+      "description": "Bumped on any breaking change. Renderers must refuse a version they do not know."
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:_[a-z0-9]+)*$",
+      "description": "Stable slug. Also the JSON filename and the rendered MP4 basename."
+    },
+    "title": {
+      "type": "string",
+      "maxLength": 80
+    },
+    "concept": {
+      "type": "string",
+      "description": "Concept id from the Python taxonomy, e.g. 'python.basics.input_output'."
+    },
+    "objective": {
+      "type": "string",
+      "maxLength": 200,
+      "description": "THE single learning objective. One per Meal - this is the governing product rule. If a Meal needs two, it is two Meals."
+    },
+    "difficulty": {
+      "enum": [
+        "beginner",
+        "intermediate",
+        "advanced"
+      ]
+    },
+    "prerequisites": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Concept ids. Feeds the learning graph and 'what next' in the feed."
+    },
+    "next_concepts": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "source": {
+      "type": "object",
+      "description": "Provenance when a Meal was derived from user content. A source clip is EVIDENCE, never Meal content - the Meal itself is newly rendered.",
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "curated",
+            "lecture",
+            "project",
+            "youtube"
+          ]
+        },
+        "job_id": {
+          "type": "string"
+        },
+        "module_id": {
+          "type": "integer"
+        },
+        "start": {
+          "type": "string",
+          "description": "MM:SS or HH:MM:SS in the source"
+        },
+        "end": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind"
+      ]
+    },
+    "voice": {
+      "type": "object",
+      "description": "The narration. Audio is core, not optional.",
+      "required": [
+        "script"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "script": {
+          "type": "string",
+          "description": "The full spoken text, in order. Every word here is read aloud, so it must contain only pronounceable language - no markdown, no arrows, no bare symbols. Scene timing is derived from forced alignment against this, never guessed."
+        },
+        "voice_id": {
+          "type": "string",
+          "default": "en-US-BrianNeural",
+          "description": "TTS voice. Must be an original synthetic voice - never an imitation of a real person or a copyrighted character."
+        },
+        "rate": {
+          "type": "string",
+          "default": "+0%"
+        },
+        "pitch": {
+          "type": "string",
+          "default": "+0Hz"
+        }
+      }
+    },
+    "captions": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "words_per_line": {
+          "type": "integer",
+          "default": 5
+        },
+        "highlight_active_word": {
+          "type": "boolean",
+          "default": true
+        }
+      }
+    },
+    "scenes": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Ordered beats. Not every Meal needs every beat - the planner chooses. Scene duration is derived from the narration alignment, so authored timings are hints, not truth.",
+      "items": {
+        "$ref": "#/$defs/scene"
+      }
+    },
+    "practice": {
+      "$ref": "#/$defs/practice"
+    },
+    "render": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "width": {
+          "type": "integer",
+          "default": 1080
+        },
+        "height": {
+          "type": "integer",
+          "default": 1920
+        },
+        "fps": {
+          "type": "integer",
+          "default": 30
+        }
+      }
+    }
+  },
+  "$defs": {
+    "beat": {
+      "enum": [
+        "hook",
+        "question",
+        "concept",
+        "visual",
+        "code",
+        "execution",
+        "takeaway",
+        "practice"
+      ],
+      "description": "The eight-beat Meal structure, in canonical order."
+    },
+    "narration_anchor": {
+      "type": "string",
+      "description": "A verbatim phrase from voice.script. The renderer forced-aligns the narration and starts this scene when the phrase is spoken. This is how visuals stay locked to the voice without anyone hand-timing anything. Must appear in the script exactly once."
+    },
+    "scene": {
+      "type": "object",
+      "required": [
+        "beat",
+        "visual"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "beat": {
+          "$ref": "#/$defs/beat"
+        },
+        "narration_anchor": {
+          "$ref": "#/$defs/narration_anchor"
+        },
+        "min_duration": {
+          "type": "number",
+          "description": "Seconds. A floor, for scenes that need to breathe even if the narration moves on."
+        },
+        "visual": {
+          "$ref": "#/$defs/visual"
+        }
+      }
+    },
+    "visual": {
+      "description": "A CONTROLLED visual type, never arbitrary animation code. The planner picks from this closed set; adding a type means adding a renderer component, deliberately.",
+      "oneOf": [
+        {
+          "$ref": "#/$defs/visual_text"
+        },
+        {
+          "$ref": "#/$defs/visual_code_editor"
+        },
+        {
+          "$ref": "#/$defs/visual_terminal"
+        },
+        {
+          "$ref": "#/$defs/visual_flow"
+        },
+        {
+          "$ref": "#/$defs/visual_variable"
+        },
+        {
+          "$ref": "#/$defs/visual_sequence"
+        },
+        {
+          "$ref": "#/$defs/visual_practice"
+        }
+      ]
+    },
+    "visual_text": {
+      "type": "object",
+      "description": "Full-bleed typographic beat. Used for hook, question and takeaway.",
+      "required": [
+        "type",
+        "text"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "text"
+        },
+        "text": {
+          "type": "string",
+          "maxLength": 160
+        },
+        "emphasis": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Substrings of text to accent. Must be exact substrings."
+        },
+        "tone": {
+          "enum": [
+            "hook",
+            "question",
+            "takeaway"
+          ],
+          "default": "hook"
+        }
+      }
+    },
+    "visual_code_editor": {
+      "type": "object",
+      "description": "A code pane driven by a timeline of actions. Renderer-agnostic: the same actions drive a Motion Canvas code node or a Monaco instance.",
+      "required": [
+        "type",
+        "language",
+        "code"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "code_editor"
+        },
+        "language": {
+          "enum": [
+            "python"
+          ]
+        },
+        "filename": {
+          "type": "string",
+          "default": "main.py"
+        },
+        "code": {
+          "type": "string",
+          "description": "The FINAL state of the code. Every action below is expressed relative to this."
+        },
+        "show_line_numbers": {
+          "type": "boolean",
+          "default": true
+        },
+        "actions": {
+          "type": "array",
+          "description": "Ordered editor choreography. Each action may anchor to the narration so typing lands with the voice.",
+          "items": {
+            "$ref": "#/$defs/code_action"
+          }
+        }
+      }
+    },
+    "code_action": {
+      "type": "object",
+      "required": [
+        "action"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "enum": [
+            "type",
+            "highlight",
+            "cursor",
+            "select",
+            "error",
+            "clear"
+          ],
+          "description": "type: reveal code as if typed. highlight: emphasise a span. cursor: move the caret. select: selection. error: red squiggle plus message. clear: reset the pane."
+        },
+        "narration_anchor": {
+          "$ref": "#/$defs/narration_anchor"
+        },
+        "lines": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "description": "1-indexed lines of `code` this action applies to. Omit for the whole pane."
+        },
+        "text": {
+          "type": "string",
+          "description": "For `type`, the exact substring being typed; must be a substring of `code`. For `error`, the message shown."
+        },
+        "speed_cps": {
+          "type": "number",
+          "default": 28,
+          "description": "Typing speed in characters per second. Realistic typing, not instant paste."
+        }
+      }
+    },
+    "visual_terminal": {
+      "type": "object",
+      "description": "A terminal running the code. Output is RECORDED, never authored - see `execution`. CONTRACT: the code being run is the `code` of the nearest PRECEDING code_editor scene in the same Meal. A terminal scene with no preceding code_editor is invalid.",
+      "required": [
+        "type",
+        "execution"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "terminal"
+        },
+        "command": {
+          "type": "string",
+          "default": "python main.py"
+        },
+        "stdin": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Lines fed to the program, typed into the terminal in sequence."
+        },
+        "execution": {
+          "$ref": "#/$defs/execution"
+        }
+      }
+    },
+    "execution": {
+      "type": "object",
+      "description": "Proof that the code actually ran. The product rule is absolute: never claim code executed if it did not. A Meal with verified=false must not be published.",
+      "required": [
+        "verified",
+        "source",
+        "stdout",
+        "exit_code"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "verified": {
+          "type": "boolean",
+          "description": "True ONLY when this output was captured from a real run of exactly this code with exactly this stdin."
+        },
+        "source": {
+          "enum": [
+            "glot.io",
+            "local_sandbox",
+            "unverified"
+          ],
+          "description": "Which executor produced the output. `unverified` means it was authored by hand and the Meal is NOT publishable."
+        },
+        "executed_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "stdout": {
+          "type": "string"
+        },
+        "stderr": {
+          "type": "string",
+          "default": ""
+        },
+        "exit_code": {
+          "type": "integer"
+        }
+      }
+    },
+    "visual_flow": {
+      "type": "object",
+      "description": "Boxes, arrows, decisions. Covers input/output flow, function flow and if/else branching. Layout is the renderer's job - the planner supplies structure only.",
+      "required": [
+        "type",
+        "nodes"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "flow"
+        },
+        "layout": {
+          "enum": [
+            "vertical",
+            "horizontal",
+            "branch"
+          ],
+          "default": "vertical"
+        },
+        "nodes": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "label"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string",
+                "maxLength": 40
+              },
+              "kind": {
+                "enum": [
+                  "box",
+                  "actor",
+                  "value",
+                  "decision",
+                  "output"
+                ],
+                "default": "box"
+              },
+              "narration_anchor": {
+                "$ref": "#/$defs/narration_anchor"
+              }
+            }
+          }
+        },
+        "edges": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "from",
+              "to"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "from": {
+                "type": "string"
+              },
+              "to": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string",
+                "maxLength": 32
+              },
+              "narration_anchor": {
+                "$ref": "#/$defs/narration_anchor"
+              }
+            }
+          }
+        }
+      }
+    },
+    "visual_variable": {
+      "type": "object",
+      "description": "Memory visualisation: named boxes whose values change over time.",
+      "required": [
+        "type",
+        "variables"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "variable"
+        },
+        "variables": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "value": {
+                "type": "string"
+              },
+              "value_type": {
+                "enum": [
+                  "str",
+                  "int",
+                  "float",
+                  "bool",
+                  "list",
+                  "dict",
+                  "none"
+                ]
+              }
+            }
+          }
+        },
+        "steps": {
+          "type": "array",
+          "description": "Successive rebindings, animated as the value changing in place.",
+          "items": {
+            "type": "object",
+            "required": [
+              "name",
+              "value"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "value": {
+                "type": "string"
+              },
+              "narration_anchor": {
+                "$ref": "#/$defs/narration_anchor"
+              }
+            }
+          }
+        }
+      }
+    },
+    "visual_sequence": {
+      "type": "object",
+      "description": "An ordered collection with a pointer walking it. Covers lists, iteration and for-loop traversal.",
+      "required": [
+        "type",
+        "items"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "sequence"
+        },
+        "label": {
+          "type": "string"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "pointer_label": {
+          "type": "string",
+          "description": "The loop variable, e.g. `name`."
+        },
+        "steps": {
+          "type": "array",
+          "description": "Each step advances the pointer and may emit output.",
+          "items": {
+            "type": "object",
+            "required": [
+              "index"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "index": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "emit": {
+                "type": "string",
+                "description": "What the body produces this pass."
+              },
+              "narration_anchor": {
+                "$ref": "#/$defs/narration_anchor"
+              }
+            }
+          }
+        }
+      }
+    },
+    "visual_practice": {
+      "type": "object",
+      "required": [
+        "type",
+        "prompt"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "practice"
+        },
+        "prompt": {
+          "type": "string",
+          "maxLength": 200
+        }
+      }
+    },
+    "practice": {
+      "type": "object",
+      "description": "The interactive task the feed offers after the Meal. Distinct from the practice SCENE, which is only the on-screen card.",
+      "required": [
+        "prompt"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "prompt": {
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "write_code",
+            "predict_output",
+            "fix_bug"
+          ],
+          "default": "write_code"
+        },
+        "starter_code": {
+          "type": "string"
+        },
+        "expected_stdout": {
+          "type": "string",
+          "description": "Used to check a learner's submission by running it, not by string-matching their source."
+        },
+        "hint": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

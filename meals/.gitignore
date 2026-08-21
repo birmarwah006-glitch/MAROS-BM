@@ -1,0 +1,4 @@
+# Generated media — regenerate with narrate.py / render.mjs
+build/
+out/
+__pycache__/
